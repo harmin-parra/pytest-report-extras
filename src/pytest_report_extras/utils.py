@@ -108,7 +108,7 @@ def get_screenshot(target, full_page=True, sources=False):
             if isinstance(target, WebElement) or isinstance(target, WebDriver):
                 image, source = _get_selenium_screenshot(target, full_page, sources)
 
-        elif importlib.util.find_spec('playwright') is not None:
+        if importlib.util.find_spec('playwright') is not None:
             from playwright.sync_api import Page
             from playwright.sync_api import Locator
             if isinstance(target, Page) or isinstance(target, Locator):

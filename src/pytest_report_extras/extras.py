@@ -62,7 +62,7 @@ class Extras:
                 if isinstance(target, WebDriver) and self.target is None:
                     self.target = target
 
-            elif importlib.util.find_spec('playwright') is not None:
+            if importlib.util.find_spec('playwright') is not None:
                 from playwright.sync_api import Page
                 if isinstance(target, Page) and self.target is None:
                     self.target = target
