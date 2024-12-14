@@ -53,7 +53,7 @@ To add a step to the report:
   step(
       comment: str = None,
       target: WebDriver|WebElement|Page|Locator = None,
-      code_block: str = None,
+      code_block: CodeBlockText = None,
       full_page: bool = True
       escape_html: bool = False  # Whether to escape HTML characters in the comment.
   )
@@ -62,18 +62,18 @@ Auxiliary method to get the code block format of a string:
 
 .. code-block:: python
 
-    format_code_block(content: str) -> str
+    format_code_block(text: str) -> CodeBlockText
 
 Auxiliary methods to format XML, JSON and YAML strings and files:
 
 .. code-block:: python
 
-    format_json_file(filepath: string, indent: int = 4) -> str
-    format_json_str(content: string, indent: int = 4) -> str
-    format_xml_file(filepath: string, indent: int = 4) -> str
-    format_xml_str(content: string, indent: int = 4) -> str
-    format_yaml_file(filepath: string, indent: int = 4) -> str
-    format_yaml_str(content: string, indent: int = 4) -> str
+    format_json_file(filepath: string, indent: int = 4) -> CodeBlockText
+    format_json_str(text: string, indent: int = 4) -> CodeBlockText
+    format_xml_file(filepath: string, indent: int = 4) -> CodeBlockText
+    format_xml_str(text: string, indent: int = 4) -> CodeBlockText
+    format_yaml_file(filepath: string, indent: int = 4) -> CodeBlockText
+    format_yaml_str(text: string, indent: int = 4) -> CodeBlockText
 
 
 Limitations
@@ -152,6 +152,7 @@ Sample code
       """
       page.goto("https://www.selenium.dev/selenium/web/web-form.html")
       report.step("Get the webpage to test", page)
+      report.step(comment="Get the webpage to test", target=page, full_page=False)
 
 
 * Example adding code-block content (using pytes-html report)
@@ -169,8 +170,8 @@ Sample code
           <heading>Reminder</heading>  
           <body>Don't forget me this weekend!</body>  
           </note>"""
-      report.step("This is a XML document:" + report.format_xml_str(xml))
-      report.step(comment="This is a XML document:" + report.format_xml_str(xml))
+      report.step("This is a XML document:" + str(report.format_xml_str(xml)))
+      report.step(comment="This is a XML document:" + str(report.format_xml_str(xml)))
       report.step("This is a XML document:", code_block=report.format_xml_str(xml))
       report.step(comment="This is a XML document:", code_block=report.format_xml_str(xml))
 
@@ -191,6 +192,8 @@ Sample code
           <body>Don't forget me this weekend!</body>  
           </note>"""
       report.step("This is a XML document:", code_block=report.format_xml_str(xml))
+
+\* Always pass the code-block text through the `code_block` parameter when using Allure.
 
 
 Sample CSS file
