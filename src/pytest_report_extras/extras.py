@@ -37,6 +37,7 @@ class Extras:
         self.sources = []
         self.comments = []
         self.target = None
+        self.attachment_type = None
         self._fx_screenshots = fx_screenshots
         self._fx_sources = fx_sources
         self._folder = report_folder
@@ -108,6 +109,10 @@ class Extras:
         self.sources.append(link_source)
 
     def format_code_block(self, content) -> str:
+        if content is None:
+            self.attachment_type = None
+            return None
+        self.attachment_type = "text/plain"
         # content = content.replace('<', '&lt;').replace('>', '&gt;')
         content = utils.escape_html(content)
         return f'<pre class="extras_pre">{content}</pre>'
@@ -125,6 +130,7 @@ class Extras:
         """
         Formats a string holding a JSON content.
         """
+        self.attachment_type = "application/json"
         content = json.loads(content)
         return self.format_code_block(json.dumps(content, indent=indent))
 
@@ -141,6 +147,7 @@ class Extras:
         """
         Formats a string holding a XML content.
         """
+        self.attachment_type = "application/xml"
         result = None
         try:
             result = xdom.parseString(re.sub(r"\n\s+", '',  content).replace('\n','')).toprettyxml(indent=" " * indent)
@@ -163,5 +170,6 @@ class Extras:
         """
         Formats a string containing a YAML document content.
         """
+        self.attachment_type = "application/yaml"
         content = yaml.safe_load(content)
         return self.format_code_block(yaml.dump(content, indent=indent))
