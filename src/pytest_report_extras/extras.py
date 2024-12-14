@@ -22,22 +22,22 @@ def counter() -> int:
 
 class CodeBlockText:
     
-    def __init__(self, content: str = None, mime: str = "plain"):
-        self.content = None if content is None or content == "" else content
+    def __init__(self, text: str = None, mime: str = "text/plain"):
+        self.text = None if text is None or text == "" else text
         self.mime = mime
     
     def __str__(self):
-        if self.content is None:
+        if self.text is None:
             return ""
-        return f'<pre class="extras_pre">{utils.escape_html(self.content)}</pre>'
+        return f'<pre class="extras_pre">{utils.escape_html(self.text)}</pre>'
 
     def get_escaped_text(self):
-        return utils.escape_html(self.content)
+        return utils.escape_html(self.text)
     
     def get_html_tag(self):
-        if self.content is None:
+        if self.text is None:
             return ""
-        return f'<pre class="extras_pre">{utils.escape_html(self.content)}</pre>'
+        return f'<pre class="extras_pre">{utils.escape_html(self.text)}</pre>'
 
 
 class Extras:
@@ -102,12 +102,12 @@ class Extras:
                 # Attach the webpage source
                 if source is not None:
                     allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
-            if code_block is not None and code_block.content is not None:
-                allure.attach(code_block.content, name=comment, attachment_type=code_block.mime)
+            if code_block is not None and code_block.text is not None:
+                allure.attach(code_block.text, name=comment, attachment_type=code_block.mime)
 
         # Add extras to pytest-html report
         self._save_screenshot(image, source)
-        if code_block is not None and code_block.content is not None:
+        if code_block is not None and code_block.text is not None:
             comment += '\n' + code_block.get_html_tag()
         self.comments.append(comment)
 
