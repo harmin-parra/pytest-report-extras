@@ -20,6 +20,26 @@ def counter() -> int:
     return count
 
 
+class CodeBlockText:
+    
+    def __init__(self, content: str = None, mime: str = "plain"):
+        self.content = None if content is None or content == "" else content
+        self.mime = mime
+    
+    def __str__(self):
+        if self.content is None:
+            return ""
+        return f'<pre class="extras_pre">{utils.escape_html(self.content)}</pre>'
+
+    def get_escaped_text(self):
+        return utils.escape_html(self.content)
+    
+    def get_html_tag(self):
+        if self.content is None:
+            return ""
+        return f'<pre class="extras_pre">{utils.escape_html(self.content)}</pre>'
+
+
 class Extras:
     """
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
@@ -37,13 +57,12 @@ class Extras:
         self.sources = []
         self.comments = []
         self.target = None
-        self.attachment_type = None
         self._fx_screenshots = fx_screenshots
         self._fx_sources = fx_sources
         self._folder = report_folder
         self._allure = report_allure
 
-    def step(self, comment: str = None, target=None, code_block: str = None, full_page: bool = True, escape_html: bool = False):
+    def step(self, comment: str = None, target=None, code_block: CodeBlockText = None, full_page: bool = True, escape_html: bool = False):
         """
         Adds a step in the pytest-html report: screenshot, comment and webpage source.
         The screenshot is saved in <forder_report>/screenshots folder.
@@ -52,7 +71,7 @@ class Extras:
         Args:
             comment (str): The comment of the test step.
             target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
-            code_block (str): The code-block formatted text to be added.
+            code_block (CodeBlockText): The code-block formatted content to be added.
             full_page (bool): Whether to take a full-page screenshot.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
@@ -74,7 +93,7 @@ class Extras:
         image, source = utils.get_screenshot(target, full_page, self._fx_sources)
         comment = "" if comment is None else comment
         comment = html.escape(comment, quote=True) if escape_html else comment      
-        
+
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
             import allure
@@ -83,17 +102,13 @@ class Extras:
                 # Attach the webpage source
                 if source is not None:
                     allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
-            if code_block is not None:
-                if self.attachment_type is None:
-                    self.attachment_type = "text/plain"
-                allure.attach(code_block, name=comment, attachment_type=self.attachment_type)
-
-        self.attachment_type = None
+            if code_block is not None and code_block.content is not None:
+                allure.attach(code_block.content, name=comment, attachment_type=code_block.mime)
 
         # Add extras to pytest-html report
         self._save_screenshot(image, source)
-        if code_block is not None:
-            comment += '\n' + code_block
+        if code_block is not None and code_block.content is not None:
+            comment += '\n' + code_block.get_html_tag()
         self.comments.append(comment)
 
 
@@ -120,14 +135,8 @@ class Extras:
             link_source = utils.get_source_link(self._folder, index, source)
         self.sources.append(link_source)
 
-    def format_code_block(self, content) -> str:
-        if content is None:
-            self.attachment_type = None
-            return None
-        self.attachment_type = "text/plain"
-        # content = content.replace('<', '&lt;').replace('>', '&gt;')
-        content = utils.escape_html(content)
-        return f'<pre class="extras_pre">{content}</pre>'
+    def format_code_block(self, content, mime = "text/plain") -> str:
+        return CodeBlockText(content, mime)
 
     def format_json_file(self, filepath, indent=4) -> str:
         """
@@ -142,9 +151,8 @@ class Extras:
         """
         Formats a string holding a JSON content.
         """
-        self.attachment_type = "application/json"
         content = json.loads(content)
-        return self.format_code_block(json.dumps(content, indent=indent))
+        return CodeBlockText(json.dumps(content, indent=indent), "application/json")
 
     def format_xml_file(self, filepath, indent=4) -> str:
         """
@@ -159,15 +167,14 @@ class Extras:
         """
         Formats a string holding a XML content.
         """
-        self.attachment_type = "application/xml"
         result = None
         try:
             result = xdom.parseString(re.sub(r"\n\s+", '',  content).replace('\n','')).toprettyxml(indent=" " * indent)
         except expat.ExpatError:
             if content is None:
                 content = 'None'
-            result = "Raw text:\n" + content
-        return self.format_code_block(result)
+            result = "Raw content:\n" + content
+        return CodeBlockText(result, "application/xml")
 
     def format_yaml_file(self, filepath, indent=4) -> str:
         """
@@ -182,6 +189,5 @@ class Extras:
         """
         Formats a string containing a YAML document content.
         """
-        self.attachment_type = "application/yaml"
         content = yaml.safe_load(content)
-        return self.format_code_block(yaml.dump(content, indent=indent))
+        return CodeBlockText(yaml.dump(content, indent=indent), "application/yaml")

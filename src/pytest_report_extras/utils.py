@@ -181,6 +181,7 @@ def _get_playwright_screenshot(target, full_page=True, sources=False):
             source = target.content()
     else:
         image = target.screenshot()
+
     return image, source
 
     
@@ -296,6 +297,8 @@ def append_header(call, report, extras, pytest_html,
 
 def escape_html(text, quote=False):
     """ Escapes HTML characters in a text. """
+    if text is None:
+        return ""
     return html.escape(str(text), quote)
 
 
