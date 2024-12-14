@@ -1,0 +1,37 @@
+[build-system]
+requires = ["flit_core >=3.4"]
+build-backend = "flit_core.buildapi"
+
+
+[project]
+name = "pytest-report-extras"
+version = "1.0.0rc1"
+description = "Pytest plugin to enhance pytest-html and allure reports of webtest projects by adding screenshots, comments and webpage sources."
+readme = "README.md"
+#license = "MIT"
+authors = [
+    {name = "Harmin Parra Rueda", email="harmin.rueda@gmail.com"},
+]
+requires-python = ">=3.10"
+dependencies = [
+    'pytest >= 7.0.0',
+    'pytest-html >= 4.0.0',
+    'pyyaml >= 6.0.2',
+]
+classifiers = [
+    "Framework :: Pytest",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+keywords = [
+    "pytest",
+    "selenium",
+    "playwright",
+    "webtest",
+    "webtesting",
+]
+
+
+[project.entry-points.pytest11]
+pytest_report_extras = "pytest_report_extras.plugin"

@@ -1,0 +1,60 @@
+.logwrapper {
+    max-height: 100px;
+}
+
+.extras_separator {
+    height:2px;
+    background-color: gray;
+    /* display: none; */
+}
+
+.extras_td {
+    width: 320px;
+    /* text-align: center; */
+}
+
+.extras_td_div {
+    text-align: center;
+}
+
+.extras_div {
+    display: inline-block;
+    text-align: center;
+}
+
+.extras_page_src {
+    font-size: 12px;
+    color: #999;
+}
+
+.extras_exception {
+    color: black;
+}
+
+.extras_comment {
+    font-family: monospace;
+    color: blue;
+}
+
+.extras_failure {
+    font-family: monospace;
+    color: red;
+}
+
+.extras_skip {
+    font-family: monospace;
+    color: orange;
+}
+
+.extras_image {
+    border: 1px solid black;
+    width: 300px;
+    height: 170px;
+    object-fit: cover;
+    object-position: top;
+}
+
+.extras_pre {
+    margin-left: 30px;
+    color: black;
+}
