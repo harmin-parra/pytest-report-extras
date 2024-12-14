@@ -51,8 +51,9 @@ To add a step to the report:
 .. code-block:: python
 
   step(
-      target: WebDriver|WebElement|Page|Locator = None,
       comment: str = None,
+      target: WebDriver|WebElement|Page|Locator = None,
+      code_block: str = None,
       full_page: bool = True
       escape_html: bool = False  # Whether to escape HTML characters in the comment.
   )
@@ -82,7 +83,7 @@ Limitations
 
 * For **Playwright**, only ``sync_api`` is supported.
 
-* Only test steps with screenshot can be added to Allure reports.
+* The Allure report cannot be generated alone. It needs to be generated together with the pytest-html report.
 
 
 Example
@@ -131,12 +132,12 @@ Sample code
       """
       driver = WebDriver()
       driver.get("https://www.selenium.dev/selenium/web/web-form.html")
-      report.step(driver, "Get the webpage to test", full_page=False)
+      report.step("Get the webpage to test", driver)
       driver.find_element(By.ID, "my-text-id").send_keys("Hello World!")
-      report.step(driver, "<h1>Set input text</h1>", escape_html=False)
+      report.step("<h1>Set input text</h1>", driver, full_page=True, escape_html=False)
       driver.find_element(By.NAME, "my-password").send_keys("password")
-      report.step(driver, "Set password")
-      report.step(driver, comment="Another comment")
+      report.step(comment="Another comment", target=driver)
+      report.step("Comment without screenshot")
       report.step(comment="Comment without screenshot")
       driver.quit()
 
@@ -150,10 +151,10 @@ Sample code
       This is a test using Playwright
       """
       page.goto("https://www.selenium.dev/selenium/web/web-form.html")
-      report.step(page, "Get the webpage to test")
+      report.step("Get the webpage to test", page)
 
 
-* Example adding code-block content
+* Example adding code-block content (using pytes-html report)
 
 .. code-block:: python
 
@@ -168,7 +169,28 @@ Sample code
           <heading>Reminder</heading>  
           <body>Don't forget me this weekend!</body>  
           </note>"""
+      report.step("This is a XML document:" + report.format_xml_str(xml))
       report.step(comment="This is a XML document:" + report.format_xml_str(xml))
+      report.step("This is a XML document:", code_block=report.format_xml_str(xml))
+      report.step(comment="This is a XML document:", code_block=report.format_xml_str(xml))
+
+
+* Example adding code-block content (using Allure report)
+
+.. code-block:: python
+
+  def test_code_block(page: Page, report):
+      """
+      This is a test with code-block content
+      """
+      xml = """
+          <note>  
+          <to>John</to>  
+          <from>Diana</from>  
+          <heading>Reminder</heading>  
+          <body>Don't forget me this weekend!</body>  
+          </note>"""
+      report.step("This is a XML document:", code_block=report.format_xml_str(xml))
 
 
 Sample CSS file

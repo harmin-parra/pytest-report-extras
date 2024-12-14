@@ -10,4 +10,4 @@ Changelog
 
 **Limitation**
 
-Only test steps with screenshot can be added to Allure reports.
+* The Allure report cannot be generated alone. It needs to be generated together with the pytest-html report.
