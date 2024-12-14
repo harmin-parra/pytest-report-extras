@@ -84,7 +84,7 @@ Limitations
 
 * For **Playwright**, only ``sync_api`` is supported.
 
-* The Allure report cannot be generated alone. It needs to be generated together with the pytest-html report.
+* The **Allure** report cannot be generated alone. It needs to be generated together with the pytest-html report.
 
 
 Example
@@ -107,7 +107,7 @@ If using Allure report:
 
 .. code-block:: bash
 
-  pytest --html=/path/to/report --css=/path/to/css --alluredir allure-results
+  pytest --html=/path/to/report --css=/path/to/css --alluredir=/path/to/allure-results
 
 
 Sample ``pytest.ini`` file
