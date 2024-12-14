@@ -97,7 +97,7 @@ def get_full_page_screenshot_chromium(driver):
     return base64.urlsafe_b64decode(base_64_png['data'])
 
 
-def get_screenshot(target, full_page=True, sources=False):
+def get_screenshot(target, full_page=True, page_source=False):
     image = None
     source = None
 
@@ -106,18 +106,18 @@ def get_screenshot(target, full_page=True, sources=False):
             from selenium.webdriver.remote.webdriver import WebDriver
             from selenium.webdriver.remote.webelement import WebElement
             if isinstance(target, WebElement) or isinstance(target, WebDriver):
-                image, source = _get_selenium_screenshot(target, full_page, sources)
+                image, source = _get_selenium_screenshot(target, full_page, page_source)
 
         if importlib.util.find_spec('playwright') is not None:
             from playwright.sync_api import Page
             from playwright.sync_api import Locator
             if isinstance(target, Page) or isinstance(target, Locator):
-                image, source = _get_playwright_screenshot(target, full_page, sources)
+                image, source = _get_playwright_screenshot(target, full_page, page_source)
     
     return image, source
 
 
-def _get_selenium_screenshot(target, full_page=True, sources=False):
+def _get_selenium_screenshot(target, full_page=True, page_source=False):
     """
     Returns the screenshot in PNG format as bytes and the HTML source code.
         target (WebDriver | WebElement): The target of the screenshot.
@@ -152,12 +152,12 @@ def _get_selenium_screenshot(target, full_page=True, sources=False):
                     image = target.get_screenshot_as_png()
         else:
             image = target.get_screenshot_as_png()
-        if sources:
+        if page_source:
             source = target.page_source
     return image, source
 
 
-def _get_playwright_screenshot(target, full_page=True, sources=False):
+def _get_playwright_screenshot(target, full_page=True, page_source=False):
     """
     Returns a screenshot in PNG format as bytes.
         target (Page | Locator): The target of the screenshot.
@@ -177,7 +177,7 @@ def _get_playwright_screenshot(target, full_page=True, sources=False):
 
     if isinstance(target, Page):
         image = target.screenshot(full_page=full_page)
-        if sources:
+        if page_source:
             source = target.content()
     else:
         image = target.screenshot()

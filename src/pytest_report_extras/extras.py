@@ -62,7 +62,15 @@ class Extras:
         self._folder = report_folder
         self._allure = report_allure
 
-    def step(self, comment: str = None, target=None, code_block: CodeBlockText = None, full_page: bool = True, escape_html: bool = False):
+    def step(
+            self,
+            comment: str = None,
+            target=None,
+            code_block: CodeBlockText = None,
+            full_page: bool = True,
+            page_source: bool = False,
+            escape_html: bool = False
+    ):
         """
         Adds a step in the pytest-html report: screenshot, comment and webpage source.
         The screenshot is saved in <forder_report>/screenshots folder.
@@ -73,6 +81,7 @@ class Extras:
             target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
             code_block (CodeBlockText): The code-block formatted content to be added.
             full_page (bool): Whether to take a full-page screenshot.
+            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         if target is not None:
@@ -90,7 +99,7 @@ class Extras:
             return
 
         # Get the 3 parts of the test step: image, comment and source
-        image, source = utils.get_screenshot(target, full_page, self._fx_sources)
+        image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
         comment = "" if comment is None else comment
         comment = html.escape(comment, quote=True) if escape_html else comment      
 
@@ -110,7 +119,6 @@ class Extras:
         if code_block is not None and code_block.text is not None:
             comment += '\n' + code_block.get_html_tag()
         self.comments.append(comment)
-
 
     def _save_screenshot(self, image: bytes | str, source: str):
         """
