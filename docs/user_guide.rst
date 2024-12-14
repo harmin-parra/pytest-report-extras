@@ -54,8 +54,9 @@ To add a step to the report:
       comment: str = None,
       target: WebDriver|WebElement|Page|Locator = None,
       code_block: CodeBlockText = None,
-      full_page: bool = True
-      escape_html: bool = False  # Whether to escape HTML characters in the comment.
+      full_page: bool = True,
+      page_source: bool = False,  # Whether to include the webpage HTML source.
+      escape_html: bool = False   # Whether to escape HTML characters in the comment.
   )
   
 Auxiliary method to get the code block format of a string:
