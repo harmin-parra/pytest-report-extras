@@ -135,10 +135,10 @@ class Extras:
             link_source = utils.get_source_link(self._folder, index, source)
         self.sources.append(link_source)
 
-    def format_code_block(self, text, mime="text/plain") -> str:
+    def format_code_block(self, text: str, mime="text/plain") -> CodeBlockText:
         return CodeBlockText(text, mime)
 
-    def format_json_file(self, filepath, indent=4) -> str:
+    def format_json_file(self, filepath: str, indent=4) -> CodeBlockText:
         """
         Formats the contents of a JSON file.
         """
@@ -147,14 +147,14 @@ class Extras:
         f.close()
         return self.format_json_str(content, indent)
 
-    def format_json_str(self, text, indent=4) -> str:
+    def format_json_str(self, text: str, indent: int = 4) -> CodeBlockText:
         """
         Formats a string holding a JSON document.
         """
         text = json.loads(text)
         return CodeBlockText(json.dumps(text, indent=indent), "application/json")
 
-    def format_xml_file(self, filepath, indent=4) -> str:
+    def format_xml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
         """
         Formats the contents of a XML file.
         """
@@ -163,7 +163,7 @@ class Extras:
         f.close()
         return self.format_xml_str(content, indent)
 
-    def format_xml_str(self, text, indent=4) -> str:
+    def format_xml_str(self, text: str, indent: int = 4) -> CodeBlockText:
         """
         Formats a string holding a XML document.
         """
@@ -176,7 +176,7 @@ class Extras:
             result = "Raw text:\n" + text
         return CodeBlockText(result, "application/xml")
 
-    def format_yaml_file(self, filepath, indent=4) -> str:
+    def format_yaml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
         """
         Formats the contents of a YAML file.
         """
@@ -185,7 +185,7 @@ class Extras:
         f.close()
         return self.format_yaml_str(content, indent)
 
-    def format_yaml_str(self, text, indent=4) -> str:
+    def format_yaml_str(self, text: str, indent: int = 4) -> CodeBlockText:
         """
         Formats a string containing a YAML document.
         """
