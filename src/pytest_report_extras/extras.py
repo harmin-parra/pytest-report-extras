@@ -43,15 +43,16 @@ class Extras:
         self._folder = report_folder
         self._allure = report_allure
 
-    def step(self, target=None, comment: str = None, full_page: bool = True, escape_html: bool = False):
+    def step(self, comment: str = None, target=None, code_block: str = None, full_page: bool = True, escape_html: bool = False):
         """
         Adds a step in the pytest-html report: screenshot, comment and webpage source.
         The screenshot is saved in <forder_report>/screenshots folder.
         The webpage source is saved in <forder_report>/sources folder.
 
         Args:
-            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
             comment (str): The comment of the test step.
+            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
+            code_block (str): The code-block formatted text to be added.
             full_page (bool): Whether to take a full-page screenshot.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
@@ -69,21 +70,32 @@ class Extras:
         if self._fx_screenshots == "last" and target is not None:
             return
 
+        # Get the 3 parts of the test step: image, comment and source
         image, source = utils.get_screenshot(target, full_page, self._fx_sources)
-        self._save_screenshot(image, source)
-
         comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment
+        comment = html.escape(comment, quote=True) if escape_html else comment      
+        
+        # Add extras to Allure report if allure-pytest plugin is being used.
+        if self._allure and importlib.util.find_spec('allure') is not None:
+            import allure
+            if image is not None:
+                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
+                # Attach the webpage source
+                if source is not None:
+                    allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
+            if code_block is not None:
+                if self.attachment_type is None:
+                    self.attachment_type = "text/plain"
+                allure.attach(code_block, name=comment, attachment_type=self.attachment_type)
+
+        self.attachment_type = None
+
+        # Add extras to pytest-html report
+        self._save_screenshot(image, source)
+        if code_block is not None:
+            comment += '\n' + code_block
         self.comments.append(comment)
 
-        # Add extras to Allure report if allure-pytest plugin is being used.
-        # if importlib.util.find_spec('allure') is not None:
-        if self._allure and importlib.util.find_spec('allure') is not None and image is not None:
-            import allure
-            allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
-            # Attach the webpage source
-            if source is not None:
-                allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
 
     def _save_screenshot(self, image: bytes | str, source: str):
         """
