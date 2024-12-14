@@ -135,8 +135,8 @@ class Extras:
             link_source = utils.get_source_link(self._folder, index, source)
         self.sources.append(link_source)
 
-    def format_code_block(self, content, mime = "text/plain") -> str:
-        return CodeBlockText(content, mime)
+    def format_code_block(self, text, mime="text/plain") -> str:
+        return CodeBlockText(text, mime)
 
     def format_json_file(self, filepath, indent=4) -> str:
         """
@@ -147,12 +147,12 @@ class Extras:
         f.close()
         return self.format_json_str(content, indent)
 
-    def format_json_str(self, content, indent=4) -> str:
+    def format_json_str(self, text, indent=4) -> str:
         """
-        Formats a string holding a JSON content.
+        Formats a string holding a JSON document.
         """
-        content = json.loads(content)
-        return CodeBlockText(json.dumps(content, indent=indent), "application/json")
+        text = json.loads(text)
+        return CodeBlockText(json.dumps(text, indent=indent), "application/json")
 
     def format_xml_file(self, filepath, indent=4) -> str:
         """
@@ -163,17 +163,17 @@ class Extras:
         f.close()
         return self.format_xml_str(content, indent)
 
-    def format_xml_str(self, content, indent=4) -> str:
+    def format_xml_str(self, text, indent=4) -> str:
         """
-        Formats a string holding a XML content.
+        Formats a string holding a XML document.
         """
         result = None
         try:
-            result = xdom.parseString(re.sub(r"\n\s+", '',  content).replace('\n','')).toprettyxml(indent=" " * indent)
+            result = xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n','')).toprettyxml(indent=" " * indent)
         except expat.ExpatError:
-            if content is None:
-                content = 'None'
-            result = "Raw content:\n" + content
+            if text is None:
+                text = 'None'
+            result = "Raw text:\n" + text
         return CodeBlockText(result, "application/xml")
 
     def format_yaml_file(self, filepath, indent=4) -> str:
@@ -185,9 +185,9 @@ class Extras:
         f.close()
         return self.format_yaml_str(content, indent)
 
-    def format_yaml_str(self, content, indent=4) -> str:
+    def format_yaml_str(self, text, indent=4) -> str:
         """
-        Formats a string containing a YAML document content.
+        Formats a string containing a YAML document.
         """
-        content = yaml.safe_load(content)
-        return CodeBlockText(yaml.dump(content, indent=indent), "application/yaml")
+        text = yaml.safe_load(text)
+        return CodeBlockText(yaml.dump(text, indent=indent), "application/yaml")
