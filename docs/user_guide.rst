@@ -194,7 +194,7 @@ Sample code
           </note>"""
       report.step("This is a XML document:", code_block=report.format_xml_str(xml))
 
-\* Always pass the code-block text through the `code_block` parameter when using Allure.
+\* Always pass the code-block text through the ``code_block`` parameter when using Allure.
 
 
 Sample CSS file
