@@ -27,19 +27,11 @@ Docstring of tests are also included in the report, as mean to provide a long de
 Therefore, you are highly encouraged to document your tests with docstrings.
 
 
-===========
-Limitations
-===========
-
-Only test steps with screenshot can be added to Allure reports.
-
-
-======================
 History of the project
 ======================
 
 **pytest-report-extras** is the successor of the `pytest-webtest-extras <https://pytest-webtest-extras.readthedocs.io/>`_ project. The latter is now deprecated.
 
-``pytest-webtest-extras`` was primarily focus on front-end tests (Selenium or Playwright).
+**pytest-webtest-extras** was primarily focus on front-end tests (Selenium or Playwright).
 
-``pytest-report-extras`` is a more general-purpose test report plugin that can also be used for back-end tests without screenshots.
+**pytest-report-extras** is a more general-purpose test report plugin that can also be used for back-end tests without screenshots.

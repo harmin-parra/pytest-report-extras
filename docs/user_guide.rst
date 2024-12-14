@@ -18,7 +18,7 @@ Accepted values:
 
 * ``all``:    Include all gathered screenshots in the report.
 
-* ``last``:   Include only the last screenshot of each test in the report. Works only if the API was been called previously during the test execution in order to store the reference of the WebDriver (Selenium) or Page (Playwright) object.
+* ``last``:   Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution in order to store the reference of the WebDriver (Selenium) or Page (Playwright) object.
 
 Default value: ``all``
 
@@ -57,7 +57,7 @@ To add a step to the report:
       escape_html: bool = False  # Whether to escape HTML characters in the comment.
   )
   
-Auxiliary method to get a code block format of a string:
+Auxiliary method to get the code block format of a string:
 
 .. code-block:: python
 
@@ -78,9 +78,11 @@ Auxiliary methods to format XML, JSON and YAML strings and files:
 Limitations
 ===========
 
-No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
+* No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
 
-For **Playwright**, only ``sync_api`` is supported.
+* For **Playwright**, only ``sync_api`` is supported.
+
+* Only test steps with screenshot can be added to Allure reports.
 
 
 Example
