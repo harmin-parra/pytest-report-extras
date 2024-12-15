@@ -206,12 +206,6 @@ Sample CSS file
       max-height: 100px;
   }
 
-  .extras_separator {
-      height:2px;
-      background-color: gray;
-      /* display: none; */
-  }
-
   .extras_td {
       width: 320px;
       /* text-align: center; */
@@ -220,24 +214,30 @@ Sample CSS file
   .extras_td_div {
       text-align: center;
   }
-
-  .extras_div {
-      display: inline-block;
-      text-align: center;
+ 
+  .extras_separator {
+      height:2px;
+      background-color: gray;
+      /* display: none; */
   }
-
-  .extras_page_src {
-      font-size: 12px;
-      color: #999;
+  
+ .extras_description {
+    color: black;
+    font-size: larger
   }
 
   .extras_exception {
-      color: black;
+      color: red;
   }
 
   .extras_comment {
       font-family: monospace;
       color: blue;
+  }
+
+  .extras_pre {
+      margin-left: 30px;
+      color: black;
   }
 
   .extras_failure {
@@ -258,9 +258,9 @@ Sample CSS file
       object-position: top;
   }
 
-  .extras_pre {
-      margin-left: 30px;
-      color: black;
+  .extras_page_src {
+      font-size: 12px;
+      color: #999;
   }
 
 
