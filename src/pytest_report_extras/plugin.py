@@ -222,6 +222,8 @@ def pytest_runtest_makereport(item, call):
     
             # To check test failure/skip
             xfail = hasattr(report, 'wasxfail')
+            wasxpassed = xfail and report.wasxfail == "xpassed"
+            wasxfailure = xfail and report.wasxfail == "xfailure"
             failure = xfail or report.outcome in ("failed", "skipped")
     
             # Add steps in the report
@@ -244,17 +246,21 @@ def pytest_runtest_makereport(item, call):
     
             # Add screenshot for test failure/skip
             if failure and target is not None:
-                if xfail or report.outcome == "failed":
-                    event = "failure"
+                if report.outcome == "failed" or wasxpassed:
+                    event_class = "failure"
                 else:
-                    event = "skip"
+                    event_class = "skip"
+                if report.outcome == "failed" or wasxfailure or wasxpassed or (report.skipped and xfail):
+                    event_label = "failure"
+                else:
+                    event_label = "skip"
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
-                fx_report.step(f"Last screenshot before {event}", target)
+                fx_report.step(f"Last screenshot before {event_label}", target)
                 rows += utils.get_table_row_tag(
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
-                    event
+                    event_class
                 )
     
             # Add horizontal line between the header and the comments/screenshots
