@@ -84,7 +84,7 @@ Limitations
 
 * For **Playwright**, only ``sync_api`` is supported.
 
-* The **Allure** report cannot be generated alone. It needs to be generated together with the pytest-html report.
+* The **Allure** report cannot be generated alone. It needs to be generated together with the **pytest-html** report.
 
 
 Example
