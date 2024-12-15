@@ -240,7 +240,7 @@ def append_header(call, report, extras, pytest_html,
     if description is not None:
         description = escape_html(description).strip().replace('\n', "<br>")
         description = description.strip().replace('\n', "<br>")
-        extras.append(pytest_html.extras.html(f"<{description_tag}>{description}</{description_tag}>"))
+        extras.append(pytest_html.extras.html(f'<{description_tag} class="extras_description">{description}</{description_tag}>'))
 
     # Catch explicit pytest.fail and pytest.skip calls
     if (
