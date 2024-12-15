@@ -1,7 +1,8 @@
+import pathlib
 import pytest
+import re
 from . import utils
 from .extras import Extras
-import re
 
 
 #
@@ -287,3 +288,14 @@ def pytest_runtest_makereport(item, call):
                 extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
 
     report.extras = extras
+
+
+@pytest.hookimpl(trylast=False)
+def pytest_configure(config):
+    # Add CSS file to --css request option for pytest-html
+    # This code doesn't always run before pytest-html configuration
+    report_css = config.getoption("--css")
+    resources_path = pathlib.Path(__file__).parent.joinpath("resources")
+    style_css = pathlib.Path(resources_path, "style.css")
+    # report_css.insert(0, style_css)
+    report_css.append(style_css)
