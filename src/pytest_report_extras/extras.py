@@ -177,7 +177,8 @@ class Extras:
         """
         result = None
         try:
-            result = xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n','')).toprettyxml(indent=" " * indent)
+            result = (xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', ''))
+                      .toprettyxml(indent=" " * indent))
         except expat.ExpatError:
             if text is None:
                 text = 'None'
