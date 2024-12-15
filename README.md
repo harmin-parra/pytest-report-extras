@@ -1,14 +1,14 @@
-# pytest-webtest-extras
+# pytest-report-extras
 
-Pytest plugin to enhance pytest-html and Allure reports of webtest projects with screenshots, comments and webpage sources.
+Pytest plugin to enhance **pytest-html** and **allure** reports of front-end and back-end tests with step comments, screenshots, webpage sources and code-blocks of XML, JSON and YAML documents.
 
 ![](https://img.shields.io/badge/license-MIT%202.0-blue.svg)
 
 ## Resources ##
 
-- [Documentation](https://pytest-webtest-extras.readthedocs.io/en/stable/)
-- [Issue tracker](https://github.com/harmin-parra/pytest-webtest-extras/issues)
-- [Source code](https://github.com/harmin-parra/pytest-webtest-extras)
+- [Documentation](https://pytest-report-extras.readthedocs.io/stable/)
+- [Issue tracker](https://github.com/harmin-parra/pytest-report-extras/issues)
+- [Source code](https://github.com/harmin-parra/pytest-report-extras)
 
 <br/>
 
