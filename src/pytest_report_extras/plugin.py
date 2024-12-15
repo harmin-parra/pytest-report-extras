@@ -151,6 +151,10 @@ def pytest_runtest_makereport(item, call):
     extras = getattr(report, 'extras', [])
     issues = []
 
+    # Is the test item using the 'report' fixtures?
+    # if not ("request" in item.funcargs and "report" in item.funcargs):
+    #     return
+
     try:
         feature_request = item.funcargs['request']
         fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
