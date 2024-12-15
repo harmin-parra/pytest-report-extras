@@ -8,6 +8,11 @@
     /* display: none; */
 }
 
+.extras_description {
+    color: black;
+    font-size: larger
+}
+
 .extras_td {
     width: 320px;
     /* text-align: center; */
@@ -28,7 +33,7 @@
 }
 
 .extras_exception {
-    color: black;
+    color: red;
 }
 
 .extras_comment {
