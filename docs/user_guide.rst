@@ -38,7 +38,7 @@ The HTML tag for the test description (test docstring).
 
 Accepted values: ``h1``, ``h2``, ``h3``, ``p`` or ``pre``
 
-Default value: ``h2``
+Default value: ``pre``
 
 
 API
@@ -115,9 +115,9 @@ Sample ``pytest.ini`` file
 
 .. code-block:: ini
 
+  extras_description_tag = pre
   extras_screenshots = all
   extras_sources = False
-  extras_allure = False
 
 
 Sample code

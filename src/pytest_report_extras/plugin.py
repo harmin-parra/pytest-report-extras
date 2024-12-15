@@ -23,7 +23,7 @@ def pytest_addoption(parser):
     parser.addini(
         "extras_description_tag",
         type="string",
-        default="h2",
+        default="pre",
         help="HTML tag for the test description. Accepted values: h1, h2, h3, p or pre.",
     )
     parser.addini(
