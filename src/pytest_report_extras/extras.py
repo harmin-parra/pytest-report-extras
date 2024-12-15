@@ -21,7 +21,9 @@ def counter() -> int:
 
 
 class CodeBlockText:
-    
+    """
+    Class to represent text to be formatted as code-block in a <pre> HTML tag.
+    """
     def __init__(self, text: str = None, mime: str = "text/plain"):
         self.text = None if text is None or text == "" else text
         self.mime = mime
