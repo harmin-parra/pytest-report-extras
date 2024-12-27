@@ -43,6 +43,8 @@ def pytest_addoption(parser):
 
 fx_issue_link = None
 fx_issue_key = None
+fx_html = None
+fx_allure = None
 
 
 #
@@ -60,14 +62,17 @@ def screenshots(request):
 @pytest.fixture(scope='session')
 def report_html(request):
     """ The folder storing the pytest-html report """
-    htmlpath = request.config.getoption("--html")
-    return utils.get_folder(htmlpath)
+    global fx_html
+    fx_html = utils.get_folder(request.config.getoption("--html", default=None))
+    return fx_html
 
 
 @pytest.fixture(scope='session')
 def report_allure(request):
     """ Whether the allure-pytest plugin is being used """
-    return request.config.getoption("--alluredir", default=None) is not None
+    global fx_allure
+    fx_allure = request.config.getoption("--alluredir", default=None) is not None
+    return fx_allure
 
 
 @pytest.fixture(scope='session')
@@ -159,6 +164,8 @@ def pytest_runtest_makereport(item, call):
 
     try:
         feature_request = item.funcargs['request']
+        fx_html = feature_request.getfixturevalue("report_html")
+        fx_allure = feature_request.getfixturevalue("report_allure")
         fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
         fx_issue_key = feature_request.getfixturevalue("issue_key_pattern")
     except:
@@ -212,8 +219,6 @@ def pytest_runtest_makereport(item, call):
             fx_report = feature_request.getfixturevalue("report")
             fx_description_tag = feature_request.getfixturevalue("description_tag")
             fx_screenshots = feature_request.getfixturevalue("screenshots")
-            # fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
-            # fx_issue_key = feature_request.getfixturevalue("issue_key_pattern")
             target = fx_report.target
     
             # Append test description and execution exception trace, if any.
