@@ -179,12 +179,13 @@ class Extras:
         """
         result = None
         try:
-            result = (xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', ''))
-                      .toprettyxml(indent=" " * indent))
+            result = xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', '')).toprettyxml(indent=" " * indent)
+            result = '\n'.join(line for line in result.splitlines() if not re.match(r"^\s*<!--.*?-->\s*\n*$", line))
         except expat.ExpatError:
             if text is None:
                 text = 'None'
-            result = "Raw text:\n" + text
+            result = "Error formatting XML. Raw text:\n " + text
+            return CodeBlockText(result, "text/plain")
         return CodeBlockText(result, "application/xml")
 
     def format_yaml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
