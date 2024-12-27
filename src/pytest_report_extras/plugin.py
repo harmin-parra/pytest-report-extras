@@ -58,7 +58,7 @@ def screenshots(request):
 
 
 @pytest.fixture(scope='session')
-def report_folder(request):
+def report_html(request):
     """ The folder storing the pytest-html report """
     htmlpath = request.config.getoption("--html")
     return utils.get_folder(htmlpath)
@@ -106,18 +106,19 @@ def issue_key_pattern(request):
 
 
 @pytest.fixture(scope='session')
-def check_options(request, report_folder):
+def check_options(request, report_html, report_allure):
     """ Verifies preconditions before using this plugin. """
-    utils.check_html_option(report_folder)
-    utils.create_assets(report_folder)
+    utils.check_options(report_html, report_allure)
+    if report_html is not None:
+        utils.create_assets(report_html)
 
 
 #
 # Test fixture
 #
 @pytest.fixture(scope='function')
-def report(request, report_folder, screenshots, sources, report_allure, check_options):
-    return Extras(report_folder, screenshots, sources, report_allure)
+def report(request, report_html, screenshots, sources, report_allure, check_options):
+    return Extras(report_html, screenshots, sources, report_allure)
 
 
 #

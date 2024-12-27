@@ -47,10 +47,10 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_folder, fx_screenshots, fx_sources, report_allure):
+    def __init__(self, report_html, fx_screenshots, fx_sources, report_allure):
         """
         Args:
-            report_folder (str): The 'report_folder' fixture.
+            report_html (str): The 'report_html' fixture.
             fx_screenshots (str): The 'screenshots' fixture.
             fx_sources (bool): The 'sources' fixture.
             report_allure (str): The 'report_allure' fixture.
@@ -61,7 +61,7 @@ class Extras:
         self.target = None
         self._fx_screenshots = fx_screenshots
         self._fx_sources = fx_sources
-        self._folder = report_folder
+        self._html = report_html
         self._allure = report_allure
 
     def step(
@@ -116,11 +116,12 @@ class Extras:
             if code_block is not None and code_block.text is not None:
                 allure.attach(code_block.text, name=comment, attachment_type=code_block.mime)
 
-        # Add extras to pytest-html report
-        self._save_screenshot(image, source)
-        if code_block is not None and code_block.text is not None:
-            comment += '\n' + code_block.get_html_tag()
-        self.comments.append(comment)
+        # Add extras to pytest-html report if pytest-html plugin is being used.
+        if self._html:
+            self._save_screenshot(image, source)
+            if code_block is not None and code_block.text is not None:
+                comment += '\n' + code_block.get_html_tag()
+            self.comments.append(comment)
 
     def _save_screenshot(self, image: bytes | str, source: str):
         """
@@ -138,11 +139,11 @@ class Extras:
             except:
                 image = None
         index = -1 if image is None else counter()
-        link_image = utils.get_image_link(self._folder, index, image)
+        link_image = utils.get_image_link(self._html, index, image)
         self.images.append(link_image)
         link_source = None
         if source is not None:
-            link_source = utils.get_source_link(self._folder, index, source)
+            link_source = utils.get_source_link(self._html, index, source)
         self.sources.append(link_source)
 
     def format_code_block(self, text: str, mime="text/plain") -> CodeBlockText:

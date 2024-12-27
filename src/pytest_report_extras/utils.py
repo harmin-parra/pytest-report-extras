@@ -12,12 +12,12 @@ import traceback
 #
 # Auxiliary functions to check options and fixtures
 #
-def check_html_option(htmlpath):
+def check_options(htmlpath, allurepath):
     """ Verifies if the --html has been set by the user. """
-    if htmlpath is None:
+    if htmlpath is None and allurepath is None:
         msg = ("It seems you are using pytest-report-extras plugin.\n"
-               "pytest-html plugin is required.\n"
-               "'--html' option is missing.\n")
+               "pytest-html or pytest-allure plugin is required.\n"
+               "'--html' or '--alluredir' option is missing.\n")
         print(msg, file=sys.stderr)
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
@@ -54,12 +54,14 @@ def check_lists_length(report, fx_extras):
         return True
 
 
-def create_assets(report_folder):
+def create_assets(report_html):
     """ Recreate screenshots and webpage sources folders. """
+    if report_html is None:
+        return
     # Recreate screenshots_folder
     folder = ""
-    if report_folder is not None and report_folder != '':
-        folder = f"{report_folder}{os.sep}"
+    if report_html is not None and report_html != '':
+        folder = f"{report_html}{os.sep}"
     # Create page sources folder
     shutil.rmtree(f"{folder}sources", ignore_errors=True)
     pathlib.Path(f"{folder}sources").mkdir(parents=True)
@@ -185,13 +187,13 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False):
     return image, source
 
     
-def get_image_link(report_folder, index, image):
+def get_image_link(report_html, index, image):
     if image is None:
         return None
     link = f"screenshots{os.sep}image-{index}.png"
     folder = ""
-    if report_folder is not None and report_folder != '':
-        folder = f"{report_folder}{os.sep}"
+    if report_html is not None and report_html != '':
+        folder = f"{report_html}{os.sep}"
     filename = folder + link
     try:
         f = open(filename, 'wb')
@@ -205,11 +207,11 @@ def get_image_link(report_folder, index, image):
         return link
 
 
-def get_source_link(report_folder, index, source):
+def get_source_link(report_html, index, source):
     link = f"sources{os.sep}page-{index}.txt"
     folder = ""
-    if report_folder is not None and report_folder != '':
-        folder = f"{report_folder}{os.sep}"
+    if report_html is not None and report_html != '':
+        folder = f"{report_html}{os.sep}"
     filename = folder + link
     try:
         f = open(filename, 'w', encoding="utf-8")
