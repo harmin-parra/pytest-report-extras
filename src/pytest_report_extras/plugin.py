@@ -173,7 +173,8 @@ def pytest_runtest_makereport(item, call):
         fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
         fx_issue_key = feature_request.getfixturevalue("issue_key_pattern")
     except:
-        pass
+        if call.when == "call":
+            return
 
     # Update status variables
     if call.when == 'setup':
@@ -221,8 +222,10 @@ def pytest_runtest_makereport(item, call):
         elif hasattr(report, 'wasxfail'):
             issues = re.sub(r"[^\w-]", " ",  report.wasxfail).split()
 
-        # Is the test item using the 'report' fixtures?
-        if "request" in item.funcargs and "report" in item.funcargs:
+        # Add extras to the pytest-html report
+        # if the test item is using the 'report' fixtures and the pytest-html plugin
+        if ("request" in item.funcargs and "report" in item.funcargs
+                and fx_html is not None and pytest_html is not None):
 
             # Get test fixture values
             feature_request = item.funcargs['request']
@@ -294,11 +297,18 @@ def pytest_runtest_makereport(item, call):
                 )
                 extras.append(pytest_html.extras.html(table))
 
-    # Identify issue patterns and add issue links to extras
+    # Identify issue patterns and add issue links to the report(s)
     if fx_issue_key is not None and fx_issue_link is not None:
         for issue in issues:
             if re.match(rf"^{fx_issue_key}$", issue):
-                extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
+                # Add extras to HTML report if pytest-html plugin is being used.
+                if fx_html is not None and pytest_html is not None:
+                    extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
+                # Add extras to Allure report if allure-pytest plugin is being used.
+                if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+                    import allure
+                    from allure_commons.types import LinkType
+                    allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.LINK, name=issue)
 
     report.extras = extras
 
