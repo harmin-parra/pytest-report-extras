@@ -167,7 +167,7 @@ class Extras:
 
     def format_xml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
         """
-        Formats the contents of a XML file.
+        Formats the contents of an XML file.
         """
         f = open(filepath, 'r')
         content = f.read()
@@ -176,7 +176,7 @@ class Extras:
 
     def format_xml_str(self, text: str, indent: int = 4) -> CodeBlockText:
         """
-        Formats a string holding a XML document.
+        Formats a string holding an XML document.
         """
         result = None
         try:
