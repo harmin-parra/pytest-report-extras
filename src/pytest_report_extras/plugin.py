@@ -140,7 +140,7 @@ error_teardown = 0
 
 def pytest_sessionfinish(session, exitstatus):
     global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
-    if xpassed >= 0 and failed == 0 and error_setup == 0:
+    if xpassed >= 0 and failed + skipped + error_setup + error_teardown == 0:
         session.exitstatus = 0
     if (xfailed + skipped + error_teardown + error_setup > 0) and failed == 0:
         session.exitstatus = 6
