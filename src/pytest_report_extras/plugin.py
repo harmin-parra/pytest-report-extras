@@ -149,7 +149,11 @@ def pytest_sessionfinish(session, exitstatus):
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
-    global fx_issue_link, fx_issue_key
+    global fx_issue_link, fx_issue_key, fx_html, fx_allure
+    wasfailed = False
+    wasxpassed = False
+    wasxfailed = False
+    wasskipped = False
 
     """ Override report generation. """
     pytest_html = item.config.pluginmanager.getplugin('html')
@@ -174,10 +178,12 @@ def pytest_runtest_makereport(item, call):
     # Update status variables
     if call.when == 'setup':
         # For tests with the pytest.mark.skip fixture
-        if (report.skipped and hasattr(call, 'excinfo')
+        if (report.skipped
+                and hasattr(call, 'excinfo')
                 and call.excinfo is not None
-                and call.excinfo.typename == 'Skipped'):
+                and hasattr(call.excinfo.value, 'msg')):
             issues = re.sub(r"[^\w-]", " ",  call.excinfo.value.msg).split()
+            wasskipped = True
             skipped += 1
         # For setup fixture
         if report.failed and call.excinfo is not None:
@@ -191,12 +197,16 @@ def pytest_runtest_makereport(item, call):
     if report.when == 'call':
         # Update status variables
         if report.failed:
+            wasfailed = True
             failed += 1
         if report.skipped and not hasattr(report, "wasxfail"):
+            wasskipped = True
             skipped += 1
         if report.skipped and hasattr(report, "wasxfail"):
+            wasxfailed = True
             xfailed += 1
         if report.passed and hasattr(report, "wasxfail"):
+            wasxpassed = True
             xpassed += 1
         if report.passed and not hasattr(report, "wasxfail"):
             passed += 1
@@ -205,7 +215,7 @@ def pytest_runtest_makereport(item, call):
         # For tests with pytest.fail, pytest.xfail or pytest.skip call
         if (hasattr(call, 'excinfo')
                 and call.excinfo is not None
-                and (call.excinfo.typename in ('Failed', 'XFailed', 'Skipped'))):
+                and hasattr(call.excinfo.value, 'msg')):
             issues = re.sub(r"[^\w-]", " ",  call.excinfo.value.msg).split()
         # For tests with the pytest.mark.xfail fixture
         elif hasattr(report, 'wasxfail'):
@@ -220,23 +230,20 @@ def pytest_runtest_makereport(item, call):
             fx_description_tag = feature_request.getfixturevalue("description_tag")
             fx_screenshots = feature_request.getfixturevalue("screenshots")
             target = fx_report.target
-    
+
             # Append test description and execution exception trace, if any.
             description = item.function.__doc__ if hasattr(item, 'function') else None
             utils.append_header(call, report, extras, pytest_html, description, fx_description_tag)
-    
+
             if not utils.check_lists_length(report, fx_report):
                 return
-    
+
             # Generate HTML code for the extras to be added in the report
             rows = ""   # The HTML table rows of the test report
-    
+
             # To check test failure/skip
-            xfail = hasattr(report, 'wasxfail')
-            wasxpassed = xfail and report.wasxfail == "xpassed"
-            wasxfailure = xfail and report.wasxfail == "xfailure"
-            failure = xfail or report.outcome in ("failed", "skipped")
-    
+            failure = wasfailed or wasxfailed or wasxpassed or wasskipped
+
             # Add steps in the report
             for i in range(len(fx_report.images)):
                 rows += utils.get_table_row_tag(
@@ -244,7 +251,7 @@ def pytest_runtest_makereport(item, call):
                     fx_report.images[i],
                     fx_report.sources[i]
                 )
-    
+
             # Add screenshot for last step
             if fx_screenshots == "last" and failure is False and target is not None:
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
@@ -254,14 +261,14 @@ def pytest_runtest_makereport(item, call):
                     fx_report.images[-1],
                     fx_report.sources[-1]
                 )
-    
+
             # Add screenshot for test failure/skip
             if failure and target is not None:
-                if report.outcome == "failed" or wasxpassed:
+                if wasfailed or wasxpassed:
                     event_class = "failure"
                 else:
                     event_class = "skip"
-                if report.outcome == "failed" or wasxfailure or wasxpassed or (report.skipped and xfail):
+                if wasfailed or wasxfailed or wasxpassed:
                     event_label = "failure"
                 else:
                     event_label = "skip"
@@ -273,11 +280,11 @@ def pytest_runtest_makereport(item, call):
                     fx_report.sources[-1],
                     event_class
                 )
-    
+
             # Add horizontal line between the header and the comments/screenshots
             if len(extras) > 0 and len(rows) > 0:
                 extras.append(pytest_html.extras.html(f'<hr class="extras_separator">'))
-    
+
             # Append extras
             if rows != "":
                 table = (
