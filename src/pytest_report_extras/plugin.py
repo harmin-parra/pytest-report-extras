@@ -162,6 +162,9 @@ def pytest_sessionfinish(session, exitstatus):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
+    """
+    Complete pytest-html report with extras and Allure report with attachments.
+    """
     global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
     global fx_issue_link, fx_issue_key, fx_html, fx_allure
     wasfailed = False
@@ -169,9 +172,8 @@ def pytest_runtest_makereport(item, call):
     wasxfailed = False
     wasskipped = False
 
-    """ Override report generation. """
-    pytest_html = item.config.pluginmanager.getplugin('html')
     outcome = yield
+    pytest_html = item.config.pluginmanager.getplugin('html')
     report = outcome.get_result()
     extras = getattr(report, 'extras', [])
     issues = []
@@ -210,20 +212,21 @@ def pytest_runtest_makereport(item, call):
             error_teardown += 1
 
     if report.when == 'call':
+        xfail = hasattr(report, "wasxfail")
         # Update status variables
         if report.failed:
             wasfailed = True
             failed += 1
-        if report.skipped and not hasattr(report, "wasxfail"):
+        if report.skipped and not xfail:
             wasskipped = True
             skipped += 1
-        if report.skipped and hasattr(report, "wasxfail"):
+        if report.skipped and xfail:
             wasxfailed = True
             xfailed += 1
-        if report.passed and hasattr(report, "wasxfail"):
+        if report.passed and xfail:
             wasxpassed = True
             xpassed += 1
-        if report.passed and not hasattr(report, "wasxfail"):
+        if report.passed and not xfail:
             passed += 1
 
         # Check for issue links to add
