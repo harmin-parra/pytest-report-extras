@@ -270,7 +270,7 @@ Sample CSS file
 Sample reports
 ==============
 
-* Pytest sample report
+* Pytest-html sample report
 
 .. image:: demo-pytest.png
 
