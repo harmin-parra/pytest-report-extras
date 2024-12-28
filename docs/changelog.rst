@@ -25,6 +25,7 @@ Changelog
 =====
 
 **Bug fix**
+
 * Exception handling when formatting invalid XML, JSON and YAML documents added in comments.
  
 **Improvements**
