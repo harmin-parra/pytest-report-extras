@@ -24,6 +24,9 @@ Changelog
 1.1.0
 =====
 
+**Bug fix**
+* Exception handling when formatting invalid XML, JSON and YAML documents.
+ 
 **Improvements**
 
 * The **Allure** report can be generated if the **pytest-html** option is not used.
