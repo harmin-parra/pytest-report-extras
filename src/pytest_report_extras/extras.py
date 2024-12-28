@@ -153,30 +153,39 @@ class Extras:
         """
         Formats the contents of a JSON file.
         """
-        f = open(filepath, 'r')
-        content = f.read()
-        f.close()
+        try:
+            f = open(filepath, 'r')
+            content = f.read()
+            f.close()
+        except:
+            content = None
         return self.format_json_str(content, indent)
 
     def format_json_str(self, text: str, indent: int = 4) -> CodeBlockText:
         """
         Formats a string holding a JSON document.
         """
-        text = json.loads(text)
-        return CodeBlockText(json.dumps(text, indent=indent), "application/json")
+        try:
+            text = json.loads(text)
+            return CodeBlockText(json.dumps(text, indent=indent), "application/json")
+        except:
+            return CodeBlockText("Error formatting JSON.\n " + text, "text/plain")
 
     def format_xml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
         """
-        Formats the contents of an XML file.
+        Formats the contents of a XML file.
         """
-        f = open(filepath, 'r')
-        content = f.read()
-        f.close()
+        try:
+            f = open(filepath, 'r')
+            content = f.read()
+            f.close()
+        except Exception as err:
+            content = str(err)
         return self.format_xml_str(content, indent)
 
     def format_xml_str(self, text: str, indent: int = 4) -> CodeBlockText:
         """
-        Formats a string holding an XML document.
+        Formats a string holding a XML document.
         """
         result = None
         try:
@@ -185,22 +194,27 @@ class Extras:
         except expat.ExpatError:
             if text is None:
                 text = 'None'
-            result = "Error formatting XML. Raw text:\n " + text
-            return CodeBlockText(result, "text/plain")
+            return CodeBlockText("Error formatting XML.\n " + text, "text/plain")
         return CodeBlockText(result, "application/xml")
 
     def format_yaml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
         """
         Formats the contents of a YAML file.
         """
-        f = open(filepath, 'r')
-        content = f.read()
-        f.close()
+        try:
+            f = open(filepath, 'r')
+            content = f.read()
+            f.close()
+        except Exception as err:
+            content = str(err)
         return self.format_yaml_str(content, indent)
 
     def format_yaml_str(self, text: str, indent: int = 4) -> CodeBlockText:
         """
         Formats a string containing a YAML document.
         """
-        text = yaml.safe_load(text)
-        return CodeBlockText(yaml.dump(text, indent=indent), "application/yaml")
+        try:
+            text = yaml.safe_load(text)
+            return CodeBlockText(yaml.dump(text, indent=indent), "application/yaml")
+        except:
+            return CodeBlockText("Error formatting YAML.\n " + text, "text/plain")
