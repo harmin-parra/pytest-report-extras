@@ -1,14 +1,26 @@
 import base64
 import html
 import importlib
-import json
-import re
-import xml.parsers.expat as expat
-import xml.dom.minidom as xdom
-import yaml
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
+import warnings
+
+
+deprecation_msg = """
+report.step(comment: str, code_block: CodeBlockText) is deprecated and will be removed in the next major version release
+
+Please use: report.step(comment: str', attachment: Attachment)
+
+Examples:
+report.step(
+    comment="comment",
+    attachment=report.attachment(text="<XML string>", mime=report.Mime.application_xml)
+)
+report.step(
+    comment="comment",
+    attachment=report.attachment(file="/path/to/JSON file", mime=report.Mime.application_json)
+)"""
 
 
 # Counter used for image and page source files naming
@@ -22,26 +34,9 @@ def counter() -> int:
     return count
 
 
-class CodeBlockText:
-    """
-    Class to represent text to be formatted as code-block in a <pre> HTML tag.
-    """
-    def __init__(self, text: str = None, mime: str = "text/plain"):
-        self.text = None if text is None or text == "" else text
-        self.mime = mime
-    
-    def __str__(self):
-        if self.text is None:
-            return ""
-        return f'<pre class="extras_pre">{utils.escape_html(self.text)}</pre>'
-
-    def get_escaped_text(self):
-        return utils.escape_html(self.text)
-    
-    def get_html_tag(self):
-        if self.text is None:
-            return ""
-        return f'<pre class="extras_pre">{utils.escape_html(self.text)}</pre>'
+# Deprecated attachment class
+class CodeBlockText(Attachment):
+    pass
 
 
 class Extras:
@@ -66,6 +61,7 @@ class Extras:
         self._fx_sources = fx_sources
         self._html = report_html
         self._allure = report_allure
+        self._indent = indent
         self.Mime = Mime
 
     def step(
@@ -121,6 +117,7 @@ class Extras:
                     allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
             if attachment is not None and attachment.text is not None:
                 allure.attach(attachment.text, name=comment, attachment_type=attachment.mime)
+            # Deprecated attachment
             if code_block is not None and code_block.text is not None:
                 allure.attach(code_block.text, name=comment, attachment_type=code_block.mime)
 
@@ -129,9 +126,14 @@ class Extras:
             self._save_screenshot(image, source)
             if attachment is not None and attachment.text is not None:
                 comment += '\n' + attachment.get_html_tag()
+            # Deprecated attachment
             if code_block is not None and code_block.text is not None:
                 comment += '\n' + code_block.get_html_tag()
             self.comments.append(comment)
+
+        # Deprecation warning
+        if code_block is not None:
+            warnings.warn(deprecation_msg, DeprecationWarning)
 
     def _save_screenshot(self, image: bytes | str, source: str):
         """
@@ -183,7 +185,11 @@ class Extras:
         """
         self.links.append((uri, name))
 
-    def format_json_file(self, filepath: str, indent=4) -> CodeBlockText:
+    # Deprecated code from here downwards
+    def format_code_block(self, text: str, mime="text/plain") -> Attachment:
+        return Attachment(text, mime)
+    
+    def format_json_file(self, filepath: str, indent=4) -> Attachment:
         """
         Formats the contents of a JSON file.
         """
@@ -195,19 +201,15 @@ class Extras:
             content = None
         return self.format_json_str(content, indent)
 
-    def format_json_str(self, text: str, indent: int = 4) -> CodeBlockText:
+    def format_json_str(self, text: str, indent: int = 4) -> Attachment:
         """
         Formats a string holding a JSON document.
         """
-        try:
-            text = json.loads(text)
-            return CodeBlockText(json.dumps(text, indent=indent), "application/json")
-        except:
-            return CodeBlockText("Error formatting JSON.\n " + text, "text/plain")
+        return Attachment.parse_text(text, Mime.application_json, indent)
 
-    def format_xml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
+    def format_xml_file(self, filepath: str, indent: int = 4) -> Attachment:
         """
-        Formats the contents of a XML file.
+        Formats the contents of an XML file.
         """
         try:
             f = open(filepath, 'r')
@@ -217,21 +219,13 @@ class Extras:
             content = str(err)
         return self.format_xml_str(content, indent)
 
-    def format_xml_str(self, text: str, indent: int = 4) -> CodeBlockText:
+    def format_xml_str(self, text: str, indent: int = 4) -> Attachment:
         """
-        Formats a string holding a XML document.
+        Formats a string holding an XML document.
         """
-        result = None
-        try:
-            result = xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', '')).toprettyxml(indent=" " * indent)
-            result = '\n'.join(line for line in result.splitlines() if not re.match(r"^\s*<!--.*?-->\s*\n*$", line))
-        except expat.ExpatError:
-            if text is None:
-                text = 'None'
-            return CodeBlockText("Error formatting XML.\n " + text, "text/plain")
-        return CodeBlockText(result, "application/xml")
+        return Attachment.parse_text(text, Mime.application_xml, indent)
 
-    def format_yaml_file(self, filepath: str, indent: int = 4) -> CodeBlockText:
+    def format_yaml_file(self, filepath: str, indent: int = 4) -> Attachment:
         """
         Formats the contents of a YAML file.
         """
@@ -243,12 +237,8 @@ class Extras:
             content = str(err)
         return self.format_yaml_str(content, indent)
 
-    def format_yaml_str(self, text: str, indent: int = 4) -> CodeBlockText:
+    def format_yaml_str(self, text: str, indent: int = 4) -> Attachment:
         """
         Formats a string containing a YAML document.
         """
-        try:
-            text = yaml.safe_load(text)
-            return CodeBlockText(yaml.dump(text, indent=indent), "application/yaml")
-        except:
-            return CodeBlockText("Error formatting YAML.\n " + text, "text/plain")
+        return Attachment.parse_text(text, Mime.application_yaml, indent)
