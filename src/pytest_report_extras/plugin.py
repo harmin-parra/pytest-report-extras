@@ -26,13 +26,13 @@ def pytest_addoption(parser):
         "extras_description_tag",
         type="string",
         default="pre",
-        help="HTML tag for the test description. Accepted values: h1, h2, h3, p or pre.",
+        help="The HTML tag for the test description. Accepted values: h1, h2, h3, p or pre.",
     )
     parser.addini(
         "extras_attachment_indent",
         type="string",
         default="4",
-        help="Indent to use to format XML, JSON & YAML attachments. Accepted value: a positive integer",
+        help="The indent to use for attachments. Accepted value: a positive integer",
     )
     parser.addini(
         "extras_issue_link_pattern",
@@ -97,7 +97,7 @@ def description_tag(request):
 
 @pytest.fixture(scope='session')
 def indent(request):
-    """ The indentation for XML, JSON & YAML attachments. """
+    """ The indent to use for attachments. """
     indent = request.config.getini("extras_attachment_indent")
     try:
         return int(indent)

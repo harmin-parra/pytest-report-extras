@@ -8,6 +8,7 @@ import warnings
 
 
 deprecation_msg = """
+
 report.step(comment: str, code_block: CodeBlockText) is deprecated and will be removed in the next major version release
 
 Please use: report.step(comment: str', attachment: Attachment)
@@ -51,7 +52,7 @@ class Extras:
             fx_screenshots (str): The 'screenshots' fixture.
             fx_sources (bool): The 'sources' fixture.
             report_allure (str): The 'report_allure' fixture.
-            indent: The indentation for XML, JSON & YAML attachments.
+            indent: The 'indent' fixture.
         """
         self.images = []
         self.sources = []
