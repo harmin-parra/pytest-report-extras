@@ -29,6 +29,12 @@ def pytest_addoption(parser):
         help="HTML tag for the test description. Accepted values: h1, h2, h3, p or pre.",
     )
     parser.addini(
+        "extras_attachment_indent",
+        type="string",
+        default="4",
+        help="Indent to use to format XML, JSON & YAML attachments. Accepted value: a positive integer",
+    )
+    parser.addini(
         "extras_issue_link_pattern",
         type="string",
         default=None,
@@ -90,6 +96,16 @@ def description_tag(request):
 
 
 @pytest.fixture(scope='session')
+def indent(request):
+    """ The indentation for XML, JSON & YAML attachments. """
+    indent = request.config.getini("extras_attachment_indent")
+    try:
+        return int(indent)
+    except:
+        return 4
+
+
+@pytest.fixture(scope='session')
 def sources(request):
     """ Whether to include webpage sources in the report. """
     return request.config.getini("extras_sources")
@@ -123,8 +139,8 @@ def check_options(request, report_html, report_allure):
 # Test fixture
 #
 @pytest.fixture(scope='function')
-def report(request, report_html, screenshots, sources, report_allure, check_options):
-    return Extras(report_html, screenshots, sources, report_allure)
+def report(request, report_html, screenshots, sources, report_allure, indent, check_options):
+    return Extras(report_html, screenshots, sources, report_allure, indent)
 
 
 #

@@ -44,13 +44,14 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_html, fx_screenshots, fx_sources, report_allure):
+    def __init__(self, report_html, fx_screenshots, fx_sources, report_allure, indent):
         """
         Args:
             report_html (str): The 'report_html' fixture.
             fx_screenshots (str): The 'screenshots' fixture.
             fx_sources (bool): The 'sources' fixture.
             report_allure (str): The 'report_allure' fixture.
+            indent: The indentation for XML, JSON & YAML attachments.
         """
         self.images = []
         self.sources = []
