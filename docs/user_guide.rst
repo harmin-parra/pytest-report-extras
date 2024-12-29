@@ -44,7 +44,7 @@ Default value: ``pre``
 
 * ``extras_attachment_indent``
 
-The indent to use for attachments
+The indent to use for attachments.
 
 Accepted values: any positive integer.
 
