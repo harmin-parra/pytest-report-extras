@@ -13,8 +13,8 @@ Changelog
 **Features**
 
 * Users can add links to the tests report.
-* New ``ini`` option to customize the indent for XML, JSON and YAML attachments.
-* Support of mime types: text/csv
+* New ``ini`` option to customize the indentation of attachments.
+* Support of mime types: **text/csv**
 
 
 1.1.0
