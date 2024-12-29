@@ -58,6 +58,7 @@ class Extras:
         self.images = []
         self.sources = []
         self.comments = []
+        self.links = []
         self.target = None
         self._fx_screenshots = fx_screenshots
         self._fx_sources = fx_sources
@@ -148,6 +149,14 @@ class Extras:
 
     def format_code_block(self, text: str, mime="text/plain") -> CodeBlockText:
         return CodeBlockText(text, mime)
+    def link(self, uri: str, name: str = None):
+        """
+        Adds a link to the report.
+        Args:
+            uri (str): The link URI
+            name (str): The link text
+        """
+        self.links.append((uri, name))
 
     def format_json_file(self, filepath: str, indent=4) -> CodeBlockText:
         """

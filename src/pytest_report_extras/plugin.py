@@ -177,6 +177,7 @@ def pytest_runtest_makereport(item, call):
     report = outcome.get_result()
     extras = getattr(report, 'extras', [])
     issues = []
+    links = []
 
     # Is the test item using the 'report' fixtures?
     # if not ("request" in item.funcargs and "report" in item.funcargs):
@@ -250,6 +251,7 @@ def pytest_runtest_makereport(item, call):
             fx_description_tag = feature_request.getfixturevalue("description_tag")
             fx_screenshots = feature_request.getfixturevalue("screenshots")
             target = fx_report.target
+            links = fx_report.links
 
             # Append test description and execution exception trace, if any.
             description = item.function.__doc__ if hasattr(item, 'function') else None
@@ -313,6 +315,20 @@ def pytest_runtest_makereport(item, call):
                     "</table>"
                 )
                 extras.append(pytest_html.extras.html(table))
+
+        # Add links to the report(s)
+        for link in links:
+            if fx_html is not None and pytest_html is not None:
+                if link[1] not in (None, ""):
+                    extras.append(pytest_html.extras.url(link[0], name=link[1]))
+                else:
+                    extras.append(pytest_html.extras.url(link[0], name=link[0]))
+            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+                import allure
+                if link[1] not in (None, ""):
+                    allure.dynamic.link(link[0], name=link[1])
+                else:
+                    allure.dynamic.link(link[0], name=link[0])
 
     # Identify issue patterns and add issue links to the report(s)
     if fx_issue_key is not None and fx_issue_link is not None:
