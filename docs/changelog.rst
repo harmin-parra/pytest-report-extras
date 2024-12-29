@@ -3,6 +3,20 @@ Changelog
 =========
 
 
+2.0.0
+=====
+
+**Change**
+
+* Modification of the algorithm related to attachments.
+
+**Features**
+
+* Users can add links to the tests report.
+* New ``ini`` option to customize the indent for XML, JSON and YAML attachments.
+* Support of mime types: text/csv
+
+
 1.1.0
 =====
 

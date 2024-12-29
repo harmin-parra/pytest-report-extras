@@ -40,6 +40,14 @@ Accepted values: ``h1``, ``h2``, ``h3``, ``p`` or ``pre``
 
 Default value: ``pre``
 
+----
+
+* ``extras_attachment_indent``
+
+The indentation for attachments
+
+Accepted values: any positive integer.
+
 
 API
 ===
@@ -53,7 +61,7 @@ To add a step to the report:
   step(
       comment: str = None,
       target: WebDriver|WebElement|Page|Locator = None,
-      code_block: CodeBlockText = None,
+      attachment: Attachment = None,
       full_page: bool = True,
       page_source: bool = False,  # Whether to include the webpage HTML source.
       escape_html: bool = False   # Whether to escape HTML characters in the comment.
@@ -63,18 +71,11 @@ Auxiliary method to get the code block format of a string:
 
 .. code-block:: python
 
-    format_code_block(text: str) -> CodeBlockText
-
-Auxiliary methods to format XML, JSON and YAML strings and files:
-
-.. code-block:: python
-
-    format_json_file(filepath: string, indent: int = 4) -> CodeBlockText
-    format_json_str(text: string, indent: int = 4) -> CodeBlockText
-    format_xml_file(filepath: string, indent: int = 4) -> CodeBlockText
-    format_xml_str(text: string, indent: int = 4) -> CodeBlockText
-    format_yaml_file(filepath: string, indent: int = 4) -> CodeBlockText
-    format_yaml_str(text: string, indent: int = 4) -> CodeBlockText
+    attachment(
+		text: str = None,            # The content/body of the attachment.
+		file: str = None,            # The filepath of the file to attach.
+		mime: str = Mime.text_plain  # The attachment mime type.
+	) -> Attachment
 
 
 Limitations
@@ -118,7 +119,8 @@ Sample ``pytest.ini`` file
 
 .. code-block:: ini
 
-  extras_description_tag = pre
+  extras_description_tag = h1
+  extras_attachment_indent = 4
   extras_screenshots = all
   extras_sources = False
 
@@ -159,45 +161,48 @@ Sample code
       report.step(comment="Get the webpage to test", target=page, full_page=False)
 
 
-* Example adding code-block content
+* Example adding attachments
 
 .. code-block:: python
 
-  def test_code_block(page: Page, report):
+  def test_attachments(report):
       """
-      This is a test with code-block content
+      This is a test adding XML & JSON attachments
       """
-      xml = """
+      xml_body = """
           <note>  
-          <to>John</to>  
-          <from>Diana</from>  
-          <heading>Reminder</heading>  
-          <body>Don't forget me this weekend!</body>  
+              <to>John</to>  
+              <from>Diana</from>  
+              <heading>Reminder</heading>  
+              <body>Don't forget me this weekend!</body>  
           </note>"""
-      report.step("This is a XML document:" + str(report.format_xml_str(xml)))
-      report.step(comment="This is a XML document:" + str(report.format_xml_str(xml)))
-      report.step("This is a XML document:", code_block=report.format_xml_str(xml))
-      report.step(comment="This is a XML document:", code_block=report.format_xml_str(xml))
+      report(
+          "This is a XML document:",
+          attachment=report.attachment(
+              text=xml_body,
+              mime=report.Mime.application_xml
+          )
+	  )
+      report(
+          comment="This is a JSON document:",
+          attachment=report.attachment(
+              file="/path/to/file",
+              mime=report.Mime.application_json
+          )
+	  )
 
 
-* Example adding code-block content (using Allure report)
+* Example adding links
 
 .. code-block:: python
 
-  def test_code_block(page: Page, report):
+  def test_links(report):
       """
-      This is a test with code-block content
+      This is a test adding links
       """
-      xml = """
-          <note>  
-          <to>John</to>  
-          <from>Diana</from>  
-          <heading>Reminder</heading>  
-          <body>Don't forget me this weekend!</body>  
-          </note>"""
-      report.step("This is a XML document:", code_block=report.format_xml_str(xml))
-
-\* Always pass the code-block text through the ``code_block`` parameter when using Allure.
+      report.link("https://en.wikipedia.org")
+      report.link("https://wikipedia.org", "Wikipedia")
+      report.link(uri="https://wikipedia.org", name="Wikipedia")
 
 
 Sample CSS file
