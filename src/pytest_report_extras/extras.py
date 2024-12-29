@@ -76,8 +76,8 @@ class Extras:
     ):
         """
         Adds a step in the pytest-html report: screenshot, comment and webpage source.
-        The screenshot is saved in <forder_report>/screenshots folder.
-        The webpage source is saved in <forder_report>/sources folder.
+        The screenshot is saved in <report_html>/screenshots folder.
+        The webpage source is saved in <report_html>/sources folder.
 
         Args:
             comment (str): The comment of the test step.
@@ -127,8 +127,8 @@ class Extras:
     def _save_screenshot(self, image: bytes | str, source: str):
         """
         Saves the pytest-html 'extras': screenshot, comment and webpage source.
-        The screenshot is saved in <forder_report>/screenshots folder.
-        The webpage source is saved in <forder_report>/sources folder.
+        The screenshot is saved in <report_html>/screenshots folder.
+        The webpage source is saved in <report_html>/sources folder.
 
         Args:
             image (bytes | str): The screenshot as bytes or base64 string.
