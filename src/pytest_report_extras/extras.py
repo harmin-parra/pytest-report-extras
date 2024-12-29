@@ -7,6 +7,8 @@ import xml.parsers.expat as expat
 import xml.dom.minidom as xdom
 import yaml
 from . import utils
+from .attachment import Attachment
+from .attachment import Mime
 
 
 # Counter used for image and page source files naming
@@ -64,11 +66,13 @@ class Extras:
         self._fx_sources = fx_sources
         self._html = report_html
         self._allure = report_allure
+        self.Mime = Mime
 
     def step(
             self,
             comment: str = None,
             target=None,
+            attachment: Attachment = None,
             code_block: CodeBlockText = None,
             full_page: bool = True,
             page_source: bool = False,
@@ -82,6 +86,7 @@ class Extras:
         Args:
             comment (str): The comment of the test step.
             target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
+            attachment (Attachment): The attachment to be added.
             code_block (CodeBlockText): The code-block formatted content to be added.
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
@@ -114,12 +119,16 @@ class Extras:
                 # Attach the webpage source
                 if source is not None:
                     allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
+            if attachment is not None and attachment.text is not None:
+                allure.attach(attachment.text, name=comment, attachment_type=attachment.mime)
             if code_block is not None and code_block.text is not None:
                 allure.attach(code_block.text, name=comment, attachment_type=code_block.mime)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
             self._save_screenshot(image, source)
+            if attachment is not None and attachment.text is not None:
+                comment += '\n' + attachment.get_html_tag()
             if code_block is not None and code_block.text is not None:
                 comment += '\n' + code_block.get_html_tag()
             self.comments.append(comment)
@@ -147,8 +156,24 @@ class Extras:
             link_source = utils.get_source_link(self._html, index, source)
         self.sources.append(link_source)
 
-    def format_code_block(self, text: str, mime="text/plain") -> CodeBlockText:
-        return CodeBlockText(text, mime)
+    def attachment(self, text: str = None, file: str = None, mime: str = Mime.text_plain) -> Attachment:
+        """
+        Creates an attachment for a step.
+        Args:
+            text (str): The content of the attachment.
+            file (str): The filepath of the file to attach.
+            mime (str): The attachment mime type (Necessary for Allure report).
+        """
+        if file is not None:
+            try:
+                f = open(file, 'r')
+                text = f.read()
+                f.close()
+            except Exception as err:
+                text = str(err)
+                mime = Mime.text_plain
+        return Attachment.parse_text(text, mime, self._indent)
+
     def link(self, uri: str, name: str = None):
         """
         Adds a link to the report.
