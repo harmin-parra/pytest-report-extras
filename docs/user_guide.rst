@@ -176,20 +176,22 @@ Sample code
               <heading>Reminder</heading>  
               <body>Don't forget me this weekend!</body>  
           </note>"""
+          
       report(
           "This is a XML document:",
           attachment=report.attachment(
               text=xml_body,
               mime=report.Mime.application_xml
           )
-	  )
+      )
+	  
       report(
           comment="This is a JSON document:",
           attachment=report.attachment(
               file="/path/to/file",
               mime=report.Mime.application_json
           )
-	  )
+      )
 
 
 * Example adding links
