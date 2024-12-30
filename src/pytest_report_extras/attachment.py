@@ -46,7 +46,7 @@ def _format_json(text: str, indent: int = 4) -> (str, str):
         text = json.loads(text)
         return Attachment(text=json.dumps(text, indent=indent), mime=Mime.application_json)
     except:
-        return Attachment(text="Error formatting JSON.\n " + text, mime=Mime.text_plain)
+        return Attachment(text="Error formatting JSON.\n" + text, mime=Mime.text_plain)
 
 
 def _format_xml(text: str, indent: int = 4) -> Attachment:
@@ -60,7 +60,7 @@ def _format_xml(text: str, indent: int = 4) -> Attachment:
     except expat.ExpatError:
         if text is None:
             text = 'None'
-        return Attachment("Error formatting XML.\n " + text, Mime.text_plain)
+        return Attachment("Error formatting XML.\n" + text, Mime.text_plain)
     return Attachment(result, Mime.application_xml)
 
 
@@ -72,7 +72,7 @@ def _format_yaml(text: str, indent: int = 4) -> Attachment:
         text = yaml.safe_load(text)
         return Attachment(yaml.dump(text, indent=indent), Mime.application_yaml)
     except:
-        return Attachment("Error formatting YAML.\n " + text, Mime.text_plain)
+        return Attachment("Error formatting YAML.\n" + text, Mime.text_plain)
 
 
 def _format_txt(text: str, mime: str = Mime.text_plain) -> Attachment:
