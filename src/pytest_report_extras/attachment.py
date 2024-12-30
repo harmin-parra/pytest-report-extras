@@ -1,9 +1,10 @@
+import csv
+import io
 import json
 import re
 import xml.parsers.expat as expat
 import xml.dom.minidom as xdom
 import yaml
-from .utils import escape_html
 
 
 class Mime:
@@ -11,9 +12,8 @@ class Mime:
     application_json = "application/json"
     application_xml = "application/xml"
     application_yaml = "application/yaml"
-    text_csv = 5
-    text_tab_separated_values = 6
-    text_uri_list = 7
+    text_csv = "text/csv"
+    text_uri_list = "text/uri-list"
 
 
 class Attachment:
@@ -26,7 +26,7 @@ class Attachment:
         self.inner_html = inner_html
 
     @classmethod
-    def parse_text(cls, text: str = None, mime: str = Mime.text_plain, indent: int = 4):
+    def parse_text(cls, text: str = None, mime: str = Mime.text_plain, indent: int = 4, delimiter=','):
         match mime:
             case Mime.application_json:
                 return _format_json(text, indent)
@@ -34,6 +34,8 @@ class Attachment:
                 return _format_xml(text, indent)
             case Mime.application_yaml:
                 return _format_yaml(text, indent)
+            case Mime.text_csv:
+                return _format_csv(text=text, delimiter=delimiter)
             case _:
                 return _format_txt(text)
 
@@ -79,5 +81,21 @@ def _format_txt(text: str, mime: str = Mime.text_plain) -> Attachment:
     return Attachment(text, mime)
 
 
-def _format_csv(text: str) -> Attachment:
-    pass
+def _format_csv(text: str, delimiter=',') -> Attachment:
+    inner_html = None
+    try:
+        f = io.StringIO(text)
+        csv_reader = csv.reader(f, delimiter=delimiter)
+        inner_html = "<table>"
+        for row in csv_reader:
+            inner_html += "<tr>"
+            for cell in row:
+                if csv_reader.line_num == 1:
+                    inner_html += f"<th>{cell}</th>"
+                else:
+                    inner_html += f"<td>{cell}</td>"
+            inner_html += "</tr>"
+        inner_html += "</table>"
+    except:
+        return Attachment("Error formatting YAML.\n" + text, Mime.text_plain)
+    return Attachment(text, Mime.text_csv, inner_html)

@@ -160,7 +160,7 @@ class Extras:
             link_source = utils.get_source_link(self._html, index, source)
         self.sources.append(link_source)
 
-    def attachment(self, text: str = None, file: str = None, mime: str = Mime.text_plain) -> Attachment:
+    def attachment(self, text: str = None, file: str = None, mime: str = Mime.text_plain, delimiter=',') -> Attachment:
         """
         Creates an attachment for a step.
         Args:
@@ -174,9 +174,9 @@ class Extras:
                 text = f.read()
                 f.close()
             except Exception as err:
-                text = str(err)
+                text = f"Error reading file: {file}\n{err}"
                 mime = Mime.text_plain
-        return Attachment.parse_text(text, mime, self._indent)
+        return Attachment.parse_text(text, mime, self._indent, delimiter)
 
     def link(self, uri: str, name: str = None):
         """
