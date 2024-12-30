@@ -24,24 +24,6 @@ class Attachment:
         self.text = text
         self.mime = mime
         self.inner_html = inner_html
-    
-    def __str__(self):
-        if self.text in (None, ""):
-            return ""
-        else:
-            return f'<pre class="extras_pre">{escape_html(self.text)}</pre>'
-
-    def get_escaped_text(self):
-        return escape_html(self.text)
-    
-    def get_html_tag(self):
-        if self.inner_html is None:
-            if self.text in (None, ""):
-                return ""
-            else:
-                return f'<pre class="extras_pre">{escape_html(self.text)}</pre>'
-        else:
-            return f'<pre class="extras_pre">{self.inner_html}</pre>'
 
     @classmethod
     def parse_text(cls, text: str = None, mime: str = Mime.text_plain, indent: int = 4):

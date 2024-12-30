@@ -7,6 +7,7 @@ import pytest
 import shutil
 import sys
 import traceback
+from . import Attachment
 
 
 #
@@ -387,6 +388,18 @@ def decorate_page_source(filename):
     """ Applies CSS class to a page source anchor element. """
     clazz = "extras_page_src"
     return f'<a href="{filename}" target="_blank" class="{clazz}">[page source]</a>'
+
+
+def decorate_attachment(attachment: Attachment):
+    """ Applies CSS class to an attachment. """
+    clazz = "extras_pre"
+    if attachment.inner_html is None:
+        if attachment.text in (None, ""):
+            return ""
+        else:
+            return f'<pre class="{clazz}">{escape_html(attachment.text)}</pre>'
+    else:
+        return f'<pre class="{clazz}">{attachment.inner_html}</pre>'
 
 
 def log_error_message(report, message):
