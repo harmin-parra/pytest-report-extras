@@ -1,10 +1,10 @@
 import base64
 import html
 import importlib
+import warnings
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
-import warnings
 
 
 deprecation_msg = """
@@ -126,11 +126,11 @@ class Extras:
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
             self._save_screenshot(image, source)
-            if attachment is not None and attachment.text is not None:
-                comment += '\n' + attachment.get_html_tag()
+            if attachment is not None:
+                comment += '\n' + utils.decorate_attachment(attachment)
             # Deprecated attachment
             if code_block is not None and code_block.text is not None:
-                comment += '\n' + code_block.get_html_tag()
+                comment += '\n' + utils.decorate_attachment(code_block)
             self.comments.append(comment)
 
         # Deprecation warning
