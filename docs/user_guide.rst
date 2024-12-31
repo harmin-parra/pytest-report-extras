@@ -61,11 +61,11 @@ To add a step with screenshot:
 .. code-block:: python
 
   screenshot(
-      comment: str = None,        # Comment of the test step.
+      comment: str,                 # Comment of the test step.
       target: WebDriver|WebElement|Page|Locator = None,
       full_page: bool = True,
-      page_source: bool = False,  # Whether to include the webpage HTML source.
-      escape_html: bool = False   # Whether to escape HTML characters in the comment.
+      page_source: bool = False,    # Whether to include the webpage HTML source.
+      escape_html: bool = False     # Whether to escape HTML characters in the comment.
   )
   
 To add a step with attachment:
@@ -73,13 +73,22 @@ To add a step with attachment:
 .. code-block:: python
 
   attach(
-      comment: str = None,         # Comment of the test step.
-	  body: str = None,            # The content/body of the attachment.
-	  source: str = None,          # The filepath of the attachment.
-	  mime: Mime = None            # The attachment mime type.
+      comment: str,                # Comment of the test step.
+      body: str = None,            # The content/body of the attachment.
+      source: str = None,          # The filepath of the attachment.
+      mime: Mime = None,           # The attachment mime type.
       escape_html: bool = False    # Whether to escape HTML characters in the comment.
   )
 
+To add a link to the report:
+
+.. code-block:: python
+
+  link(
+      uri: str,              # The uri.
+      name: str = None       # The text of the anchor tag.
+  )
+  
 
 Limitations
 ===========
