@@ -4,10 +4,12 @@ import importlib
 import os
 import pathlib
 import pytest
+import subprocess
 import shutil
 import sys
 import traceback
-from . import Attachment
+from typing import List
+# from . import Attachment
 
 
 #
@@ -70,6 +72,9 @@ def create_assets(report_html):
     # Create screenshots folder
     shutil.rmtree(f"{folder}screenshots", ignore_errors=True)
     pathlib.Path(f"{folder}screenshots").mkdir(parents=True)
+    # Create downloads folder
+    shutil.rmtree(f"{folder}downloads", ignore_errors=True)
+    pathlib.Path(f"{folder}downloads").mkdir(parents=True)
     # Copy error.png to screenshots folder
     resources_path = pathlib.Path(__file__).parent.joinpath("resources")
     error_img = pathlib.Path(resources_path, "error.png")
@@ -201,10 +206,10 @@ def get_image_link(report_html, index, image):
         f = open(filename, 'wb')
         f.write(image)
         f.close()
-    except Exception as e:
+    except Exception as err:
         trace = traceback.format_exc()
         link = f"screenshots{os.sep}error.png"
-        print(f"{str(e)}\n\n{trace}", file=sys.stderr)
+        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
     finally:
         return link
 
@@ -219,13 +224,22 @@ def get_source_link(report_html, index, source):
         f = open(filename, 'w', encoding="utf-8")
         f.write(source)
         f.close()
-    except Exception as e:
+    except Exception as err:
         trace = traceback.format_exc()
         link = None
-        print(f"{str(e)}\n\n{trace}", file=sys.stderr)
+        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
     finally:
         return link
 
+
+def get_download_link(report_html, index, filepath: str = None):
+    try:
+        subprocess.run(["cp", filepath, f"{report_html}{os.sep}downloads{os.sep}file-{index}"]).check_returncode()
+        return f"downloads{os.sep}file-{index}"
+    except Exception as err:
+        trace = traceback.format_exc()
+        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
+        return None
 
 #
 # Auxiliary functions for the report generation
@@ -392,7 +406,26 @@ def decorate_page_source(filename):
     return f'<a href="{filename}" target="_blank" class="{clazz}">[page source]</a>'
 
 
-def decorate_attachment(attachment: Attachment):
+def decorate_uri(uri: str):
+    """ Applies CSS class to a uri anchor element. """
+    if uri is None or uri == '':
+        return ""
+    if uri.startswith("downloads"):
+        return f'<a href="{uri}" target="_blank">{pathlib.Path(uri).name}</a>'
+    else:
+        return f'<a href="{uri}" target="_blank">{uri}</a>'
+
+
+def decorate_uri_list(uris: List[str]):
+    """ Applies CSS class to a download file anchor element. """
+    links = ""
+    for uri in uris:
+        if uri != '':
+            links += decorate_uri(uri) + "<br>"
+    return links
+
+
+def decorate_attachment(attachment):
     """ Applies CSS class to an attachment. """
     clazz = "extras_pre"
     if attachment.inner_html is None:

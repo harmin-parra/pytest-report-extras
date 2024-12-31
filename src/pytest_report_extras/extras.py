@@ -2,6 +2,7 @@ import base64
 import html
 import importlib
 import warnings
+from typing import List
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
@@ -160,13 +161,22 @@ class Extras:
             link_source = utils.get_source_link(self._html, index, source)
         self.sources.append(link_source)
 
-    def attachment(self, text: str = None, file: str = None, mime: str = Mime.text_plain, delimiter=',') -> Attachment:
+    def attachment(
+        self,
+        text: str = None,
+        file: str = None,
+        mime: str = Mime.text_plain,
+        delimiter=',',
+        uri_list: List[str] = None
+    ) -> Attachment:
         """
         Creates an attachment for a step.
         Args:
-            text (str): The content of the attachment.
+            text (str): The content/body of the attachment.
             file (str): The filepath of the file to attach.
             mime (str): The attachment mime type (Necessary for Allure report).
+            delimiter (str): The delimiter for CSV documents.
+            uri_list (List[str]): The uri list.
         """
         if file is not None:
             try:
@@ -176,14 +186,14 @@ class Extras:
             except Exception as err:
                 text = f"Error reading file: {file}\n{err}"
                 mime = Mime.text_plain
-        return Attachment.parse_text(text, mime, self._indent, delimiter)
+        return Attachment.parse_text(text, mime, self._indent, delimiter, uri_list)
 
     def link(self, uri: str, name: str = None):
         """
         Adds a link to the report.
         Args:
-            uri (str): The link URI
-            name (str): The link text
+            uri (str): The link uri.
+            name (str): The link text.
         """
         self.links.append((uri, name))
 

@@ -5,6 +5,8 @@ import re
 import xml.parsers.expat as expat
 import xml.dom.minidom as xdom
 import yaml
+from typing import List
+from . import utils
 
 
 class Mime:
@@ -13,7 +15,8 @@ class Mime:
     application_xml = "application/xml"
     application_yaml = "application/yaml"
     text_csv = "text/csv"
-    text_uri_list = "text/uri-list"
+    text_tab_separated_values = 6
+    text_uri_list = 7
 
 
 class Attachment:
@@ -26,7 +29,16 @@ class Attachment:
         self.inner_html = inner_html
 
     @classmethod
-    def parse_text(cls, text: str = None, mime: str = Mime.text_plain, indent: int = 4, delimiter=','):
+    def parse_text(
+        cls,
+        text: str = None,
+        mime: str = Mime.text_plain,
+        indent: int = 4,
+        delimiter=',',
+        uri_list: List[str] = None
+    ):
+        if uri_list is not None and len(uri_list) > 0:
+            mime = Mime.text_uri_list
         match mime:
             case Mime.application_json:
                 return _format_json(text, indent)
@@ -36,6 +48,8 @@ class Attachment:
                 return _format_yaml(text, indent)
             case Mime.text_csv:
                 return _format_csv(text=text, delimiter=delimiter)
+            case Mime.text_uri_list:
+                return _format_uri_list(text, uri_list)
             case _:
                 return _format_txt(text)
 
@@ -99,3 +113,15 @@ def _format_csv(text: str, delimiter=',') -> Attachment:
     except:
         return Attachment("Error formatting YAML.\n" + text, Mime.text_plain)
     return Attachment(text, Mime.text_csv, inner_html)
+
+
+def _format_uri_list(text: str, uri_list: List[str]):
+    try:
+        if text is not None:
+            uri_list = text.split('\n')
+        else:
+            text = '\n'.join(uri_list)
+        inner_html = utils.decorate_uri_list(uri_list)
+        return Attachment(text, Mime.text_uri_list, inner_html)
+    except:
+        return Attachment("Error parsing uri list.", Mime.text_plain)
