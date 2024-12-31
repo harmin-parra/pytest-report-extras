@@ -314,14 +314,14 @@ def append_header(call, report, extras, pytest_html,
     report.extras = extras
 
 
-def escape_html(text, quote=False):
+def escape_html(text, quote=False) -> str:
     """ Escapes HTML characters in a text. """
     if text is None:
         return ""
     return html.escape(str(text), quote)
 
 
-def get_table_row_tag(comment, image, source, clazz_comment="comment"):
+def get_table_row_tag(comment, image, source, clazz_comment="comment") -> str:
     """
     Returns the HTML table row of a test step.
 
@@ -364,7 +364,7 @@ def get_table_row_tag(comment, image, source, clazz_comment="comment"):
         )
 
 
-def decorate_label(label, clazz):
+def decorate_label(label, clazz) -> str:
     """
     Applies a CSS style to a text.
 
@@ -390,7 +390,7 @@ def decorate_label(label, clazz):
 #         return image
 
 
-def decorate_screenshot(filename):
+def decorate_screenshot(filename) -> str:
     if filename is None:
         return ""
     """ Applies CSS class to a screenshot anchor element. """
@@ -398,7 +398,7 @@ def decorate_screenshot(filename):
     return f'<a href="{filename}" target="_blank"><img src ="{filename}" class="{clazz}"></a>'
 
 
-def decorate_page_source(filename):
+def decorate_page_source(filename) -> str:
     """ Applies CSS class to a page source anchor element. """
     if filename is None:
         return ""
@@ -406,7 +406,7 @@ def decorate_page_source(filename):
     return f'<a href="{filename}" target="_blank" class="{clazz}">[page source]</a>'
 
 
-def decorate_uri(uri: str):
+def decorate_uri(uri: str) -> str:
     """ Applies CSS class to a uri anchor element. """
     if uri is None or uri == '':
         return ""
@@ -416,16 +416,16 @@ def decorate_uri(uri: str):
         return f'<a href="{uri}" target="_blank">{uri}</a>'
 
 
-def decorate_uri_list(uris: List[str]):
-    """ Applies CSS class to a download file anchor element. """
+def decorate_uri_list(uris: List[str]) -> str:
+    """ Applies CSS class to a list of uri attachment. """
     links = ""
     for uri in uris:
-        if uri != '':
+        if uri is not None and uri != '':
             links += decorate_uri(uri) + "<br>"
     return links
 
 
-def decorate_attachment(attachment):
+def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz = "extras_pre"
     if attachment.inner_html is None:
