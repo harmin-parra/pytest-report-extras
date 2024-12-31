@@ -48,34 +48,37 @@ The indent to use for attachments.
 
 Accepted values: any positive integer.
 
+Default value: ``4``
+
 
 API
 ===
 
 The function scoped fixture ``report`` provides the following methods:
 
-To add a step to the report:
+To add a step with screenshot:
 
 .. code-block:: python
 
-  step(
-      comment: str = None,
+  screenshot(
+      comment: str = None,        # Comment of the test step.
       target: WebDriver|WebElement|Page|Locator = None,
-      attachment: Attachment = None,
       full_page: bool = True,
       page_source: bool = False,  # Whether to include the webpage HTML source.
       escape_html: bool = False   # Whether to escape HTML characters in the comment.
   )
   
-Auxiliary method to get the code block format of a string:
+To add a step with attachment:
 
 .. code-block:: python
 
-    attachment(
-		text: str = None,            # The content/body of the attachment.
-		file: str = None,            # The filepath of the file to attach.
-		mime: str = Mime.text_plain  # The attachment mime type.
-	) -> Attachment
+  attach(
+      comment: str = None,         # Comment of the test step.
+	  body: str = None,            # The content/body of the attachment.
+	  source: str = None,          # The filepath of the attachment.
+	  mime: Mime = None            # The attachment mime type.
+      escape_html: bool = False    # Whether to escape HTML characters in the comment.
+  )
 
 
 Limitations
@@ -138,13 +141,13 @@ Sample code
       """
       driver = WebDriver()
       driver.get("https://www.selenium.dev/selenium/web/web-form.html")
-      report.step("Get the webpage to test", driver)
+      report.screenshot("Get the webpage to test", driver)
       driver.find_element(By.ID, "my-text-id").send_keys("Hello World!")
-      report.step("<h1>Set input text</h1>", driver, full_page=True, escape_html=False)
+      report.screenshot("<h1>Set input text</h1>", driver, full_page=True, escape_html=False)
       driver.find_element(By.NAME, "my-password").send_keys("password")
-      report.step(comment="Another comment", target=driver)
-      report.step("Comment without screenshot")
-      report.step(comment="Comment without screenshot")
+      report.screenshot(comment="Another comment", target=driver)
+      report.screenshot("Comment without screenshot")
+      report.screenshot(comment="Comment without screenshot")
       driver.quit()
 
 
@@ -157,8 +160,8 @@ Sample code
       This is a test using Playwright
       """
       page.goto("https://www.selenium.dev/selenium/web/web-form.html")
-      report.step("Get the webpage to test", page)
-      report.step(comment="Get the webpage to test", target=page, full_page=False)
+      report.screenshot("Get the webpage to test", page)
+      report.screenshot(comment="Get the webpage to test", target=page, full_page=False)
 
 
 * Example adding attachments
@@ -177,20 +180,16 @@ Sample code
               <body>Don't forget me this weekend!</body>  
           </note>"""
           
-      report(
+      report.attach(
           "This is a XML document:",
-          attachment=report.attachment(
-              text=xml_body,
-              mime=report.Mime.application_xml
-          )
+          body=xml_body,
+          mime=report.Mime.application_xml
       )
 	  
-      report(
+      report.attach(
           comment="This is a JSON document:",
-          attachment=report.attachment(
-              file="/path/to/file",
-              mime=report.Mime.application_json
-          )
+          source="/path/to/file",
+          mime=report.Mime.application_json
       )
 
 
