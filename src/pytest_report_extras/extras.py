@@ -187,6 +187,9 @@ class Extras:
         """
         self.links.append((uri, name))
 
+    def add_to_downloads(self, filepath: str = None) -> str:
+        return utils.get_download_link(self._html, counter(), filepath)
+
     # Deprecated code from here downwards
     def format_code_block(self, text: str, mime="text/plain") -> Attachment:
         return Attachment(text, mime)
