@@ -114,7 +114,7 @@ class Extras:
         # Get the 3 parts of the test step: image, comment and source
         image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
         comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment      
+        comment = html.escape(comment, quote=True) if escape_html else comment
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -221,7 +221,7 @@ class Extras:
         # Get the 3 parts of the test step: image, comment and source
         image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
         comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment      
+        comment = html.escape(comment, quote=True) if escape_html else comment
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -301,6 +301,15 @@ class Extras:
                     f.close()
             except Exception as err:
                 body = f"Error reading file: {source}\n{err}"
+                mime = Mime.text_plain
+        if mime == Mime.text_html:
+            try:
+                encoded_bytes = base64.b64encode(body.encode('utf-8'))
+                encoded_str = encoded_bytes.decode('utf-8')
+                inner_html = f"data:text/html;base64,{encoded_str}"
+                return Attachment(body=body, source=source, mime=mime, inner_html=inner_html)
+            except Exception as err:
+                body = f"Error encoding HTML body\n{err}"
                 mime = Mime.text_plain
         return Attachment.parse_body(body, mime, self._indent, delimiter)
 

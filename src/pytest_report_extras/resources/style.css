@@ -58,3 +58,10 @@
     font-size: 12px;
     color: #999;
 }
+.extras_iframe {
+	margin-left: 30px;
+	margin-right: 30px;
+	margin-top: 15px;
+	inline-size: -webkit-fill-available;	
+}
+

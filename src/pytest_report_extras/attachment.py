@@ -15,6 +15,7 @@ class Mime:
     Class to hold mime type enums.
     """
     text_plain = "text/plain"
+    text_html = "text/html"
     application_json = "application/json"
     application_xml = "application/xml"
     application_yaml = "application/yaml"

@@ -4,8 +4,8 @@ import importlib
 import os
 import pathlib
 import pytest
-import subprocess
 import shutil
+import subprocess
 import sys
 import traceback
 import uuid
@@ -428,14 +428,18 @@ def decorate_uri_list(uris: List[str]) -> str:
 
 def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
-    clazz = "extras_pre"
+    clazz1 = "extras_pre"
+    clazz2 = "extras_iframe"
     if attachment.inner_html is None:
         if attachment.body in (None, ""):
             return ""
         else:
-            return f'<pre class="{clazz}">{escape_html(attachment.body)}</pre>'
+            return f'<pre class="{clazz1}">{escape_html(attachment.body)}</pre>'
     else:
-        return f'<pre class="{clazz}">{attachment.inner_html}</pre>'
+        if attachment.mime == "text/html":
+            return f'<iframe class="{clazz2}" src="{attachment.inner_html}"></iframe>'
+        else:
+            return f'<pre class="{clazz1}">{attachment.inner_html}</pre>'
 
 
 def log_error_message(report, message):
