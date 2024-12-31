@@ -10,6 +10,9 @@ from . import utils
 
 
 class Mime:
+    """
+    Class to hold mime type enums.
+    """
     text_plain = "text/plain"
     application_json = "application/json"
     application_xml = "application/xml"
@@ -55,7 +58,7 @@ class Attachment:
 
 def _format_json(text: str, indent: int = 4) -> (str, str):
     """
-    Formats a string holding a JSON document.
+    Returns an attachment object with a string holding a JSON document.
     """
     try:
         text = json.loads(text)
@@ -66,7 +69,7 @@ def _format_json(text: str, indent: int = 4) -> (str, str):
 
 def _format_xml(text: str, indent: int = 4) -> Attachment:
     """
-    Formats a string holding an XML document.
+    Returns an attachment object with a string holding an XML document.
     """
     result = None
     try:
@@ -81,7 +84,7 @@ def _format_xml(text: str, indent: int = 4) -> Attachment:
 
 def _format_yaml(text: str, indent: int = 4) -> Attachment:
     """
-    Formats a string holding a YAML document.
+    Returns an attachment object with a string holding a YAML document.
     """
     try:
         text = yaml.safe_load(text)
@@ -91,10 +94,16 @@ def _format_yaml(text: str, indent: int = 4) -> Attachment:
 
 
 def _format_txt(text: str, mime: str = Mime.text_plain) -> Attachment:
+    """
+    Returns an attachment object with a plain/text string.
+    """
     return Attachment(text, mime)
 
 
 def _format_csv(text: str, delimiter=',') -> Attachment:
+    """
+    Returns an attachment object with a string holding a CVS document.
+    """
     inner_html = None
     try:
         f = io.StringIO(text)
@@ -115,6 +124,9 @@ def _format_csv(text: str, delimiter=',') -> Attachment:
 
 
 def _format_uri_list(text: str, uri_list: List[str]):
+    """
+    Returns an attachment object with a uri list.
+    """
     try:
         if text is not None:
             uri_list = text.split('\n')
