@@ -15,8 +15,7 @@ class Mime:
     application_xml = "application/xml"
     application_yaml = "application/yaml"
     text_csv = "text/csv"
-    text_tab_separated_values = 6
-    text_uri_list = 7
+    text_uri_list = "text/uri-list"
 
 
 class Attachment:
