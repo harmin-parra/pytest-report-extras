@@ -285,7 +285,8 @@ Sample CSS file
       margin-left: 30px;
       margin-right: 30px;
       margin-top: 15px;
-      inline-size: -webkit-fill-available;	
+      inline-size: -webkit-fill-available;
+      background-color: #faf0e6;
   }
 
 
