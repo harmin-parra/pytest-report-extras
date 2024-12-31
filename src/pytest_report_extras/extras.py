@@ -2,6 +2,7 @@ import base64
 import html
 import importlib
 import warnings
+from typing import Dict
 from typing import List
 from . import utils
 from .attachment import Attachment
@@ -10,19 +11,28 @@ from .attachment import Mime
 
 deprecation_msg = """
 
-report.step(comment: str, code_block: CodeBlockText) is deprecated and will be removed in the next major version release
+report.step(....) is deprecated and will be removed in the next major version release
 
-Please use: report.step(comment: str', attachment: Attachment)
+Please use:
+    report.screenshot: To add steps with screenshots.
+    report.attach: To add steps with attachments.
 
 Examples:
-report.step(
+report.screenshot(
     comment="comment",
-    attachment=report.attachment(text="<XML string>", mime=report.Mime.application_xml)
+    target=<WebDriver>
 )
-report.step(
+report.attach(
     comment="comment",
-    attachment=report.attachment(file="/path/to/JSON file", mime=report.Mime.application_json)
-)"""
+    body="<XML string>",
+    mime=report.Mime.application_xml
+)
+report.attach(
+    comment="comment",
+    source="/path/to/JSON file",
+    mime=report.Mime.application_json
+)
+"""
 
 
 # Counter used for image and page source files naming
@@ -67,11 +77,115 @@ class Extras:
         self._indent = indent
         self.Mime = Mime
 
+    def screenshot(
+            self,
+            comment: str,
+            target = None,
+            full_page: bool = True,
+            page_source: bool = False,
+            escape_html: bool = False
+    ):
+        """
+        Adds a step with a screenshot in the report.
+        The screenshot is saved in <report_html>/screenshots folder.
+        The webpage source is saved in <report_html>/sources folder.
+
+        Args:
+            comment (str): The comment of the test step.
+            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
+            full_page (bool): Whether to take a full-page screenshot.
+            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
+            escape_html (bool): Whether to escape HTML characters in the comment.
+        """
+        if target is not None:
+            if importlib.util.find_spec('selenium') is not None:
+                from selenium.webdriver.remote.webdriver import WebDriver
+                if isinstance(target, WebDriver) and self.target is None:
+                    self.target = target
+
+            if importlib.util.find_spec('playwright') is not None:
+                from playwright.sync_api import Page
+                if isinstance(target, Page) and self.target is None:
+                    self.target = target
+
+        if self._fx_screenshots == "last" and target is not None:
+            return
+
+        # Get the 3 parts of the test step: image, comment and source
+        image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
+        comment = "" if comment is None else comment
+        comment = html.escape(comment, quote=True) if escape_html else comment      
+
+        # Add extras to Allure report if allure-pytest plugin is being used.
+        if self._allure and importlib.util.find_spec('allure') is not None:
+            import allure
+            if image is not None:
+                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
+                # Attach the webpage source
+                if source is not None:
+                    allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
+
+        # Add extras to pytest-html report if pytest-html plugin is being used.
+        if self._html:
+            self._save_screenshot(image, source)
+            self.comments.append(comment)
+
+    def attach(
+            self,
+            comment: str,
+            body: str = None,
+            source: str = None,
+            mime: str = None,
+            csv_delimiter=',',
+            escape_html: bool = False
+    ):
+        """
+        Adds a step in the pytest-html report: screenshot, comment and webpage source.
+        The screenshot is saved in <report_html>/screenshots folder.
+        The webpage source is saved in <report_html>/sources folder.
+        The 'body' and 'source' parameters are exclusive.
+
+        Args:
+            comment (str): The comment of the test step.
+            body (str | Dict | List[str]): The content/body of the attachment.
+                Can be of type 'Dict' for JSON mime type.
+                Can be of type 'List[str]' for uri-list mime type.
+            source (str): The filepath of the source to attach.
+            mime (str): The attachment mime type.
+            csv_delimiter (str): The delimiter for CSV documents.
+            escape_html (bool): Whether to escape HTML characters in the comment.
+        """
+        comment = "" if comment is None else comment
+        comment = html.escape(comment, quote=True) if escape_html else comment
+        attachment = self._get_attachment(body, source, mime, csv_delimiter)
+
+        # Add extras to Allure report if allure-pytest plugin is being used.
+        if self._allure and importlib.util.find_spec('allure') is not None:
+            import allure
+            if attachment is not None:
+                try:
+                    if attachment.body is not None:
+                        allure.attach(attachment.body, name=comment, attachment_type=attachment.mime)
+                    elif attachment.source is not None:
+                        allure.attach.file(attachment.source)
+                except Exception as err:
+                    allure.attach(str(err), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
+
+        # Add extras to pytest-html report if pytest-html plugin is being used.
+        if self._html:
+            if attachment is not None:
+                if attachment.body is None and attachment.mime is None and attachment.source is not None:
+                    comment += ' ' + attachment.inner_html
+                else:
+                    comment += '\n' + utils.decorate_attachment(attachment)
+            self._save_screenshot(None, None)
+            self.comments.append(comment)
+
+    # Deprecated method
     def step(
             self,
             comment: str = None,
             target=None,
-            attachment: Attachment = None,
             code_block: CodeBlockText = None,
             full_page: bool = True,
             page_source: bool = False,
@@ -85,7 +199,6 @@ class Extras:
         Args:
             comment (str): The comment of the test step.
             target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
-            attachment (Attachment): The attachment to be added.
             code_block (CodeBlockText): The code-block formatted content to be added.
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
@@ -118,25 +231,18 @@ class Extras:
                 # Attach the webpage source
                 if source is not None:
                     allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
-            if attachment is not None and attachment.text is not None:
-                allure.attach(attachment.text, name=comment, attachment_type=attachment.mime)
-            # Deprecated attachment
-            if code_block is not None and code_block.text is not None:
-                allure.attach(code_block.text, name=comment, attachment_type=code_block.mime)
+            if code_block is not None and code_block.body is not None:
+                allure.attach(code_block.body, name=comment, attachment_type=code_block.mime)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
             self._save_screenshot(image, source)
-            if attachment is not None:
-                comment += '\n' + utils.decorate_attachment(attachment)
-            # Deprecated attachment
-            if code_block is not None and code_block.text is not None:
+            if code_block is not None and code_block.body is not None:
                 comment += '\n' + utils.decorate_attachment(code_block)
             self.comments.append(comment)
 
         # Deprecation warning
-        if code_block is not None:
-            warnings.warn(deprecation_msg, DeprecationWarning)
+        warnings.warn(deprecation_msg, DeprecationWarning)
 
     def _save_screenshot(self, image: bytes | str, source: str):
         """
@@ -161,36 +267,42 @@ class Extras:
             link_source = utils.get_source_link(self._html, index, source)
         self.sources.append(link_source)
 
-    def attachment(
+    def _get_attachment(
         self,
-        text: str = None,
-        file: str = None,
-        mime: str = Mime.text_plain,
+        body: str | Dict | List[str] = None,
+        source: str = None,
+        mime: str = None,
         delimiter=',',
-        uri_list: List[str] = None
     ) -> Attachment:
         """
-        Creates an attachment for a step.
+        Creates an attachment.
 
         Args:
-            text (str): The content/body of the attachment.
-            file (str): The filepath of the file to attach.
-            mime (str): The attachment mime type (Necessary for Allure report).
+            body (str | Dict | List[str]): The content/body of the attachment.
+                Can be of type 'Dict' for JSON mime type.
+                Can be of type 'List[str]' for uri-list mime type.
+            source (str): The filepath of the source to attach.
+            mime (str): The attachment mime type.
             delimiter (str): The delimiter for CSV documents.
-            uri_list (List[str]): The uri list.
         
         Returns:
             An attachment object.
         """
-        if file is not None:
+        if source is not None:
             try:
-                f = open(file, 'r')
-                text = f.read()
-                f.close()
+                if mime is None:
+                    inner_html = None
+                    if self._html:
+                        inner_html = utils.decorate_uri(self.add_to_downloads(source))
+                    return Attachment(source=source, inner_html=inner_html)
+                else:
+                    f = open(source, 'r')
+                    body = f.read()
+                    f.close()
             except Exception as err:
-                text = f"Error reading file: {file}\n{err}"
+                body = f"Error reading file: {source}\n{err}"
                 mime = Mime.text_plain
-        return Attachment.parse_text(text, mime, self._indent, delimiter, uri_list)
+        return Attachment.parse_body(body, mime, self._indent, delimiter)
 
     def link(self, uri: str, name: str = None):
         """
@@ -204,16 +316,18 @@ class Extras:
 
     def add_to_downloads(self, filepath: str = None) -> str:
         """
-        Copies a file into the report's download folder, make it available to download.
-        Note: Only works in pytest-html reports. Doesn't work in Allure reports. 
+        When using pytest-html, copies a file into the report's download folder, make it available to download.
 
         Args:
-            filepath (str): The file to add to doawload folder.
+            filepath (str): The file to add to download folder.
 
         Returns:
             The uri of the downloadable file.
         """
-        return utils.get_download_link(self._html, counter(), filepath)
+        if self._html:
+            return utils.get_download_link(self._html, filepath)
+        else:
+            return None
 
     # Deprecated code from here downwards
     def format_code_block(self, text: str, mime="text/plain") -> Attachment:
@@ -235,7 +349,7 @@ class Extras:
         """
         Formats a string holding a JSON document.
         """
-        return Attachment.parse_text(text, Mime.application_json, indent)
+        return Attachment.parse_body(text, Mime.application_json, indent)
 
     def format_xml_file(self, filepath: str, indent: int = 4) -> Attachment:
         """
@@ -253,7 +367,7 @@ class Extras:
         """
         Formats a string holding an XML document.
         """
-        return Attachment.parse_text(text, Mime.application_xml, indent)
+        return Attachment.parse_body(text, Mime.application_xml, indent)
 
     def format_yaml_file(self, filepath: str, indent: int = 4) -> Attachment:
         """
@@ -271,4 +385,4 @@ class Extras:
         """
         Formats a string containing a YAML document.
         """
-        return Attachment.parse_text(text, Mime.application_yaml, indent)
+        return Attachment.parse_body(text, Mime.application_yaml, indent)

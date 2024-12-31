@@ -8,6 +8,7 @@ import subprocess
 import shutil
 import sys
 import traceback
+import uuid
 from typing import List
 # from . import Attachment
 
@@ -232,14 +233,14 @@ def get_source_link(report_html, index, source):
         return link
 
 
-def get_download_link(report_html, index, filepath: str = None):
+def get_download_link(report_html, filepath: str = None):
     try:
-        subprocess.run(["cp", filepath, f"{report_html}{os.sep}downloads{os.sep}file-{index}"]).check_returncode()
-        return f"downloads{os.sep}file-{index}"
-    except Exception as err:
-        trace = traceback.format_exc()
-        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
-        return None
+        filename = uuid.uuid4()
+        subprocess.run(["cp", filepath, f"{report_html}{os.sep}downloads{os.sep}{filename}"]).check_returncode()
+        return f"downloads{os.sep}{filename}"
+    except:
+        raise
+
 
 #
 # Auxiliary functions for the report generation
@@ -429,10 +430,10 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz = "extras_pre"
     if attachment.inner_html is None:
-        if attachment.text in (None, ""):
+        if attachment.body in (None, ""):
             return ""
         else:
-            return f'<pre class="{clazz}">{escape_html(attachment.text)}</pre>'
+            return f'<pre class="{clazz}">{escape_html(attachment.body)}</pre>'
     else:
         return f'<pre class="{clazz}">{attachment.inner_html}</pre>'
 
