@@ -378,7 +378,7 @@ def decorate_label(label, clazz):
 
 def decorate_screenshot(filename):
     if filename is None:
-        return ''
+        return ""
     """ Applies CSS class to a screenshot anchor element. """
     clazz = "extras_image"
     return f'<a href="{filename}" target="_blank"><img src ="{filename}" class="{clazz}"></a>'
@@ -386,6 +386,8 @@ def decorate_screenshot(filename):
 
 def decorate_page_source(filename):
     """ Applies CSS class to a page source anchor element. """
+    if filename is None:
+        return ""
     clazz = "extras_page_src"
     return f'<a href="{filename}" target="_blank" class="{clazz}">[page source]</a>'
 
