@@ -30,9 +30,8 @@ class Attachment:
         self.mime = mime
         self.inner_html = inner_html
 
-    @classmethod
+    @staticmethod
     def parse_text(
-        cls,
         text: str = None,
         mime: str = Mime.text_plain,
         indent: int = 4,
