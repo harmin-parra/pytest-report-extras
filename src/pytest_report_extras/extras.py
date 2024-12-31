@@ -171,12 +171,16 @@ class Extras:
     ) -> Attachment:
         """
         Creates an attachment for a step.
+
         Args:
             text (str): The content/body of the attachment.
             file (str): The filepath of the file to attach.
             mime (str): The attachment mime type (Necessary for Allure report).
             delimiter (str): The delimiter for CSV documents.
             uri_list (List[str]): The uri list.
+        
+        Returns:
+            An attachment object.
         """
         if file is not None:
             try:
@@ -191,6 +195,7 @@ class Extras:
     def link(self, uri: str, name: str = None):
         """
         Adds a link to the report.
+
         Args:
             uri (str): The link uri.
             name (str): The link text.
@@ -198,6 +203,16 @@ class Extras:
         self.links.append((uri, name))
 
     def add_to_downloads(self, filepath: str = None) -> str:
+        """
+        Copies a file into the report's download folder, make it available to download.
+        Note: Only works in pytest-html reports. Doesn't work in Allure reports. 
+
+        Args:
+            filepath (str): The file to add to doawload folder.
+
+        Returns:
+            The uri of the downloadable file.
+        """
         return utils.get_download_link(self._html, counter(), filepath)
 
     # Deprecated code from here downwards
