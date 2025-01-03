@@ -174,6 +174,7 @@ def pytest_sessionfinish(session, exitstatus):
             session.exitstatus = 7
     if (xfailed + skipped + error_setup + error_teardown > 0) and failed == 0:
         session.exitstatus = 6
+    # print(f"\n{failed} failed, {passed} passed, {skipped} skipped, {xfailed} xfailed, {xpassed} xpassed, {error_setup + error_teardown} errors")
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -195,7 +196,7 @@ def pytest_runtest_makereport(item, call):
     issues = []
     links = []
 
-    # Is the test item using the 'report' fixtures?
+    # Exit if the test is not using the 'report' fixtures
     # if not ("request" in item.funcargs and "report" in item.funcargs):
     #     return
 
@@ -206,8 +207,7 @@ def pytest_runtest_makereport(item, call):
         fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
         fx_issue_key = feature_request.getfixturevalue("issue_key_pattern")
     except:
-        if call.when == "call":
-            return
+        pass
 
     # Update status variables
     if call.when == 'setup':
