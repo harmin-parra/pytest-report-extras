@@ -21,7 +21,7 @@ Changelog
 **Features**
 
 * Posibility to add links to the tests report.
-* New ``ini`` option to customize the indentation of XML, JSON and YAML attachments.
+* New INI option to customize the indentation of XML, JSON and YAML attachments.
 * Support of attachments of mime type: ``text/csv``, ``text/html``  and ``text/uri-list``
 
 
