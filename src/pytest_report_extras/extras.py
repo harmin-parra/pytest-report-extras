@@ -197,6 +197,8 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
+        if Mime.isunknown(mime):
+            mime = None
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
         mime = attachment.mime
         if mime is not None and mime.startswith("image/"):
