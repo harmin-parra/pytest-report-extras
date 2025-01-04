@@ -51,6 +51,8 @@ Changelog
 
 **Initial release**
 
-**Limitation**
+**Limitations**
+
+* No support for the ``--self-contained-html`` option of the **pytest-html** plugin.
 
 * The **Allure** report cannot be generated alone. It needs to be generated together with the **pytest-html** report.
