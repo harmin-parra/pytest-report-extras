@@ -234,12 +234,13 @@ def get_source_link(report_html, index, source):
 
 
 def copy_to_downloads(report_html, target: str | bytes = None):
-    filename = uuid.uuid4()
+    filename = str(uuid.uuid4())
     try:
+        destination = f"{report_html}{os.sep}downloads{os.sep}{filename}"
         if isinstance(target, str):
-            subprocess.run(["cp", target, f"{report_html}{os.sep}downloads{os.sep}{filename}"]).check_returncode()
+            subprocess.run(["cp", target, destination]).check_returncode()
         else:  # bytes
-            f = open(filename, 'w', encoding="utf-8")
+            f = open(destination, 'wb')
             f.write(target)
             f.close()            
         return f"downloads{os.sep}{filename}"
