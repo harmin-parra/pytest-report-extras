@@ -73,13 +73,19 @@ To add a step with attachment:
 .. code-block:: python
 
   attach(
-      comment: str,                # Comment of the test step.
-      body: str = None,            # The content/body of the attachment.
-      source: str = None,          # The filepath of the attachment.
-      mime: Mime = None,           # The attachment mime type.
-      escape_html: bool = False    # Whether to escape HTML characters in the comment.
+      comment: str,                                 # Comment of the test step.
+      body: str | bytes | Dict | List[str] = None,  # The content/body of the attachment.
+      source: str = None,                           # The filepath of the attachment.
+      mime: Mime = None,                            # The attachment mime type.
+      escape_html: bool = False                     # Whether to escape HTML characters in the comment.
   )
+  # Type of body parameter:
+  #    str: for XML, JSON, YAML or text/plain attachments or for image attachments if it is a base64 string
+  #    bytes: for image attachments
+  #    Dict: for JSON attachments
+  #    List[str]: for list of URIs attachments
 
+  
 To add a link to the report:
 
 .. code-block:: python

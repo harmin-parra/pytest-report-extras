@@ -175,7 +175,7 @@ class Extras:
     def attach(
             self,
             comment: str,
-            body: str = None,
+            body: str | bytes | Dict | List[str] = None,
             source: str = None,
             mime: str = None,
             csv_delimiter=',',
@@ -189,7 +189,7 @@ class Extras:
 
         Args:
             comment (str): The comment of the test step.
-            body (str | Dict | List[str]): The content/body of the attachment.
+            body (str | bytes | Dict | List[str]): The content/body of the attachment.
                 Can be of type 'Dict' for JSON mime type.
                 Can be of type 'List[str]' for uri-list mime type.
             source (str): The filepath of the source to attach.
