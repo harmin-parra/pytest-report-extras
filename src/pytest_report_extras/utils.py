@@ -194,7 +194,7 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False):
 
     return image, source
 
-    
+
 def get_image_link(report_html, index, image):
     if image is None:
         return None
@@ -391,12 +391,26 @@ def decorate_label(label, clazz) -> str:
 #         return image
 
 
-def decorate_screenshot(filename) -> str:
-    if filename is None:
-        return ""
+def decorate_screenshot(uri) -> str:
     """ Applies CSS class to a screenshot anchor element. """
     clazz = "extras_image"
-    return f'<a href="{filename}" target="_blank"><img src ="{filename}" class="{clazz}"></a>'
+    if uri is None:
+        return ""
+    return f'<a href="{uri}" target="_blank"><img src ="{uri}" class="{clazz}"></a>'
+
+
+def decorate_screenshot_from_file(filename) -> str:
+    return decorate_screenshot(filename)
+
+
+def decorate_screenshot_from_bytes(data: bytes, mime: str) -> str:
+    uri = None
+    if data is not None:
+        try:
+            uri = f"data:{mime};base64,{base64.b64encode(data)}"
+        except:
+            pass
+    return decorate_screenshot(uri)
 
 
 def decorate_page_source(filename) -> str:
@@ -438,6 +452,8 @@ def decorate_attachment(attachment) -> str:
     else:
         if attachment.mime == "text/html":
             return f'<iframe class="{clazz2}" src="{attachment.inner_html}"></iframe>'
+        if attachment.mime.startswith("image"):
+            return attachment.inner_html
         else:
             return f'<pre class="{clazz1}">{attachment.inner_html}</pre>'
 
