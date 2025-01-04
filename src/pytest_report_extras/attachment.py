@@ -21,14 +21,24 @@ class Mime:
     image_png = "image/png"
     image_svg_xml = "image/svg+xml"
     image_tiff = "image/tiff"
-    text_plain = "text/plain"
+    text_csv = "text/csv"
     text_html = "text/html"
+    text_plain = "text/plain"
+    text_uri_list = "text/uri-list"
     application_json = "application/json"
     application_xml = "application/xml"
     application_yaml = "application/yaml"
-    text_csv = "text/csv"
-    text_uri_list = "text/uri-list"
+    
+    @staticmethod
+    def isknown(mime: str):
+        return mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png,
+                        Mime.image_svg_xml, mime == Mime.image_tiff, Mime.text_csv,
+                        Mime.text_html, Mime.text_plain, Mime.text_uri_list, Mime.application_json,
+                        Mime.application_xml, Mime.application_yaml)
 
+    @staticmethod
+    def isunknown(mime: str):
+        return not Mime.isknown(mime)
 
 class Attachment:
     """
