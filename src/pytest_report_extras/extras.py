@@ -197,13 +197,9 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        #if mime is not None and isinstance(mime, str) and mime.startswith("image"):
-        #    self.screenshot(comment=comment, data=body, mime=mime, escape_html=escape_html)
-        #    return
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
         mime = attachment.mime
-        if (mime is not None and isinstance(mime, str) 
-            and mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png, Mime.image_svg_xml, Mime.image_tiff)):
+        if mime is not None and mime.startswith("image/"):
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 
@@ -338,9 +334,11 @@ class Extras:
         Creates an attachment.
 
         Args:
-            body (str | Dict | List[str] | bytes): The content/body of the attachment.
+            comment (str): The comment of the test step.
+            body (str | bytes | Dict | List[str]): The content/body of the attachment.
                 Can be of type 'Dict' for JSON mime type.
                 Can be of type 'List[str]' for uri-list mime type.
+                Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source to attach.
             mime (str): The attachment mime type.
             delimiter (str): The delimiter for CSV documents.
@@ -390,7 +388,7 @@ class Extras:
 
     def add_to_downloads(self, target: str | bytes = None) -> str:
         """
-        When using pytest-html, copies a file into the report's download folder, make it available to download.
+        When using pytest-html, copies a file into the report's download folder, making it available to download.
 
         Args:
             target (str | bytes): The file or the bytes content to add into the download folder.
