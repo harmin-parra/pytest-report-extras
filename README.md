@@ -1,6 +1,6 @@
 # pytest-report-extras
 
-Pytest plugin to enhance **pytest-html** and **allure** reports of front-end and back-end tests with step comments, screenshots, webpage sources and code-blocks of XML, JSON and YAML documents.
+Pytest plugin to enhance **pytest-html** and **allure** reports of front-end and back-end tests with step comments, screenshots, webpage sources and attachments of XML, JSON and YAML documents.
 
 ![](https://img.shields.io/badge/license-MIT%202.0-blue.svg)
 
