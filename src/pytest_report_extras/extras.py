@@ -78,12 +78,12 @@ class Extras:
         self.Mime = Mime
 
     def screenshot(
-            self,
-            comment: str,
-            target = None,
-            full_page: bool = True,
-            page_source: bool = False,
-            escape_html: bool = False
+        self,
+        comment: str,
+        target = None,
+        full_page: bool = True,
+        page_source: bool = False,
+        escape_html: bool = False
     ):
         """
         Adds a step with a screenshot in the report.
@@ -95,6 +95,40 @@ class Extras:
             target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
+            data (bytes): The image to attach as bytes.
+            escape_html (bool): Whether to escape HTML characters in the comment.
+        """
+        self._screenshot(
+            comment=comment,
+            target=target,
+            full_page=full_page,
+            page_source=page_source,
+            data=None,
+            mime=None,
+            escape_html=escape_html
+        )
+
+    def _screenshot(
+        self,
+        comment: str,
+        target = None,
+        full_page: bool = True,
+        page_source: bool = False,
+        data: bytes = None,
+        mime: Mime = None,
+        escape_html: bool = False
+    ):
+        """
+        Adds a step with a screenshot in the report.
+        The screenshot is saved in <report_html>/screenshots folder.
+        The webpage source is saved in <report_html>/sources folder.
+
+        Args:
+            comment (str): The comment of the test step.
+            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
+            full_page (bool): Whether to take a full-page screenshot.
+            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
+            data (bytes): The image to attach as bytes.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         if target is not None:
@@ -108,11 +142,18 @@ class Extras:
                 if isinstance(target, Page) and self.target is None:
                     self.target = target
 
-        if self._fx_screenshots == "last" and target is not None:
+        if self._fx_screenshots == "last" and target is not None and data is None:
             return
 
         # Get the 3 parts of the test step: image, comment and source
-        image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
+        if target is not None:
+            image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
+        else:  # data is not None
+            try:
+                uri = f"data:{mime};base64,{base64.b64encode(data)}"
+            except:
+                uri = None
+            image, source = data, None
         comment = "" if comment is None else comment
         comment = html.escape(comment, quote=True) if escape_html else comment
 
@@ -155,9 +196,17 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
+        #if mime is not None and isinstance(mime, str) and mime.startswith("image"):
+        #    self.screenshot(comment=comment, data=body, mime=mime, escape_html=escape_html)
+        #    return
+        attachment = self._get_attachment(body, source, mime, csv_delimiter)
+        if (mime is not None and isinstance(mime, str) 
+            and mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png, Mime.image_svg_xml, Mime.image_tiff)):
+            self._screenshot(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
+            return
+
         comment = "" if comment is None else comment
         comment = html.escape(comment, quote=True) if escape_html else comment
-        attachment = self._get_attachment(body, source, mime, csv_delimiter)
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -269,7 +318,7 @@ class Extras:
 
     def _get_attachment(
         self,
-        body: str | Dict | List[str] = None,
+        body: str | Dict | List[str] | bytes = None,
         source: str = None,
         mime: str = None,
         delimiter=',',
@@ -278,7 +327,7 @@ class Extras:
         Creates an attachment.
 
         Args:
-            body (str | Dict | List[str]): The content/body of the attachment.
+            body (str | Dict | List[str] | bytes): The content/body of the attachment.
                 Can be of type 'Dict' for JSON mime type.
                 Can be of type 'List[str]' for uri-list mime type.
             source (str): The filepath of the source to attach.
@@ -296,9 +345,14 @@ class Extras:
                         inner_html = utils.decorate_uri(self.add_to_downloads(source))
                     return Attachment(source=source, inner_html=inner_html)
                 else:
-                    f = open(source, 'r')
-                    body = f.read()
-                    f.close()
+                    if mime.startswith("image"):
+                        f = open(source, "rb")
+                        body = f.read()
+                        f.close()
+                    else:
+                        f = open(source, 'r')
+                        body = f.read()
+                        f.close()
             except Exception as err:
                 body = f"Error reading file: {source}\n{err}"
                 mime = Mime.text_plain

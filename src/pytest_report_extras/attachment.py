@@ -1,3 +1,4 @@
+import base64
 import csv
 import io
 import json
@@ -14,6 +15,12 @@ class Mime:
     """
     Class to hold mime type enums.
     """
+    image_bmp = "image/bmp"
+    image_gif = "image/gif"
+    image_jpeg = "image/jpeg"
+    image_png = "image/png"
+    image_svg_xml = "image/svg+xml"
+    image_tiff = "image/tiff"
     text_plain = "text/plain"
     text_html = "text/html"
     application_json = "application/json"
@@ -27,11 +34,15 @@ class Attachment:
     """
     Class to represent text to be formatted as code-block in a <pre> HTML tag.
     """
-    def __init__(self, body: str = None, source: str = None, mime: str = None, inner_html: str = None):
+    def __init__(self, body: str | List[str] | bytes = None, source: str = None, mime: str = None, inner_html: str = None):
         self.body = body
         self.source = source
         self.mime = mime
         self.inner_html = inner_html
+
+    def __eq__(self, pattern):
+        res = re.search(pattern, self.mime)
+        return res is not None
 
     @staticmethod
     def parse_body(
@@ -53,6 +64,8 @@ class Attachment:
                 return _format_csv(body, delimiter=delimiter)
             case Mime.text_uri_list:
                 return _format_uri_list(body)
+            case Mime.image_bmp | Mime.image_gif | Mime.image_jpeg | Mime.image_png | Mime.image_svg_xml | Mime.image_tiff:
+                return _format_image(body, mime)
             case _:
                 return _format_txt(body)
 
@@ -141,3 +154,12 @@ def _format_uri_list(text: str | List[str]) -> Attachment:
         return Attachment(body=body, mime=Mime.text_uri_list, inner_html=inner_html)
     except:
         return Attachment(body="Error parsing uri list.", mime=Mime.text_plain)
+
+
+def _format_image(data: bytes | str, mime: Mime) -> Attachment:
+    """
+    Returns an attachment object with bytes representing an image.
+    """
+    if isinstance(data, str):
+        data = base64.b64decode(data)
+    return Attachment(body=data, mime=mime)
