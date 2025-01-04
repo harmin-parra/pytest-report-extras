@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.2.1
+=====
+
+**Features**
+
+* Support of attachments of mime type: **image/bmp**, **image/gif**, **image/jpeg**, **image/png**, **image/svg+xml** and **image/tiff**
+
+
 1.2.0
 =====
 
