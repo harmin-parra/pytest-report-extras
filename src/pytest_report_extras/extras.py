@@ -56,12 +56,13 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_html, fx_screenshots, fx_sources, report_allure, indent):
+    def __init__(self, report_html, single_page, screenshots, sources, report_allure, indent):
         """
         Args:
             report_html (str): The 'report_html' fixture.
-            fx_screenshots (str): The 'screenshots' fixture.
-            fx_sources (bool): The 'sources' fixture.
+            single_page (bool): The 'single_page' fixture.
+            screenshots (str): The 'screenshots' fixture.
+            sources (bool): The 'sources' fixture.
             report_allure (str): The 'report_allure' fixture.
             indent: The 'indent' fixture.
         """
@@ -70,8 +71,9 @@ class Extras:
         self.comments = []
         self.links = []
         self.target = None
-        self._fx_screenshots = fx_screenshots
-        self._fx_sources = fx_sources
+        self._fx_screenshots = screenshots
+        self._fx_sources = sources
+        self._fx_single_page = single_page
         self._html = report_html
         self._allure = report_allure
         self._indent = indent
@@ -87,7 +89,7 @@ class Extras:
     ):
         """
         Adds a step with a screenshot in the report.
-        The screenshot is saved in <report_html>/screenshots folder.
+        The screenshot is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
@@ -95,10 +97,9 @@ class Extras:
             target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
-            data (bytes): The image to attach as bytes.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        self._screenshot(
+        self._add_image_step(
             comment=comment,
             target=target,
             full_page=full_page,
@@ -108,7 +109,7 @@ class Extras:
             escape_html=escape_html
         )
 
-    def _screenshot(
+    def _add_image_step(
         self,
         comment: str,
         target = None,
@@ -119,8 +120,8 @@ class Extras:
         escape_html: bool = False
     ):
         """
-        Adds a step with a screenshot in the report.
-        The screenshot is saved in <report_html>/screenshots folder.
+        Adds a step with an image in the report.
+        The image/screenshot is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
@@ -129,6 +130,7 @@ class Extras:
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             data (bytes): The image to attach as bytes.
+            mime (str): The mime type of the image that was passed as bytes.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         if target is not None:
@@ -148,12 +150,10 @@ class Extras:
         # Get the 3 parts of the test step: image, comment and source
         if target is not None:
             image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
+            mime = "image/png"
         else:  # data is not None
-            try:
-                uri = f"data:{mime};base64,{base64.b64encode(data)}"
-            except:
-                uri = None
             image, source = data, None
+
         comment = "" if comment is None else comment
         comment = html.escape(comment, quote=True) if escape_html else comment
 
@@ -168,29 +168,30 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            self._save_screenshot(image, source)
+            self._save_image(image, source, self._fx_single_page, mime)
             self.comments.append(comment)
 
     def attach(
-            self,
-            comment: str,
-            body: str = None,
-            source: str = None,
-            mime: str = None,
-            csv_delimiter=',',
-            escape_html: bool = False
+        self,
+        comment: str,
+        body: str | bytes | Dict | List[str] = None,
+        source: str = None,
+        mime: str = None,
+        csv_delimiter=',',
+        escape_html: bool = False
     ):
         """
-        Adds a step in the pytest-html report: screenshot, comment and webpage source.
-        The screenshot is saved in <report_html>/screenshots folder.
+        Adds a step with an attachment to the report.
+        The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
         The 'body' and 'source' parameters are exclusive.
 
         Args:
             comment (str): The comment of the test step.
-            body (str | Dict | List[str]): The content/body of the attachment.
+            body (str | bytes | Dict | List[str]): The content/body of the attachment.
                 Can be of type 'Dict' for JSON mime type.
                 Can be of type 'List[str]' for uri-list mime type.
+                Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source to attach.
             mime (str): The attachment mime type.
             csv_delimiter (str): The delimiter for CSV documents.
@@ -200,9 +201,10 @@ class Extras:
         #    self.screenshot(comment=comment, data=body, mime=mime, escape_html=escape_html)
         #    return
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
+        mime = attachment.mime
         if (mime is not None and isinstance(mime, str) 
             and mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png, Mime.image_svg_xml, Mime.image_tiff)):
-            self._screenshot(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
+            self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 
         comment = "" if comment is None else comment
@@ -227,22 +229,22 @@ class Extras:
                     comment += ' ' + attachment.inner_html
                 else:
                     comment += '\n' + utils.decorate_attachment(attachment)
-            self._save_screenshot(None, None)
+            self._save_image(None, None)
             self.comments.append(comment)
 
     # Deprecated method
     def step(
-            self,
-            comment: str = None,
-            target=None,
-            code_block: CodeBlockText = None,
-            full_page: bool = True,
-            page_source: bool = False,
-            escape_html: bool = False
+        self,
+        comment: str = None,
+        target=None,
+        code_block: CodeBlockText = None,
+        full_page: bool = True,
+        page_source: bool = False,
+        escape_html: bool = False
     ):
         """
         Adds a step in the pytest-html report: screenshot, comment and webpage source.
-        The screenshot is saved in <report_html>/screenshots folder.
+        The screenshot is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
@@ -285,7 +287,7 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            self._save_screenshot(image, source)
+            self._save_image(image, source, self._fx_single_page, None)
             if code_block is not None and code_block.body is not None:
                 comment += '\n' + utils.decorate_attachment(code_block)
             self.comments.append(comment)
@@ -293,27 +295,36 @@ class Extras:
         # Deprecation warning
         warnings.warn(deprecation_msg, DeprecationWarning)
 
-    def _save_screenshot(self, image: bytes | str, source: str):
+    def _save_image(self, image: bytes | str, source: str, single_page: bool = False, mime = None):
         """
         Saves the pytest-html 'extras': screenshot, comment and webpage source.
-        The screenshot is saved in <report_html>/screenshots folder.
+        The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
             image (bytes | str): The screenshot as bytes or base64 string.
             source (str): The webpage source code.
         """
+        link_image = None
+        link_source = None
         if isinstance(image, str):
             try:
                 image = base64.b64decode(image.encode())
             except:
                 image = None
-        index = -1 if image is None else counter()
-        link_image = utils.get_image_link(self._html, index, image)
-        self.images.append(link_image)
-        link_source = None
+        if single_page is False:
+            index = -1 if image is None else counter()
+            link_image = utils.get_image_link(self._html, index, image)
+        else:
+            mime = "image/*" if mime is None else mime
+            try:
+                data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
+            except:
+                data_uri = None
+            link_image = data_uri
         if source is not None:
             link_source = utils.get_source_link(self._html, index, source)
+        self.images.append(link_image)
         self.sources.append(link_source)
 
     def _get_attachment(
@@ -377,18 +388,18 @@ class Extras:
         """
         self.links.append((uri, name))
 
-    def add_to_downloads(self, filepath: str = None) -> str:
+    def add_to_downloads(self, target: str | bytes = None) -> str:
         """
         When using pytest-html, copies a file into the report's download folder, make it available to download.
 
         Args:
-            filepath (str): The file to add to download folder.
+            target (str | bytes): The file or the bytes content to add into the download folder.
 
         Returns:
             The uri of the downloadable file.
         """
         if self._html:
-            return utils.get_download_link(self._html, filepath)
+            return utils.copy_to_downloads(self._html, target)
         else:
             return None
 

@@ -8,7 +8,7 @@ Changelog
 
 **Features**
 
-* Support of attachments of mime type: **image/bmp**, **image/gif**, **image/jpeg**, **image/png**, **image/svg+xml** and **image/tiff**
+* Support of attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
 
 
 1.2.0
@@ -21,8 +21,8 @@ Changelog
 **Features**
 
 * Posibility to add links to the tests report.
-* New ``ini`` option to customize the indentation of XML, JSON and YAML attachments.
-* Support of attachments of mime type: **text/csv**, **text/html**  and **text/uri-list**
+* New INI option to customize the indentation of XML, JSON and YAML attachments.
+* Support of attachments of mime type: ``text/csv``, ``text/html``  and ``text/uri-list``
 
 
 1.1.0

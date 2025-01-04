@@ -60,26 +60,26 @@ def check_lists_length(report, fx_extras):
 
 
 def create_assets(report_html):
-    """ Recreate screenshots and webpage sources folders. """
+    """ Recreate images and webpage sources folders. """
     if report_html is None:
         return
-    # Recreate screenshots_folder
+    # Recreate report_folder
     folder = ""
     if report_html is not None and report_html != '':
         folder = f"{report_html}{os.sep}"
     # Create page sources folder
     shutil.rmtree(f"{folder}sources", ignore_errors=True)
     pathlib.Path(f"{folder}sources").mkdir(parents=True)
-    # Create screenshots folder
-    shutil.rmtree(f"{folder}screenshots", ignore_errors=True)
-    pathlib.Path(f"{folder}screenshots").mkdir(parents=True)
+    # Create images folder
+    shutil.rmtree(f"{folder}images", ignore_errors=True)
+    pathlib.Path(f"{folder}images").mkdir(parents=True)
     # Create downloads folder
     shutil.rmtree(f"{folder}downloads", ignore_errors=True)
     pathlib.Path(f"{folder}downloads").mkdir(parents=True)
-    # Copy error.png to screenshots folder
+    # Copy error.png to images folder
     resources_path = pathlib.Path(__file__).parent.joinpath("resources")
     error_img = pathlib.Path(resources_path, "error.png")
-    shutil.copy(str(error_img), f"{folder}screenshots")
+    shutil.copy(str(error_img), f"{folder}images")
 
 
 #
@@ -198,7 +198,7 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False):
 def get_image_link(report_html, index, image):
     if image is None:
         return None
-    link = f"screenshots{os.sep}image-{index}.png"
+    link = f"images{os.sep}image-{index}.png"
     folder = ""
     if report_html is not None and report_html != '':
         folder = f"{report_html}{os.sep}"
@@ -209,7 +209,7 @@ def get_image_link(report_html, index, image):
         f.close()
     except Exception as err:
         trace = traceback.format_exc()
-        link = f"screenshots{os.sep}error.png"
+        link = f"images{os.sep}error.png"
         print(f"{str(err)}\n\n{trace}", file=sys.stderr)
     finally:
         return link
@@ -233,10 +233,16 @@ def get_source_link(report_html, index, source):
         return link
 
 
-def get_download_link(report_html, filepath: str = None):
+def copy_to_downloads(report_html, target: str | bytes = None):
+    filename = str(uuid.uuid4())
     try:
-        filename = uuid.uuid4()
-        subprocess.run(["cp", filepath, f"{report_html}{os.sep}downloads{os.sep}{filename}"]).check_returncode()
+        destination = f"{report_html}{os.sep}downloads{os.sep}{filename}"
+        if isinstance(target, str):
+            subprocess.run(["cp", target, destination]).check_returncode()
+        else:  # bytes
+            f = open(destination, 'wb')
+            f.write(target)
+            f.close()            
         return f"downloads{os.sep}{filename}"
     except:
         raise

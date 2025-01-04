@@ -61,11 +61,11 @@ To add a step with screenshot:
 .. code-block:: python
 
   screenshot(
-      comment: str,                 # Comment of the test step.
-      target: WebDriver|WebElement|Page|Locator = None,
-      full_page: bool = True,
-      page_source: bool = False,    # Whether to include the webpage HTML source.
-      escape_html: bool = False     # Whether to escape HTML characters in the comment.
+      comment: str,                              # Comment of the test step.
+      target: WebDriver | WebElement | Page | Locator = None,  # The page or element.
+      full_page: bool = True,                     # Whether to take a full page screenshot.
+      page_source: bool = False,                  # Whether to include the webpage HTML source.
+      escape_html: bool = False                   # Whether to escape HTML characters in the comment.
   )
   
 To add a step with attachment:
@@ -73,12 +73,20 @@ To add a step with attachment:
 .. code-block:: python
 
   attach(
-      comment: str,                # Comment of the test step.
-      body: str = None,            # The content/body of the attachment.
-      source: str = None,          # The filepath of the attachment.
-      mime: Mime = None,           # The attachment mime type.
-      escape_html: bool = False    # Whether to escape HTML characters in the comment.
+      comment: str,                                 # Comment of the test step.
+      body: str | bytes | Dict | List[str] = None,  # The content/body of the attachment.
+      source: str = None,                           # The filepath of the attachment.
+      mime: Mime = None,                            # The attachment mime type.
+      escape_html: bool = False                     # Whether to escape HTML characters in the comment.
   )
+  
+  # Type of body parameter:
+  #    str: - for XML, JSON, YAML, CSV or TXT attachments
+  #         - for image attachments if it is a base64 string
+  #    bytes: for image attachments
+  #    Dict: for JSON attachments
+  #    List[str]: for list-uri attachments
+
 
 To add a link to the report:
 

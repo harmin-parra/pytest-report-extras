@@ -15,7 +15,7 @@ class Mime:
     """
     Class to hold mime type enums.
     """
-    image_bmp = "image/bmp"
+    image_bmp = "image/png"
     image_gif = "image/gif"
     image_jpeg = "image/jpeg"
     image_png = "image/png"
@@ -161,5 +161,8 @@ def _format_image(data: bytes | str, mime: Mime) -> Attachment:
     Returns an attachment object with bytes representing an image.
     """
     if isinstance(data, str):
-        data = base64.b64decode(data)
+        try:
+            data = base64.b64decode(data)
+        except:
+            return Attachment(body="Error parsing image bytes.", mime=Mime.text_plain)
     return Attachment(body=data, mime=mime)
