@@ -56,12 +56,13 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_html, fx_screenshots, fx_sources, report_allure, indent):
+    def __init__(self, report_html, single_page, screenshots, sources, report_allure, indent):
         """
         Args:
             report_html (str): The 'report_html' fixture.
-            fx_screenshots (str): The 'screenshots' fixture.
-            fx_sources (bool): The 'sources' fixture.
+            single_page (bool): The 'single_page' fixture.
+            screenshots (str): The 'screenshots' fixture.
+            sources (bool): The 'sources' fixture.
             report_allure (str): The 'report_allure' fixture.
             indent: The 'indent' fixture.
         """
@@ -70,8 +71,9 @@ class Extras:
         self.comments = []
         self.links = []
         self.target = None
-        self._fx_screenshots = fx_screenshots
-        self._fx_sources = fx_sources
+        self._fx_screenshots = screenshots
+        self._fx_sources = sources
+        self._fx_single_page = single_page
         self._html = report_html
         self._allure = report_allure
         self._indent = indent
@@ -129,6 +131,7 @@ class Extras:
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             data (bytes): The image to attach as bytes.
+            mime (str): The mime type of the image that was passed as bytes.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         if target is not None:
@@ -148,12 +151,10 @@ class Extras:
         # Get the 3 parts of the test step: image, comment and source
         if target is not None:
             image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
+            mime = "image/png"
         else:  # data is not None
-            try:
-                uri = f"data:{mime};base64,{base64.b64encode(data)}"
-            except:
-                uri = None
             image, source = data, None
+
         comment = "" if comment is None else comment
         comment = html.escape(comment, quote=True) if escape_html else comment
 
@@ -168,7 +169,7 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            self._save_screenshot(image, source)
+            self._save_screenshot(image, source, self._fx_single_page, mime)
             self.comments.append(comment)
 
     def attach(
@@ -200,6 +201,7 @@ class Extras:
         #    self.screenshot(comment=comment, data=body, mime=mime, escape_html=escape_html)
         #    return
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
+        mime = attachment.mime
         if (mime is not None and isinstance(mime, str) 
             and mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png, Mime.image_svg_xml, Mime.image_tiff)):
             self._screenshot(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
@@ -285,7 +287,7 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            self._save_screenshot(image, source)
+            self._save_screenshot(image, source, self._fx_single_page, None)
             if code_block is not None and code_block.body is not None:
                 comment += '\n' + utils.decorate_attachment(code_block)
             self.comments.append(comment)
@@ -293,7 +295,7 @@ class Extras:
         # Deprecation warning
         warnings.warn(deprecation_msg, DeprecationWarning)
 
-    def _save_screenshot(self, image: bytes | str, source: str):
+    def _save_screenshot(self, image: bytes | str, source: str, single_page: bool = False, mime = None):
         """
         Saves the pytest-html 'extras': screenshot, comment and webpage source.
         The screenshot is saved in <report_html>/screenshots folder.
@@ -303,17 +305,26 @@ class Extras:
             image (bytes | str): The screenshot as bytes or base64 string.
             source (str): The webpage source code.
         """
+        link_image = None
+        link_source = None
         if isinstance(image, str):
             try:
                 image = base64.b64decode(image.encode())
             except:
                 image = None
-        index = -1 if image is None else counter()
-        link_image = utils.get_image_link(self._html, index, image)
-        self.images.append(link_image)
-        link_source = None
+        if single_page is False:
+            index = -1 if image is None else counter()
+            link_image = utils.get_image_link(self._html, index, image)
+        else:
+            mime = "image/*" if mime is None else mime
+            try:
+                data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
+            except:
+                data_uri = None
+            link_image = data_uri
         if source is not None:
             link_source = utils.get_source_link(self._html, index, source)
+        self.images.append(link_image)
         self.sources.append(link_source)
 
     def _get_attachment(

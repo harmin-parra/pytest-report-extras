@@ -74,6 +74,13 @@ def report_html(request):
     return fx_html
 
 
+#@pytest.fixture(scope='session')
+#def single_page(request):
+#    """ Whether to generate a single HTML page for pytest-html report """
+#    print(request.config.getoption("--self-contained-html"))
+#    return request.config.getoption("--self-contained-html", default=False)
+
+
 @pytest.fixture(scope='session')
 def report_allure(request):
     """ Whether the allure-pytest plugin is being used """
@@ -140,7 +147,7 @@ def check_options(request, report_html, report_allure):
 #
 @pytest.fixture(scope='function')
 def report(request, report_html, screenshots, sources, report_allure, indent, check_options):
-    return Extras(report_html, screenshots, sources, report_allure, indent)
+    return Extras(report_html, False, screenshots, sources, report_allure, indent)
 
 
 #
