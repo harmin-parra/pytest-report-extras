@@ -79,14 +79,15 @@ To add a step with attachment:
       mime: Mime = None,                            # The attachment mime type.
       escape_html: bool = False                     # Whether to escape HTML characters in the comment.
   )
-  # Type of 'body'' parameter:
-  #    str: for XML, JSON, YAML or text/plain attachments
-  #         or for image attachments if it is a base64 string
+  
+  # Type of body parameter:
+  #    str: - for XML, JSON, YAML, CSV or TXT attachments
+  #         - for image attachments if it is a base64 string
   #    bytes: for image attachments
   #    Dict: for JSON attachments
-  #    List[str]: for list of URIs attachments
+  #    List[str]: for list-uri attachments
 
-  
+
 To add a link to the report:
 
 .. code-block:: python
