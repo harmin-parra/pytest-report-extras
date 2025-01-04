@@ -5,8 +5,8 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "pytest-report-extras"
-version = "1.2.0rc0"
-description = "Pytest plugin to enhance pytest-html and allure reports by adding comments, screenshots and webpage sources."
+version = "1.2.1rc0"
+description = "Pytest plugin to enhance pytest-html and allure reports by adding comments, screenshots, webpage sources and attachments."
 readme = "README.md"
 #license = "MIT"
 authors = [

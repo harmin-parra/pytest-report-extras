@@ -101,6 +101,8 @@ To add a link to the report:
 Limitations
 ===========
 
+* No support for the ``--self-contained-html`` option of the **pytest-html** plugin.
+
 * No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
 
 * For Playwright, only ``sync_api`` is supported.
