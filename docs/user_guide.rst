@@ -61,11 +61,11 @@ To add a step with screenshot:
 .. code-block:: python
 
   screenshot(
-      comment: str,                 # Comment of the test step.
-      target: WebDriver|WebElement|Page|Locator = None,
-      full_page: bool = True,
-      page_source: bool = False,    # Whether to include the webpage HTML source.
-      escape_html: bool = False     # Whether to escape HTML characters in the comment.
+      comment: str,                              # Comment of the test step.
+      target: WebDriver | WebElement | Page | Locator = None,  # The page or element.
+      full_page: bool = True,                     # Whether to take a full page screenshot.
+      page_source: bool = False,                  # Whether to include the webpage HTML source.
+      escape_html: bool = False                   # Whether to escape HTML characters in the comment.
   )
   
 To add a step with attachment:
