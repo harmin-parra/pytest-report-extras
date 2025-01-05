@@ -40,6 +40,11 @@ class Mime:
     def isunknown(mime: str):
         return not Mime.isknown(mime)
 
+    @staticmethod
+    def isimage(mime: str):
+        return mime is not None and mime.startswith("image/")
+
+
 class Attachment:
     """
     Class to represent attachments.
@@ -65,7 +70,7 @@ class Attachment:
     ):
         if body is not None and isinstance(body, List):
             mime = Mime.text_uri_list
-        if mime is not None and mime.startswith("image/"):
+        if Mime.isimage(mime):
             return _attachment_image(body, mime)
         match mime:
             case Mime.application_json:
