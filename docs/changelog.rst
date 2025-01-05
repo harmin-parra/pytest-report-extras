@@ -10,6 +10,10 @@ Changelog
 
 * Support of attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
 
+**Bug fix**
+
+* Better handling of attachments with other mime types (ex: ``application/pdf``).
+
 
 1.2.0
 =====
