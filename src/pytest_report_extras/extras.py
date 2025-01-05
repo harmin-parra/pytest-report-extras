@@ -230,69 +230,6 @@ class Extras:
             self._save_image(None, None)
             self.comments.append(comment)
 
-    # Deprecated method
-    def step(
-        self,
-        comment: str = None,
-        target=None,
-        code_block: CodeBlockText = None,
-        full_page: bool = True,
-        page_source: bool = False,
-        escape_html: bool = False
-    ):
-        """
-        Adds a step in the pytest-html report: screenshot, comment and webpage source.
-        The screenshot is saved in <report_html>/images folder.
-        The webpage source is saved in <report_html>/sources folder.
-
-        Args:
-            comment (str): The comment of the test step.
-            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
-            code_block (CodeBlockText): The code-block formatted content to be added.
-            full_page (bool): Whether to take a full-page screenshot.
-            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
-            escape_html (bool): Whether to escape HTML characters in the comment.
-        """
-        if target is not None:
-            if importlib.util.find_spec('selenium') is not None:
-                from selenium.webdriver.remote.webdriver import WebDriver
-                if isinstance(target, WebDriver) and self.target is None:
-                    self.target = target
-
-            if importlib.util.find_spec('playwright') is not None:
-                from playwright.sync_api import Page
-                if isinstance(target, Page) and self.target is None:
-                    self.target = target
-
-        if self._fx_screenshots == "last" and target is not None:
-            return
-
-        # Get the 3 parts of the test step: image, comment and source
-        image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
-        comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment
-
-        # Add extras to Allure report if allure-pytest plugin is being used.
-        if self._allure and importlib.util.find_spec('allure') is not None:
-            import allure
-            if image is not None:
-                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
-                # Attach the webpage source
-                if source is not None:
-                    allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
-            if code_block is not None and code_block.body is not None:
-                allure.attach(code_block.body, name=comment, attachment_type=code_block.mime)
-
-        # Add extras to pytest-html report if pytest-html plugin is being used.
-        if self._html:
-            self._save_image(image, source, self._fx_single_page, None)
-            if code_block is not None and code_block.body is not None:
-                comment += '\n' + utils.decorate_attachment(code_block)
-            self.comments.append(comment)
-
-        # Deprecation warning
-        warnings.warn(deprecation_msg, DeprecationWarning)
-
     def _save_image(self, image: bytes | str, source: str, single_page: bool = False, mime = None):
         """
         Saves the pytest-html 'extras': screenshot, comment and webpage source.
@@ -398,12 +335,72 @@ class Extras:
         Returns:
             The uri of the downloadable file.
         """
-        if self._html:
-            return utils.copy_to_downloads(self._html, target)
-        else:
-            return None
+        return utils.get_download_link(self._html, target)
 
-    # Deprecated code from here downwards
+
+    # Deprecated code from here onwards
+    def step(
+        self,
+        comment: str = None,
+        target=None,
+        code_block: CodeBlockText = None,
+        full_page: bool = True,
+        page_source: bool = False,
+        escape_html: bool = False
+    ):
+        """
+        Adds a step in the pytest-html report: screenshot, comment and webpage source.
+        The screenshot is saved in <report_html>/images folder.
+        The webpage source is saved in <report_html>/sources folder.
+
+        Args:
+            comment (str): The comment of the test step.
+            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
+            code_block (CodeBlockText): The code-block formatted content to be added.
+            full_page (bool): Whether to take a full-page screenshot.
+            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
+            escape_html (bool): Whether to escape HTML characters in the comment.
+        """
+        if target is not None:
+            if importlib.util.find_spec('selenium') is not None:
+                from selenium.webdriver.remote.webdriver import WebDriver
+                if isinstance(target, WebDriver) and self.target is None:
+                    self.target = target
+
+            if importlib.util.find_spec('playwright') is not None:
+                from playwright.sync_api import Page
+                if isinstance(target, Page) and self.target is None:
+                    self.target = target
+
+        if self._fx_screenshots == "last" and target is not None:
+            return
+
+        # Get the 3 parts of the test step: image, comment and source
+        image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
+        comment = "" if comment is None else comment
+        comment = html.escape(comment, quote=True) if escape_html else comment
+
+        # Add extras to Allure report if allure-pytest plugin is being used.
+        if self._allure and importlib.util.find_spec('allure') is not None:
+            import allure
+            if image is not None:
+                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
+                # Attach the webpage source
+                if source is not None:
+                    allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
+            if code_block is not None and code_block.body is not None:
+                allure.attach(code_block.body, name=comment, attachment_type=code_block.mime)
+
+        # Add extras to pytest-html report if pytest-html plugin is being used.
+        if self._html:
+            self._save_image(image, source, self._fx_single_page, None)
+            if code_block is not None and code_block.body is not None:
+                comment += '\n' + utils.decorate_attachment(code_block)
+            self.comments.append(comment)
+
+        # Deprecation warning
+        warnings.warn(deprecation_msg, DeprecationWarning)
+
     def format_code_block(self, text: str, mime="text/plain") -> Attachment:
         return Attachment(text, mime)
     
