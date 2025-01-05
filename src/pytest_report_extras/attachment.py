@@ -13,7 +13,7 @@ from . import utils
 
 class Mime:
     """
-    Class to hold mime type enums.
+    Class to hold mime type values.
     """
     image_bmp = "image/png"
     image_gif = "image/gif"
@@ -21,28 +21,40 @@ class Mime:
     image_png = "image/png"
     image_svg_xml = "image/svg+xml"
     image_tiff = "image/tiff"
-    text_plain = "text/plain"
+    text_csv = "text/csv"
     text_html = "text/html"
+    text_plain = "text/plain"
+    text_uri_list = "text/uri-list"
     application_json = "application/json"
     application_xml = "application/xml"
     application_yaml = "application/yaml"
-    text_csv = "text/csv"
-    text_uri_list = "text/uri-list"
+    
+    @staticmethod
+    def isknown(mime: str):
+        return mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png,
+                        Mime.image_svg_xml, mime == Mime.image_tiff, Mime.text_csv,
+                        Mime.text_html, Mime.text_plain, Mime.text_uri_list, Mime.application_json,
+                        Mime.application_xml, Mime.application_yaml)
 
+    @staticmethod
+    def isunknown(mime: str):
+        return not Mime.isknown(mime)
 
 class Attachment:
     """
-    Class to represent text to be formatted as code-block in a <pre> HTML tag.
+    Class to represent attachments.
     """
-    def __init__(self, body: str | List[str] | bytes = None, source: str = None, mime: str = None, inner_html: str = None):
+    def __init__(
+        self,
+        body: str | List[str] | bytes = None,
+        source: str = None,
+        mime: str = None,
+        inner_html: str = None
+    ):
         self.body = body
         self.source = source
         self.mime = mime
         self.inner_html = inner_html
-
-    def __eq__(self, pattern):
-        res = re.search(pattern, self.mime)
-        return res is not None
 
     @staticmethod
     def parse_body(
@@ -53,24 +65,24 @@ class Attachment:
     ):
         if body is not None and isinstance(body, List):
             mime = Mime.text_uri_list
+        if mime is not None and mime.startswith("image/"):
+            return _attachment_image(body, mime)
         match mime:
             case Mime.application_json:
-                return _format_json(body, indent)
+                return _attachment_json(body, indent)
             case Mime.application_xml:
-                return _format_xml(body, indent)
+                return _attachment_xml(body, indent)
             case Mime.application_yaml:
-                return _format_yaml(body, indent)
+                return _attachment_yaml(body, indent)
             case Mime.text_csv:
-                return _format_csv(body, delimiter=delimiter)
+                return _attachment_csv(body, delimiter=delimiter)
             case Mime.text_uri_list:
-                return _format_uri_list(body)
-            case Mime.image_bmp | Mime.image_gif | Mime.image_jpeg | Mime.image_png | Mime.image_svg_xml | Mime.image_tiff:
-                return _format_image(body, mime)
+                return _attachment_uri_list(body)
             case _:
-                return _format_txt(body)
+                return _attachment_txt(body)
 
 
-def _format_json(text: str | Dict, indent: int = 4) -> Attachment:
+def _attachment_json(text: str | Dict, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding a JSON document.
     """
@@ -81,7 +93,7 @@ def _format_json(text: str | Dict, indent: int = 4) -> Attachment:
         return Attachment(body="Error formatting JSON.\n" + str(text), mime=Mime.text_plain)
 
 
-def _format_xml(text: str, indent: int = 4) -> Attachment:
+def _attachment_xml(text: str, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding an XML document.
     """
@@ -96,25 +108,25 @@ def _format_xml(text: str, indent: int = 4) -> Attachment:
     return Attachment(body=result, mime=Mime.application_xml)
 
 
-def _format_yaml(text: str, indent: int = 4) -> Attachment:
+def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding a YAML document.
     """
     try:
         text = yaml.safe_load(text)
-        return Attachment(body=yaml.dump(text, indent=indent), mime=Mime.application_yaml)
+        return Attachment(body=yaml.dump(text), mime=Mime.application_yaml)
     except:
         return Attachment(body="Error formatting YAML.\n" + str(text), mime=Mime.text_plain)
 
 
-def _format_txt(text: str) -> Attachment:
+def _attachment_txt(text: str) -> Attachment:
     """
     Returns an attachment object with a plain/body string.
     """
     return Attachment(body=text, mime=Mime.text_plain)
 
 
-def _format_csv(text: str, delimiter=',') -> Attachment:
+def _attachment_csv(text: str, delimiter=',') -> Attachment:
     """
     Returns an attachment object with a string holding a CVS document.
     """
@@ -137,7 +149,7 @@ def _format_csv(text: str, delimiter=',') -> Attachment:
     return Attachment(body=text, mime=Mime.text_csv, inner_html=inner_html)
 
 
-def _format_uri_list(text: str | List[str]) -> Attachment:
+def _attachment_uri_list(text: str | List[str]) -> Attachment:
     """
     Returns an attachment object with a uri list.
     """
@@ -156,7 +168,7 @@ def _format_uri_list(text: str | List[str]) -> Attachment:
         return Attachment(body="Error parsing uri list.", mime=Mime.text_plain)
 
 
-def _format_image(data: bytes | str, mime: Mime) -> Attachment:
+def _attachment_image(data: bytes | str, mime: Mime) -> Attachment:
     """
     Returns an attachment object with bytes representing an image.
     """

@@ -197,13 +197,11 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        #if mime is not None and isinstance(mime, str) and mime.startswith("image"):
-        #    self.screenshot(comment=comment, data=body, mime=mime, escape_html=escape_html)
-        #    return
+        if Mime.isunknown(mime):
+            mime = None
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
         mime = attachment.mime
-        if (mime is not None and isinstance(mime, str) 
-            and mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png, Mime.image_svg_xml, Mime.image_tiff)):
+        if mime is not None and mime.startswith("image/"):
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 
@@ -232,7 +230,115 @@ class Extras:
             self._save_image(None, None)
             self.comments.append(comment)
 
-    # Deprecated method
+    def _save_image(self, image: bytes | str, source: str, single_page: bool = False, mime = None):
+        """
+        Saves the pytest-html 'extras': screenshot, comment and webpage source.
+        The image is saved in <report_html>/images folder.
+        The webpage source is saved in <report_html>/sources folder.
+
+        Args:
+            image (bytes | str): The screenshot as bytes or base64 string.
+            source (str): The webpage source code.
+        """
+        link_image = None
+        link_source = None
+        if isinstance(image, str):
+            try:
+                image = base64.b64decode(image.encode())
+            except:
+                image = None
+        if single_page is False:
+            index = -1 if image is None else counter()
+            link_image = utils.get_image_link(self._html, index, image)
+        else:
+            mime = "image/*" if mime is None else mime
+            try:
+                data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
+            except:
+                data_uri = None
+            link_image = data_uri
+        if source is not None:
+            link_source = utils.get_source_link(self._html, index, source)
+        self.images.append(link_image)
+        self.sources.append(link_source)
+
+    def _get_attachment(
+        self,
+        body: str | Dict | List[str] | bytes = None,
+        source: str = None,
+        mime: str = None,
+        delimiter=',',
+    ) -> Attachment:
+        """
+        Creates an attachment.
+
+        Args:
+            comment (str): The comment of the test step.
+            body (str | bytes | Dict | List[str]): The content/body of the attachment.
+                Can be of type 'Dict' for JSON mime type.
+                Can be of type 'List[str]' for uri-list mime type.
+                Can be of type 'bytes' for image mime type.
+            source (str): The filepath of the source to attach.
+            mime (str): The attachment mime type.
+            delimiter (str): The delimiter for CSV documents.
+        
+        Returns:
+            An attachment object.
+        """
+        if source is not None:
+            try:
+                if mime is None:
+                    inner_html = None
+                    if self._html:
+                        inner_html = utils.decorate_uri(self.add_to_downloads(source))
+                    return Attachment(source=source, inner_html=inner_html)
+                else:
+                    if mime.startswith("image"):
+                        f = open(source, "rb")
+                        body = f.read()
+                        f.close()
+                    else:
+                        f = open(source, 'r')
+                        body = f.read()
+                        f.close()
+            except Exception as err:
+                body = f"Error reading file: {source}\n{err}"
+                mime = Mime.text_plain
+        if mime == Mime.text_html:
+            try:
+                encoded_bytes = base64.b64encode(body.encode('utf-8'))
+                encoded_str = encoded_bytes.decode('utf-8')
+                inner_html = f"data:text/html;base64,{encoded_str}"
+                return Attachment(body=body, source=source, mime=mime, inner_html=inner_html)
+            except Exception as err:
+                body = f"Error encoding HTML body\n{err}"
+                mime = Mime.text_plain
+        return Attachment.parse_body(body, mime, self._indent, delimiter)
+
+    def link(self, uri: str, name: str = None):
+        """
+        Adds a link to the report.
+
+        Args:
+            uri (str): The link uri.
+            name (str): The link text.
+        """
+        self.links.append((uri, name))
+
+    def add_to_downloads(self, target: str | bytes = None) -> str:
+        """
+        When using pytest-html, copies a file into the report's download folder, making it available to download.
+
+        Args:
+            target (str | bytes): The file or the bytes content to add into the download folder.
+
+        Returns:
+            The uri of the downloadable file.
+        """
+        return utils.get_download_link(self._html, target)
+
+
+    # Deprecated code from here onwards
     def step(
         self,
         comment: str = None,
@@ -295,115 +401,6 @@ class Extras:
         # Deprecation warning
         warnings.warn(deprecation_msg, DeprecationWarning)
 
-    def _save_image(self, image: bytes | str, source: str, single_page: bool = False, mime = None):
-        """
-        Saves the pytest-html 'extras': screenshot, comment and webpage source.
-        The image is saved in <report_html>/images folder.
-        The webpage source is saved in <report_html>/sources folder.
-
-        Args:
-            image (bytes | str): The screenshot as bytes or base64 string.
-            source (str): The webpage source code.
-        """
-        link_image = None
-        link_source = None
-        if isinstance(image, str):
-            try:
-                image = base64.b64decode(image.encode())
-            except:
-                image = None
-        if single_page is False:
-            index = -1 if image is None else counter()
-            link_image = utils.get_image_link(self._html, index, image)
-        else:
-            mime = "image/*" if mime is None else mime
-            try:
-                data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
-            except:
-                data_uri = None
-            link_image = data_uri
-        if source is not None:
-            link_source = utils.get_source_link(self._html, index, source)
-        self.images.append(link_image)
-        self.sources.append(link_source)
-
-    def _get_attachment(
-        self,
-        body: str | Dict | List[str] | bytes = None,
-        source: str = None,
-        mime: str = None,
-        delimiter=',',
-    ) -> Attachment:
-        """
-        Creates an attachment.
-
-        Args:
-            body (str | Dict | List[str] | bytes): The content/body of the attachment.
-                Can be of type 'Dict' for JSON mime type.
-                Can be of type 'List[str]' for uri-list mime type.
-            source (str): The filepath of the source to attach.
-            mime (str): The attachment mime type.
-            delimiter (str): The delimiter for CSV documents.
-        
-        Returns:
-            An attachment object.
-        """
-        if source is not None:
-            try:
-                if mime is None:
-                    inner_html = None
-                    if self._html:
-                        inner_html = utils.decorate_uri(self.add_to_downloads(source))
-                    return Attachment(source=source, inner_html=inner_html)
-                else:
-                    if mime.startswith("image"):
-                        f = open(source, "rb")
-                        body = f.read()
-                        f.close()
-                    else:
-                        f = open(source, 'r')
-                        body = f.read()
-                        f.close()
-            except Exception as err:
-                body = f"Error reading file: {source}\n{err}"
-                mime = Mime.text_plain
-        if mime == Mime.text_html:
-            try:
-                encoded_bytes = base64.b64encode(body.encode('utf-8'))
-                encoded_str = encoded_bytes.decode('utf-8')
-                inner_html = f"data:text/html;base64,{encoded_str}"
-                return Attachment(body=body, source=source, mime=mime, inner_html=inner_html)
-            except Exception as err:
-                body = f"Error encoding HTML body\n{err}"
-                mime = Mime.text_plain
-        return Attachment.parse_body(body, mime, self._indent, delimiter)
-
-    def link(self, uri: str, name: str = None):
-        """
-        Adds a link to the report.
-
-        Args:
-            uri (str): The link uri.
-            name (str): The link text.
-        """
-        self.links.append((uri, name))
-
-    def add_to_downloads(self, target: str | bytes = None) -> str:
-        """
-        When using pytest-html, copies a file into the report's download folder, make it available to download.
-
-        Args:
-            target (str | bytes): The file or the bytes content to add into the download folder.
-
-        Returns:
-            The uri of the downloadable file.
-        """
-        if self._html:
-            return utils.copy_to_downloads(self._html, target)
-        else:
-            return None
-
-    # Deprecated code from here downwards
     def format_code_block(self, text: str, mime="text/plain") -> Attachment:
         return Attachment(text, mime)
     
