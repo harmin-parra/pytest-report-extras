@@ -114,7 +114,7 @@ def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
     """
     try:
         text = yaml.safe_load(text)
-        return Attachment(body=yaml.dump(text, indent=indent), mime=Mime.application_yaml)
+        return Attachment(body=yaml.dump(text), mime=Mime.application_yaml)
     except:
         return Attachment(body="Error formatting YAML.\n" + str(text), mime=Mime.text_plain)
 

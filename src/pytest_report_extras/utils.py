@@ -26,6 +26,14 @@ def check_options(htmlpath, allurepath):
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
+#def getini(config, name):
+#    """ Workaround for bug https://github.com/pytest-dev/pytest/issues/11282 """
+#    value = config.getini(name)
+#    if not isinstance(value, str):
+#        value = None
+#    return value
+
+
 def get_folder(filepath):
     """
     Returns the folder of a filepath.
