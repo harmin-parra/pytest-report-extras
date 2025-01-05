@@ -374,7 +374,7 @@ def get_table_row_tag(comment, image, source, clazz_comment="comment") -> str:
     else:
         comment = ""
     if image is not None:
-        image = decorate_screenshot(image)
+        image = decorate_image(image)
         if source is not None:
             source = decorate_page_source(source)
             return (
@@ -416,7 +416,7 @@ def decorate_label(label, clazz) -> str:
 #     if image is None:
 #         return ''
 #     """ Applies CSS style to a screenshot and page source anchor elements. """
-#     image = decorate_screenshot(image)
+#     image = decorate_image(image)
 #     if source is not None:
 #         source = decorate_page_source(source)
 #         return f'<div class="extras_div">{image}<br>{source}</div>'
@@ -424,26 +424,26 @@ def decorate_label(label, clazz) -> str:
 #         return image
 
 
-def decorate_screenshot(uri) -> str:
-    """ Applies CSS class to a screenshot anchor element. """
+def decorate_image(uri) -> str:
+    """ Applies CSS class to an image anchor element. """
     clazz = "extras_image"
     if uri is None:
         return ""
     return f'<a href="{uri}" target="_blank"><img src ="{uri}" class="{clazz}"></a>'
 
 
-def decorate_screenshot_from_file(filename) -> str:
-    return decorate_screenshot(filename)
+def decorate_image_from_file(filename) -> str:
+    return decorate_image(filename)
 
 
-def decorate_screenshot_from_bytes(data: bytes, mime: str) -> str:
+def decorate_image_from_bytes(data: bytes, mime: str) -> str:
     uri = None
     if data is not None:
         try:
             uri = f"data:{mime};base64,{base64.b64encode(data)}"
         except:
             pass
-    return decorate_screenshot(uri)
+    return decorate_image(uri)
 
 
 def decorate_page_source(filename) -> str:
