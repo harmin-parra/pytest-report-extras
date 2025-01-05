@@ -201,7 +201,7 @@ class Extras:
             mime = None
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
         mime = attachment.mime
-        if mime is not None and mime.startswith("image/"):
+        if Mime.isimage(mime):
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 

@@ -10,13 +10,18 @@ Changelog
 
 * Support of attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
 
+**Bug fix**
+
+* The plugin was still making calls to deprecated code.
+* Better handling of attachments with other mime types (ex: ``application/pdf``).
+
 
 1.2.0
 =====
 
 **Change**
 
-* Modification of the algorithm related to attachments.
+* Modification of the algorithm related to attachments. The ``report.step`` method is going to be deprecated.
 
 **Features**
 
