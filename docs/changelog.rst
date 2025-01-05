@@ -12,6 +12,7 @@ Changelog
 
 **Bug fix**
 
+* The plugin was still making calls to deprecated code.
 * Better handling of attachments with other mime types (ex: ``application/pdf``).
 
 
@@ -20,7 +21,7 @@ Changelog
 
 **Change**
 
-* Modification of the algorithm related to attachments.
+* Modification of the algorithm related to attachments. The ``report.step`` method is going to be deprecated.
 
 **Features**
 
