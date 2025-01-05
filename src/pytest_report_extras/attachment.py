@@ -42,7 +42,7 @@ class Mime:
 
 class Attachment:
     """
-    Class to represent text to be formatted as code-block in a <pre> HTML tag.
+    Class to represent attachments.
     """
     def __init__(
         self,

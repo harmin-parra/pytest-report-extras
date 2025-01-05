@@ -26,14 +26,6 @@ def check_options(htmlpath, allurepath):
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
-def getini(config, name):
-    """ Workaround for bug https://github.com/pytest-dev/pytest/issues/11282 """
-    value = config.getini(name)
-    if not isinstance(value, str):
-        value = None
-    return value
-
-
 def get_folder(filepath):
     """
     Returns the folder of a filepath.
@@ -196,6 +188,14 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False):
 
 
 def get_image_link(report_html, index, image):
+    """
+    Saves an image in the 'images' folder and returns its relative path to the report folder.
+    
+    Args:
+        report_html (str): The report folder.
+        index (int): The file name suffix.
+        image (bytes) : The image to save.
+    """
     if image is None:
         return None
     link = f"images{os.sep}image-{index}.png"
@@ -216,6 +216,15 @@ def get_image_link(report_html, index, image):
 
 
 def get_source_link(report_html, index, source):
+    """
+    Saves a webpage source in the 'sources' folder and returns its relative path to the report folder.
+    Args:
+        report_html (str): The report folder.
+        index (int): The file name suffix.
+        source (str) : The webpage source to save.
+    """
+    if source is None:
+        return None
     link = f"sources{os.sep}page-{index}.txt"
     folder = ""
     if report_html is not None and report_html != '':
@@ -233,7 +242,17 @@ def get_source_link(report_html, index, source):
         return link
 
 
-def copy_to_downloads(report_html, target: str | bytes = None):
+def get_download_link(report_html, target: str | bytes = None):
+    """
+    Saves a file or bytes in the 'downloads' folder and returns its relative path to the report folder.
+
+    Args:
+        report_html (str): The report folder.
+        target (file | bytes): The name of the file or the bytes to save.
+        image (buyes) : The image to save.
+    """
+    if target is None:
+        return None
     filename = str(uuid.uuid4())
     try:
         destination = f"{report_html}{os.sep}downloads{os.sep}{filename}"
