@@ -168,7 +168,7 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            self._save_image(image, source, self._fx_single_page, mime)
+            self._save_image(image, source, mime)
             self.comments.append(comment)
 
     def attach(
@@ -230,7 +230,7 @@ class Extras:
             self._save_image(None, None)
             self.comments.append(comment)
 
-    def _save_image(self, image: bytes | str, source: str, single_page: bool = False, mime = None):
+    def _save_image(self, image: bytes | str, source: str, mime = None):
         """
         Saves the pytest-html 'extras': screenshot, comment and webpage source.
         The image is saved in <report_html>/images folder.
@@ -242,23 +242,30 @@ class Extras:
         """
         link_image = None
         link_source = None
+        index = 0 if self._fx_single_page else counter()
+
         if isinstance(image, str):
             try:
                 image = base64.b64decode(image.encode())
             except:
                 image = None
-        if single_page is False:
-            index = -1 if image is None else counter()
-            link_image = utils.get_image_link(self._html, index, image)
-        else:
-            mime = "image/*" if mime is None else mime
-            try:
-                data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
-            except:
-                data_uri = None
-            link_image = data_uri
+        # Get the image uri
+        if image is not None:
+            if self._fx_single_page is False:
+                link_image = utils.get_image_link(self._html, index, image)
+            else:
+                mime = "image/*" if mime is None else mime
+                try:
+                    data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
+                except:
+                    data_uri = None
+                link_image = data_uri
+        # Get the webpage source uri
         if source is not None:
-            link_source = utils.get_source_link(self._html, index, source)
+            if self._fx_single_page is False:
+                link_source = utils.get_source_link(self._html, index, source)
+            else:
+                link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
         self.images.append(link_image)
         self.sources.append(link_source)
 

@@ -59,7 +59,7 @@ def check_lists_length(report, fx_extras):
         return True
 
 
-def create_assets(report_html):
+def create_assets(report_html, single_page):
     """ Recreate images and webpage sources folders. """
     if report_html is None:
         return
@@ -67,19 +67,21 @@ def create_assets(report_html):
     folder = ""
     if report_html is not None and report_html != '':
         folder = f"{report_html}{os.sep}"
+    # Create downloads folder
+    shutil.rmtree(f"{folder}downloads", ignore_errors=True)
+    pathlib.Path(f"{folder}downloads").mkdir(parents=True)
+    if single_page:
+        return
     # Create page sources folder
     shutil.rmtree(f"{folder}sources", ignore_errors=True)
     pathlib.Path(f"{folder}sources").mkdir(parents=True)
     # Create images folder
     shutil.rmtree(f"{folder}images", ignore_errors=True)
     pathlib.Path(f"{folder}images").mkdir(parents=True)
-    # Create downloads folder
-    shutil.rmtree(f"{folder}downloads", ignore_errors=True)
-    pathlib.Path(f"{folder}downloads").mkdir(parents=True)
     # Copy error.png to images folder
-    resources_path = pathlib.Path(__file__).parent.joinpath("resources")
-    error_img = pathlib.Path(resources_path, "error.png")
-    shutil.copy(str(error_img), f"{folder}images")
+    # resources_path = pathlib.Path(__file__).parent.joinpath("resources")
+    # error_img = pathlib.Path(resources_path, "error.png")
+    # shutil.copy(str(error_img), f"{folder}images")
 
 
 #
@@ -217,7 +219,7 @@ def get_image_link(report_html, index, image):
         f.close()
     except Exception as err:
         trace = traceback.format_exc()
-        link = f"images{os.sep}error.png"
+        link = None  # f"images{os.sep}error.png"
         print(f"{str(err)}\n\n{trace}", file=sys.stderr)
     finally:
         return link
@@ -355,7 +357,7 @@ def escape_html(text, quote=False) -> str:
     return html.escape(str(text), quote)
 
 
-def get_table_row_tag(comment, image, source, clazz_comment="comment") -> str:
+def get_table_row_tag(comment, image, source, single_page, clazz_comment="comment") -> str:
     """
     Returns the HTML table row of a test step.
 
@@ -363,6 +365,7 @@ def get_table_row_tag(comment, image, source, clazz_comment="comment") -> str:
         comment (str): The comment of the test step.
         image (str): The screenshot anchor element.
         source (str): The page source anchor element.
+        single_page (bool): Whether to generate the HTML report in a single page.
         clazz_comment (str): The CSS class to apply to the comment table cell.
 
     Returns:
@@ -374,7 +377,7 @@ def get_table_row_tag(comment, image, source, clazz_comment="comment") -> str:
     else:
         comment = ""
     if image is not None:
-        image = decorate_image(image)
+        image = decorate_image(image, single_page)
         if source is not None:
             source = decorate_page_source(source)
             return (
@@ -424,26 +427,26 @@ def decorate_label(label, clazz) -> str:
 #         return image
 
 
-def decorate_image(uri) -> str:
+def decorate_image(uri: str, single_page: bool) -> str:
     """ Applies CSS class to an image anchor element. """
+    if single_page:
+        return decorate_image_from_base64(uri)
+    else:
+        return decorate_image_from_file(uri)
+
+
+def decorate_image_from_file(uri: str) -> str:
     clazz = "extras_image"
     if uri is None:
         return ""
-    return f'<a href="{uri}" target="_blank"><img src ="{uri}" class="{clazz}"></a>'
+    return f'<a href="{uri}" target="_blank" rel="noopener noreferrer"><img src ="{uri}" class="{clazz}"></a>'
 
 
-def decorate_image_from_file(filename) -> str:
-    return decorate_image(filename)
-
-
-def decorate_image_from_bytes(data: bytes, mime: str) -> str:
-    uri = None
-    if data is not None:
-        try:
-            uri = f"data:{mime};base64,{base64.b64encode(data)}"
-        except:
-            pass
-    return decorate_image(uri)
+def decorate_image_from_base64(uri: str) -> str:
+    clazz = "extras_image"
+    if uri is None:
+        return ""
+    return f'<img src ="{uri}" class="{clazz}">'
 
 
 def decorate_page_source(filename) -> str:
@@ -451,7 +454,7 @@ def decorate_page_source(filename) -> str:
     if filename is None:
         return ""
     clazz = "extras_page_src"
-    return f'<a href="{filename}" target="_blank" class="{clazz}">[page source]</a>'
+    return f'<a href="{filename}" target="_blank" rel="noopener noreferrer" class="{clazz}">[page source]</a>'
 
 
 def decorate_uri(uri: str) -> str:
@@ -459,9 +462,9 @@ def decorate_uri(uri: str) -> str:
     if uri is None or uri == '':
         return ""
     if uri.startswith("downloads"):
-        return f'<a href="{uri}" target="_blank">{pathlib.Path(uri).name}</a>'
+        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{pathlib.Path(uri).name}</a>'
     else:
-        return f'<a href="{uri}" target="_blank">{uri}</a>'
+        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{uri}</a>'
 
 
 def decorate_uri_list(uris: List[str]) -> str:
@@ -475,20 +478,20 @@ def decorate_uri_list(uris: List[str]) -> str:
 
 def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
-    clazz1 = "extras_pre"
-    clazz2 = "extras_iframe"
+    clazz_pre = "extras_pre"
+    clazz_frm = "extras_iframe"
     if attachment.inner_html is None:
         if attachment.body in (None, ""):
             return ""
         else:
-            return f'<pre class="{clazz1}">{escape_html(attachment.body)}</pre>'
+            return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
     else:
         if attachment.mime == "text/html":
-            return f'<iframe class="{clazz2}" src="{attachment.inner_html}"></iframe>'
+            return f'<iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
         if attachment.mime.startswith("image"):
             return attachment.inner_html
         else:
-            return f'<pre class="{clazz1}">{attachment.inner_html}</pre>'
+            return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
 
 
 def log_error_message(report, message):
