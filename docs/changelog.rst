@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.2.2
+=====
+
+**Features**
+
+* Limited support for the ``--self-contained-html`` option of the **pytest-html** plugin.
+
+
 1.2.1
 =====
 
