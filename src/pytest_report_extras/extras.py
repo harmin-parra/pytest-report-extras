@@ -300,7 +300,7 @@ class Extras:
                         inner_html = utils.decorate_uri(self.add_to_downloads(source))
                     return Attachment(source=source, inner_html=inner_html)
                 else:
-                    if mime.startswith("image"):
+                    if Mime.isimage(mime):
                         f = open(source, "rb")
                         body = f.read()
                         f.close()
