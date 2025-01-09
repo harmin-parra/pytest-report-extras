@@ -86,6 +86,21 @@ To add a step with attachment:
   #    bytes: for image attachments
   #    Dict: for JSON attachments
   #    List[str]: for list-uri attachments
+  
+  # The supported mime types are:
+  #    report.Mime.image_bmp
+  #    report.Mime.image_gif
+  #    report.Mime.image_jpeg
+  #    report.Mime.image_png
+  #    report.Mime.image_svg_xml
+  #    report.Mime.image_tiff
+  #    report.Mime.text_csv
+  #    report.Mime.text_html
+  #    report.Mime.text_plain
+  #    report.Mime.text_uri_list
+  #    report.Mime.application_json
+  #    report.Mime.application_xml
+  #    report.Mime.application_yaml
 
 
 To add a link to the report:
