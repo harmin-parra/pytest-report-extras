@@ -18,7 +18,7 @@ Accepted values:
 
 * ``all``:    Include all gathered screenshots in the report.
 
-* ``last``:   Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution in order to store the reference of the WebDriver (Selenium) or Page (Playwright) object.
+* ``last``:   Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution in order to store the reference of the WebDriver (**selenium**) or Page (**playwright**) object.
 
 Default value: ``all``
 
