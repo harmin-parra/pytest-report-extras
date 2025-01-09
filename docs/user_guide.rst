@@ -88,19 +88,19 @@ To add a step with attachment:
   #    List[str]: for list-uri attachments
   
   # The supported mime types are:
-  #    report.Mime.image_bmp
-  #    report.Mime.image_gif
-  #    report.Mime.image_jpeg
-  #    report.Mime.image_png
-  #    report.Mime.image_svg_xml
-  #    report.Mime.image_tiff
-  #    report.Mime.text_csv
-  #    report.Mime.text_html
-  #    report.Mime.text_plain
-  #    report.Mime.text_uri_list
-  #    report.Mime.application_json
-  #    report.Mime.application_xml
-  #    report.Mime.application_yaml
+  #    report.Mime.image_bmp          or "image/png"
+  #    report.Mime.image_gif          or "image/gif"
+  #    report.Mime.image_jpeg         or "image/jpeg"
+  #    report.Mime.image_png          or "image/png"
+  #    report.Mime.image_svg_xml      or "image/svg+xml"
+  #    report.Mime.image_tiff         or "image/tiff"
+  #    report.Mime.text_csv           or "text/csv"
+  #    report.Mime.text_html          or "text/html"
+  #    report.Mime.text_plain         or "text/plain"
+  #    report.Mime.text_uri_list      or "text/uri-list"
+  #    report.Mime.application_json   or "application/json"
+  #    report.Mime.application_xml    or "application/xml"
+  #    report.Mime.application_yaml   or "application/yaml"
 
 
 To add a link to the report:
