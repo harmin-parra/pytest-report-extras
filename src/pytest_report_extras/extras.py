@@ -400,7 +400,7 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            self._save_image(image, source, self._fx_single_page, None)
+            self._save_image(image, source, None)
             if code_block is not None and code_block.body is not None:
                 comment += '\n' + utils.decorate_attachment(code_block)
             self.comments.append(comment)
