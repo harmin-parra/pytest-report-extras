@@ -76,7 +76,7 @@ To add a step with attachment:
       comment: str,                                 # Comment of the test step.
       body: str | bytes | Dict | List[str] = None,  # The content/body of the attachment.
       source: str = None,                           # The filepath of the attachment.
-      mime: Mime = None,                            # The attachment mime type.
+      mime: str | Mime = None,                      # The attachment mime type.
       escape_html: bool = False                     # Whether to escape HTML characters in the comment.
   )
   
@@ -120,7 +120,7 @@ Limitations
 
 * No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
 
-* For Playwright, only ``sync_api`` is supported.
+* For Playwright, only **sync_api** is supported.
 
 
 Example
