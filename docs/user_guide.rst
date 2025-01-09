@@ -18,7 +18,7 @@ Accepted values:
 
 * ``all``:    Include all gathered screenshots in the report.
 
-* ``last``:   Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution in order to store the reference of the WebDriver (Selenium) or Page (Playwright) object.
+* ``last``:   Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution in order to store the reference of the WebDriver (**selenium**) or Page (**playwright**) object.
 
 Default value: ``all``
 
@@ -76,7 +76,7 @@ To add a step with attachment:
       comment: str,                                 # Comment of the test step.
       body: str | bytes | Dict | List[str] = None,  # The content/body of the attachment.
       source: str = None,                           # The filepath of the attachment.
-      mime: Mime = None,                            # The attachment mime type.
+      mime: str | Mime = None,                      # The attachment mime type.
       escape_html: bool = False                     # Whether to escape HTML characters in the comment.
   )
   
@@ -86,6 +86,21 @@ To add a step with attachment:
   #    bytes: for image attachments
   #    Dict: for JSON attachments
   #    List[str]: for list-uri attachments
+  
+  # The supported mime types are:
+  #    report.Mime.image_bmp          or "image/png"
+  #    report.Mime.image_gif          or "image/gif"
+  #    report.Mime.image_jpeg         or "image/jpeg"
+  #    report.Mime.image_png          or "image/png"
+  #    report.Mime.image_svg_xml      or "image/svg+xml"
+  #    report.Mime.image_tiff         or "image/tiff"
+  #    report.Mime.text_csv           or "text/csv"
+  #    report.Mime.text_html          or "text/html"
+  #    report.Mime.text_plain         or "text/plain"
+  #    report.Mime.text_uri_list      or "text/uri-list"
+  #    report.Mime.application_json   or "application/json"
+  #    report.Mime.application_xml    or "application/xml"
+  #    report.Mime.application_yaml   or "application/yaml"
 
 
 To add a link to the report:
@@ -101,11 +116,11 @@ To add a link to the report:
 Limitations
 ===========
 
-* No support for the ``--self-contained-html`` option of the **pytest-html** plugin.
+* Limited support for the ``--self-contained-html`` option of the **pytest-html** plugin. The report still contains links for attachments of unsopported mime types.
 
 * No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
 
-* For Playwright, only ``sync_api`` is supported.
+* For Playwright, only **sync_api** is supported.
 
 
 Example

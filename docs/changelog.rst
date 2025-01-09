@@ -3,12 +3,20 @@ Changelog
 =========
 
 
+1.2.2
+=====
+
+**Features**
+
+* Limited support for the ``--self-contained-html`` option of the **pytest-html** plugin.
+
+
 1.2.1
 =====
 
 **Features**
 
-* Support of attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
+* Support for attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
 
 **Bug fix**
 
@@ -27,7 +35,7 @@ Changelog
 
 * Posibility to add links to the tests report.
 * New INI option to customize the indentation of XML, JSON and YAML attachments.
-* Support of attachments of mime type: ``text/csv``, ``text/html``  and ``text/uri-list``
+* Support for attachments of mime type: ``text/csv``, ``text/html``  and ``text/uri-list``
 
 
 1.1.0

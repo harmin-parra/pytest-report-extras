@@ -74,11 +74,10 @@ def report_html(request):
     return fx_html
 
 
-#@pytest.fixture(scope='session')
-#def single_page(request):
-#    """ Whether to generate a single HTML page for pytest-html report """
-#    print(request.config.getoption("--self-contained-html"))
-#    return request.config.getoption("--self-contained-html", default=False)
+@pytest.fixture(scope='session')
+def single_page(request):
+    """ Whether to generate a single HTML page for pytest-html report """
+    return request.config.getoption("--self-contained-html", default=False)
 
 
 @pytest.fixture(scope='session')
@@ -135,19 +134,19 @@ def issue_key_pattern(request):
 
 
 @pytest.fixture(scope='session')
-def check_options(request, report_html, report_allure):
+def check_options(request, report_html, report_allure, single_page):
     """ Verifies preconditions before using this plugin. """
     utils.check_options(report_html, report_allure)
     if report_html is not None:
-        utils.create_assets(report_html)
+        utils.create_assets(report_html, single_page)
 
 
 #
 # Test fixture
 #
 @pytest.fixture(scope='function')
-def report(request, report_html, screenshots, sources, report_allure, indent, check_options):
-    return Extras(report_html, False, screenshots, sources, report_allure, indent)
+def report(request, report_html, single_page, screenshots, sources, report_allure, indent, check_options):
+    return Extras(report_html, single_page, screenshots, sources, report_allure, indent)
 
 
 #
@@ -271,6 +270,7 @@ def pytest_runtest_makereport(item, call):
             # Get test fixture values
             feature_request = item.funcargs['request']
             fx_report = feature_request.getfixturevalue("report")
+            fx_single_page = feature_request.getfixturevalue("single_page")
             fx_description_tag = feature_request.getfixturevalue("description_tag")
             fx_screenshots = feature_request.getfixturevalue("screenshots")
             target = fx_report.target
@@ -294,7 +294,8 @@ def pytest_runtest_makereport(item, call):
                 rows += utils.get_table_row_tag(
                     fx_report.comments[i],
                     fx_report.images[i],
-                    fx_report.sources[i]
+                    fx_report.sources[i],
+                    fx_single_page
                 )
 
             # Add screenshot for last step
@@ -304,7 +305,8 @@ def pytest_runtest_makereport(item, call):
                 rows += utils.get_table_row_tag(
                     fx_report.comments[-1],
                     fx_report.images[-1],
-                    fx_report.sources[-1]
+                    fx_report.sources[-1],
+                    fx_single_page
                 )
 
             # Add screenshot for test failure/skip
@@ -323,6 +325,7 @@ def pytest_runtest_makereport(item, call):
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
+                    fx_single_page,
                     event_class
                 )
 
