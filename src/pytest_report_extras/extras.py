@@ -1,38 +1,11 @@
 import base64
 import html
 import importlib
-import warnings
 from typing import Dict
 from typing import List
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
-
-
-deprecation_msg = """
-
-report.step(....) is deprecated and will be removed in the next major version release
-
-Please use:
-    report.screenshot: To add steps with screenshots.
-    report.attach: To add steps with attachments.
-
-Examples:
-report.screenshot(
-    comment="comment",
-    target=<WebDriver>
-)
-report.attach(
-    comment="comment",
-    body="<XML string>",
-    mime=report.Mime.application_xml
-)
-report.attach(
-    comment="comment",
-    source="/path/to/JSON file",
-    mime=report.Mime.application_json
-)
-"""
 
 
 # Counter used for image and page source files naming
@@ -44,11 +17,6 @@ def counter() -> int:
     global count
     count += 1
     return count
-
-
-# Deprecated attachment class
-class CodeBlockText(Attachment):
-    pass
 
 
 class Extras:
@@ -343,124 +311,3 @@ class Extras:
             The uri of the downloadable file.
         """
         return utils.get_download_link(self._html, target)
-
-
-    # Deprecated code from here onwards
-    def step(
-        self,
-        comment: str = None,
-        target=None,
-        code_block: CodeBlockText = None,
-        full_page: bool = True,
-        page_source: bool = False,
-        escape_html: bool = False
-    ):
-        """
-        Adds a step in the pytest-html report: screenshot, comment and webpage source.
-        The screenshot is saved in <report_html>/images folder.
-        The webpage source is saved in <report_html>/sources folder.
-
-        Args:
-            comment (str): The comment of the test step.
-            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
-            code_block (CodeBlockText): The code-block formatted content to be added.
-            full_page (bool): Whether to take a full-page screenshot.
-            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
-            escape_html (bool): Whether to escape HTML characters in the comment.
-        """
-        if target is not None:
-            if importlib.util.find_spec('selenium') is not None:
-                from selenium.webdriver.remote.webdriver import WebDriver
-                if isinstance(target, WebDriver) and self.target is None:
-                    self.target = target
-
-            if importlib.util.find_spec('playwright') is not None:
-                from playwright.sync_api import Page
-                if isinstance(target, Page) and self.target is None:
-                    self.target = target
-
-        if self._fx_screenshots == "last" and target is not None:
-            return
-
-        # Get the 3 parts of the test step: image, comment and source
-        image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
-        comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment
-
-        # Add extras to Allure report if allure-pytest plugin is being used.
-        if self._allure and importlib.util.find_spec('allure') is not None:
-            import allure
-            if image is not None:
-                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
-                # Attach the webpage source
-                if source is not None:
-                    allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
-            if code_block is not None and code_block.body is not None:
-                allure.attach(code_block.body, name=comment, attachment_type=code_block.mime)
-
-        # Add extras to pytest-html report if pytest-html plugin is being used.
-        if self._html:
-            self._save_image(image, source, None)
-            if code_block is not None and code_block.body is not None:
-                comment += '\n' + utils.decorate_attachment(code_block)
-            self.comments.append(comment)
-
-        # Deprecation warning
-        warnings.warn(deprecation_msg, DeprecationWarning)
-
-    def format_code_block(self, text: str, mime="text/plain") -> Attachment:
-        return Attachment(text, mime)
-    
-    def format_json_file(self, filepath: str, indent=4) -> Attachment:
-        """
-        Formats the contents of a JSON file.
-        """
-        try:
-            f = open(filepath, 'r')
-            content = f.read()
-            f.close()
-        except:
-            content = None
-        return self.format_json_str(content, indent)
-
-    def format_json_str(self, text: str, indent: int = 4) -> Attachment:
-        """
-        Formats a string holding a JSON document.
-        """
-        return Attachment.parse_body(text, Mime.application_json, indent)
-
-    def format_xml_file(self, filepath: str, indent: int = 4) -> Attachment:
-        """
-        Formats the contents of an XML file.
-        """
-        try:
-            f = open(filepath, 'r')
-            content = f.read()
-            f.close()
-        except Exception as err:
-            content = str(err)
-        return self.format_xml_str(content, indent)
-
-    def format_xml_str(self, text: str, indent: int = 4) -> Attachment:
-        """
-        Formats a string holding an XML document.
-        """
-        return Attachment.parse_body(text, Mime.application_xml, indent)
-
-    def format_yaml_file(self, filepath: str, indent: int = 4) -> Attachment:
-        """
-        Formats the contents of a YAML file.
-        """
-        try:
-            f = open(filepath, 'r')
-            content = f.read()
-            f.close()
-        except Exception as err:
-            content = str(err)
-        return self.format_yaml_str(content, indent)
-
-    def format_yaml_str(self, text: str, indent: int = 4) -> Attachment:
-        """
-        Formats a string containing a YAML document.
-        """
-        return Attachment.parse_body(text, Mime.application_yaml, indent)
