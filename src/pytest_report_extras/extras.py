@@ -210,13 +210,14 @@ class Extras:
         """
         link_image = None
         link_source = None
-        index = 0 if self._fx_single_page else counter()
 
         if isinstance(image, str):
             try:
                 image = base64.b64decode(image.encode())
             except:
                 image = None
+        # suffix for file names
+        index = 0 if self._fx_single_page or (image is None and source is None) else counter()
         # Get the image uri
         if image is not None:
             if self._fx_single_page is False:
