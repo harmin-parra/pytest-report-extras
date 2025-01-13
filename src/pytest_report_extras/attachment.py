@@ -31,10 +31,12 @@ class Mime:
     
     @staticmethod
     def is_supported(mime: str):
-        return mime in (Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png,
-                        Mime.image_svg_xml, mime == Mime.image_tiff, Mime.text_csv,
-                        Mime.text_html, Mime.text_plain, Mime.text_uri_list, Mime.application_json,
-                        Mime.application_xml, Mime.application_yaml)
+        return mime in (
+            Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png,
+            Mime.image_svg_xml, mime == Mime.image_tiff,
+            Mime.text_csv, Mime.text_html, Mime.text_plain, Mime.text_uri_list,
+            Mime.application_json, Mime.application_xml, Mime.application_yaml
+        )
 
     @staticmethod
     def is_unsupported(mime: str):
