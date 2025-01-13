@@ -41,7 +41,7 @@ class Mime:
         return not Mime.is_supported(mime)
 
     @staticmethod
-    def isimage(mime: str):
+    def is_image(mime: str):
         return mime is not None and mime.startswith("image/")
 
 
@@ -70,7 +70,7 @@ class Attachment:
     ):
         if body is not None and isinstance(body, List):
             mime = Mime.text_uri_list
-        if Mime.isimage(mime):
+        if Mime.is_image(mime):
             return _attachment_image(body, mime)
         match mime:
             case Mime.application_json:

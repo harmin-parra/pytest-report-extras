@@ -169,7 +169,7 @@ class Extras:
             mime = None
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
         mime = attachment.mime
-        if Mime.isimage(mime):
+        if Mime.is_image(mime):
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 
@@ -268,7 +268,7 @@ class Extras:
                         inner_html = utils.decorate_uri(self.add_to_downloads(source))
                     return Attachment(source=source, inner_html=inner_html)
                 else:
-                    if Mime.isimage(mime):
+                    if Mime.is_image(mime):
                         f = open(source, "rb")
                         body = f.read()
                         f.close()
