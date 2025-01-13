@@ -50,7 +50,7 @@ class Extras:
     def screenshot(
         self,
         comment: str,
-        target = None,
+        target=None,
         full_page: bool = True,
         page_source: bool = False,
         escape_html: bool = False
@@ -80,7 +80,7 @@ class Extras:
     def _add_image_step(
         self,
         comment: str,
-        target = None,
+        target=None,
         full_page: bool = True,
         page_source: bool = False,
         data: bytes = None,
@@ -198,7 +198,7 @@ class Extras:
             self._save_image(None, None)
             self.comments.append(comment)
 
-    def _save_image(self, image: bytes | str, source: str, mime = None):
+    def _save_image(self, image: bytes | str, source: str, mime=None):
         """
         Saves the pytest-html 'extras': screenshot, comment and webpage source.
         The image is saved in <report_html>/images folder.
