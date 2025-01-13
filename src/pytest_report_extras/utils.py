@@ -259,7 +259,6 @@ def get_download_link(report_html, target: str | bytes = None):
     Args:
         report_html (str): The report folder.
         target (file | bytes): The name of the file or the bytes to save.
-        image (buyes) : The image to save.
     """
     if target is None:
         return None

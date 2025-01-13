@@ -248,7 +248,6 @@ class Extras:
         Creates an attachment.
 
         Args:
-            comment (str): The comment of the test step.
             body (str | bytes | Dict | List[str]): The content/body of the attachment.
                 Can be of type 'Dict' for JSON mime type.
                 Can be of type 'List[str]' for uri-list mime type.
