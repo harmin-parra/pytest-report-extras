@@ -175,7 +175,7 @@ def _attachment_uri_list(text: str | List[str]) -> Attachment:
         return Attachment(body="Error parsing uri list.", mime=Mime.text_plain)
 
 
-def _attachment_image(data: bytes | str, mime: Mime) -> Attachment:
+def _attachment_image(data: bytes | str, mime: str) -> Attachment:
     """
     Returns an attachment object with bytes representing an image.
     """
