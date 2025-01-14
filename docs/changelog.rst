@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.3.0
+=====
+
+**Change**
+
+* Remove deprecated code.
+
+
 1.2.2
 =====
 
