@@ -28,7 +28,7 @@ class Mime:
     application_json = "application/json"
     application_xml = "application/xml"
     application_yaml = "application/yaml"
-    
+
     @staticmethod
     def is_supported(mime: str):
         return mime in (

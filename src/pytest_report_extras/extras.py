@@ -256,7 +256,7 @@ class Extras:
             source (str): The filepath of the source to attach.
             mime (str): The attachment mime type.
             delimiter (str): The delimiter for CSV documents.
-        
+
         Returns:
             An attachment object.
         """

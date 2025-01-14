@@ -50,10 +50,9 @@ def get_folder(filepath):
 def check_lists_length(report, fx_extras):
     """ Verifies if the images, comments and page sources lists have the same lenght """
     message = ('"images", "comments" and "sources" lists don\'t have the same length.\n'
-               "Screenshots won't be logged for this test in pytest-html report.\n"
-               "images: {}, comments: {}, sources = {}")
+               "Screenshots won't be logged for this test in pytest-html report.\n")
     if not (len(fx_extras.images) == len(fx_extras.comments) == len(fx_extras.sources)):
-        log_error_message(report, message.format(len(fx_extras.images), len(fx_extras.comments), len(fx_extras.sources)))
+        log_error_message(report, message)
         return False
     else:
         return True
@@ -270,7 +269,7 @@ def get_download_link(report_html, target: str | bytes = None):
         else:  # bytes
             f = open(destination, 'wb')
             f.write(target)
-            f.close()            
+            f.close()
         return f"downloads{os.sep}{filename}"
     except:
         raise
