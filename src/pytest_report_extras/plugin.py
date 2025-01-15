@@ -377,20 +377,15 @@ def pytest_runtest_makereport(item, call):
     report.extras = extras
 
 
-'''
-@pytest.hookimpl(trylast=False)
+@pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):
     """ 
     Add CSS file to --css request option for pytest-html
-    This code doesn't always run before pytest-html configuration
     """
     try:
-        report_css = config.getoption("--css", default=None)
+        report_css = config.getoption("--css", default=[])
         resources_path = pathlib.Path(__file__).parent.joinpath("resources")
         style_css = pathlib.Path(resources_path, "style.css")
-        if report_css is not None:
-            # report_css.insert(0, style_css)
-            report_css.append(style_css)
+        report_css.append(style_css)
     except:
         pass
-'''
