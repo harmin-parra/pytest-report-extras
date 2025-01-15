@@ -10,11 +10,15 @@ Changelog
 
 * Remove deprecated code.
 
+**Improvement**
+
+* CSS file is automatically added if ``-css`` option is not provided.
+
 
 1.2.2
 =====
 
-**Features**
+**Feature**
 
 * Limited support for the ``--self-contained-html`` option of the **pytest-html** plugin.
 
@@ -22,7 +26,7 @@ Changelog
 1.2.1
 =====
 
-**Features**
+**Feature**
 
 * Support for attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
 
