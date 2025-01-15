@@ -48,6 +48,8 @@ def pytest_addoption(parser):
     )
 
 
+# Global variables to store key fixtures to handle issue links in setup failures
+# Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
 fx_issue_link = None
 fx_issue_key = None
 fx_html = None
@@ -152,6 +154,7 @@ def report(request, report_html, single_page, screenshots, sources, report_allur
 #
 # Hookers
 #
+# Global variables to override exit code
 passed = 0
 failed = 0
 xfailed = 0
@@ -164,11 +167,12 @@ error_teardown = 0
 @pytest.hookimpl(trylast=True)
 def pytest_sessionfinish(session, exitstatus):
     """
-    Override exit code.
+    Override exit code 0 and add exit codes 6 and 7.
     0: All tests are passed or xpassed and there were no errors.
          (all tests were executed and got a 'passed' outcome).
-    6: No failed tests but there tests with errors
-         or with xfailed or xpassed status.
+    6: No failed tests but there were:
+         - xfailed or xpassed tests
+         - setup or teardown errors
     7: All tests are passed or xpassed and there were teardown errors.
          (all tests were executed and got a 'passed' outcome but a teardown failed).
     """
@@ -202,6 +206,7 @@ def pytest_runtest_makereport(item, call):
     issues = []
     links = []
 
+    # Comment lines below to deal with issue links even if 'report' fixture is not being used.
     # Exit if the test is not using the 'report' fixtures
     # if not ("request" in item.funcargs and "report" in item.funcargs):
     #     return
@@ -372,11 +377,13 @@ def pytest_runtest_makereport(item, call):
     report.extras = extras
 
 
-"""
+'''
 @pytest.hookimpl(trylast=False)
 def pytest_configure(config):
-    # Add CSS file to --css request option for pytest-html
-    # This code doesn't always run before pytest-html configuration
+    """ 
+    Add CSS file to --css request option for pytest-html
+    This code doesn't always run before pytest-html configuration
+    """
     try:
         report_css = config.getoption("--css", default=None)
         resources_path = pathlib.Path(__file__).parent.joinpath("resources")
@@ -386,4 +393,4 @@ def pytest_configure(config):
             report_css.append(style_css)
     except:
         pass
-"""
+'''
