@@ -26,14 +26,6 @@ def check_options(htmlpath, allurepath):
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
-#def getini(config, name):
-#    """ Workaround for bug https://github.com/pytest-dev/pytest/issues/11282 """
-#    value = config.getini(name)
-#    if not isinstance(value, str):
-#        value = None
-#    return value
-
-
 def get_folder(filepath):
     """
     Returns the folder of a filepath.
@@ -413,16 +405,18 @@ def decorate_label(label, clazz) -> str:
     return f'<span class="{clazz}">{label}</span>'
 
 
-# def decorate_anchors(image, source):
-#     if image is None:
-#         return ''
-#     """ Applies CSS style to a screenshot and page source anchor elements. """
-#     image = decorate_image(image)
-#     if source is not None:
-#         source = decorate_page_source(source)
-#         return f'<div class="extras_div">{image}<br>{source}</div>'
-#     else:
-#         return image
+'''
+def decorate_anchors(image, source):
+    if image is None:
+        return ''
+    """ Applies CSS style to a screenshot and page source anchor elements. """
+    image = decorate_image(image)
+    if source is not None:
+        source = decorate_page_source(source)
+        return f'<div class="extras_div">{image}<br>{source}</div>'
+    else:
+        return image
+'''
 
 
 def decorate_image(uri: str, single_page: bool) -> str:
