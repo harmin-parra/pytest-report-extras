@@ -1,5 +1,10 @@
 .logwrapper {
+    min-height: unset;
     max-height: 100px;
+}
+
+.logwrapper .log {
+    min-height: unset;
 }
 
 .extras_td {
@@ -60,9 +65,9 @@
 }
 
 .extras_iframe {
-	margin-left: 30px;
-	margin-right: 30px;
-	margin-top: 15px;
-	inline-size: -webkit-fill-available;
-	background-color: #faf0e6;
+    margin-left: 30px;
+    margin-right: 30px;
+    margin-top: 15px;
+    inline-size: -webkit-fill-available;
+    background-color: #faf0e6;
 }
