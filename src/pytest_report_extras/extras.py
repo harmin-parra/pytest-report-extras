@@ -27,12 +27,12 @@ class Extras:
     def __init__(self, report_html, single_page, screenshots, sources, report_allure, indent):
         """
         Args:
-            report_html (str): The 'report_html' fixture.
-            single_page (bool): The 'single_page' fixture.
-            screenshots (str): The 'screenshots' fixture.
-            sources (bool): The 'sources' fixture.
-            report_allure (str): The 'report_allure' fixture.
-            indent: The 'indent' fixture.
+            report_html (str): The HTML report folder.
+            single_page (bool): Whether to generate the HTML report in a single webpage.
+            screenshots (str): The screenshot strategy (all or last).
+            sources (bool): Whether to gather webpage sources.
+            report_allure (str): The Allure report folder.
+            indent: The indent to use to format XML, JSON and YAML documents.
         """
         self.images = []
         self.sources = []

@@ -17,7 +17,7 @@ from typing import List
 # Auxiliary functions to check options and fixtures
 #
 def check_options(htmlpath, allurepath):
-    """ Verifies if the --html has been set by the user. """
+    """ Verifies if the --html or --alluredir option has been set by the user. """
     if htmlpath is None and allurepath is None:
         msg = ("It seems you are using pytest-report-extras plugin.\n"
                "pytest-html or pytest-allure plugin is required.\n"
@@ -40,7 +40,7 @@ def get_folder(filepath):
 
 
 def check_lists_length(report, fx_extras):
-    """ Verifies if the images, comments and page sources lists have the same lenght """
+    """ Verifies if the images, comments and page sources lists have the same length """
     message = ('"images", "comments" and "sources" lists don\'t have the same length.\n'
                "Screenshots won't be logged for this test in pytest-html report.\n")
     if not (len(fx_extras.images) == len(fx_extras.comments) == len(fx_extras.sources)):
@@ -79,6 +79,7 @@ def create_assets(report_html, single_page):
 # Persistence functions
 #
 def get_full_page_screenshot_chromium(driver):
+    """ Returns the full page screenshot in PNG format as bytes when using the Chromium browser. """
     # get window size
     page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
     # parameters needed for full page screenshot
@@ -101,6 +102,14 @@ def get_full_page_screenshot_chromium(driver):
 
 
 def get_screenshot(target, full_page=True, page_source=False):
+    """
+    Returns the screenshot in PNG format as bytes and the HTML source code.
+
+    Args:
+        target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
+        full_page (bool): Whether to take a full-page screenshot if the target is a WebDriver or Page.
+        page_source (bool): Whether to gather webpage sources.
+    """
     image = None
     source = None
 
@@ -123,9 +132,11 @@ def get_screenshot(target, full_page=True, page_source=False):
 def _get_selenium_screenshot(target, full_page=True, page_source=False):
     """
     Returns the screenshot in PNG format as bytes and the HTML source code.
+
+    Args:
         target (WebDriver | WebElement): The target of the screenshot.
-        full_page (bool): Whether to take a full-page screenshot if the target is a Page instance.
-                          Defaults to True.
+        full_page (bool): Whether to take a full-page screenshot if the target is a WebDriver instance.
+        page_source (bool): Whether to gather webpage sources.
     """
     image = None
     source = None
@@ -163,9 +174,11 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False):
 def _get_playwright_screenshot(target, full_page=True, page_source=False):
     """
     Returns a screenshot in PNG format as bytes.
+
+    Args:
         target (Page | Locator): The target of the screenshot.
         full_page (bool): Whether to take a full-page screenshot if the target is a Page instance.
-                          Defaults to True.
+        page_source (bool): Whether to gather webpage sources.
     """
     image = None
     source = None
@@ -191,11 +204,11 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False):
 def get_image_link(report_html, index, image):
     """
     Saves an image in the 'images' folder and returns its relative path to the report folder.
-    
+
     Args:
         report_html (str): The report folder.
         index (int): The file name suffix.
-        image (bytes) : The image to save.
+        image (bytes): The image to save.
     """
     if image is None:
         return None
@@ -219,10 +232,11 @@ def get_image_link(report_html, index, image):
 def get_source_link(report_html, index, source):
     """
     Saves a webpage source in the 'sources' folder and returns its relative path to the report folder.
+
     Args:
         report_html (str): The report folder.
         index (int): The file name suffix.
-        source (str) : The webpage source to save.
+        source (str): The webpage source to save.
     """
     if source is None:
         return None
@@ -276,6 +290,10 @@ def append_header(call, report, extras, pytest_html,
     Appends the description and the test execution exception trace, if any, to a test report.
 
     Args:
+        call (CallInfo): Information of the test call.
+        report (TestReport): The test report returned by pytest.
+        extras (List): The test extras.
+        pytest_html (module): The pytest-html plugin.
         description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
     """
