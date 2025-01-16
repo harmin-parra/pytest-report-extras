@@ -12,7 +12,7 @@ Changelog
 
 **Improvement**
 
-* CSS file is automatically added if ``--css`` option is not provided.
+* CSS style sheet is automatically added if ``--css`` option is not provided.
 
 
 1.2.2
