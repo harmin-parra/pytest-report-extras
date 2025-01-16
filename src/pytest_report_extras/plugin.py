@@ -386,6 +386,6 @@ def pytest_configure(config):
         report_css = config.getoption("--css", default=[])
         resources_path = pathlib.Path(__file__).parent.joinpath("resources")
         style_css = pathlib.Path(resources_path, "style.css")
-        report_css.append(style_css)
+        report_css.insert(0, style_css)
     except:
         pass
