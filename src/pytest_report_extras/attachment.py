@@ -6,11 +6,7 @@ import re
 import xml.parsers.expat as expat
 import xml.dom.minidom as xdom
 import yaml
-from typing import (
-    Dict,
-    List,
-    Self
-)
+from typing import List
 from . import utils
 
 
@@ -56,16 +52,16 @@ class Attachment:
     """
     def __init__(
         self,
-        body: str | List[str] | bytes = None,
+        body: str | dict | list[str] | bytes = None,
         source: str = None,
         mime: str = None,
         inner_html: str = None
     ):
         """
         Args:
-            body (str | List[str] | bytes): The content/body of the body (optional).
-                Can be of type 'Dict' for JSON mime type.
-                Can be of type 'List[str]' for uri-list mime type.
+            body (str | dict | list[str] | bytes): The content/body of the body (optional).
+                Can be of type 'dict' for JSON mime type.
+                Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source (optional).
             mime (str): The mime type (optional).
@@ -79,18 +75,18 @@ class Attachment:
 
     @staticmethod
     def parse_body(
-        body: str | List[str] | bytes = None,
+        body: str | list[str] | bytes = None,
         mime: str = Mime.text_plain,
         indent: int = 4,
         delimiter=',',
-    ) -> Self:
+    ):
         """
         Parses the content/body of an attachment.
 
         Args:
-            body (str | List[str] | bytes): The content/body of the body (optional).
-                Can be of type 'Dict' for JSON mime type.
-                Can be of type 'List[str]' for uri-list mime type.
+            body (str | dict | list[str] | bytes): The content/body of the body (optional).
+                Can be of type 'dict' for JSON mime type.
+                Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
             mime (str): The mime type (optional).
             indent: The indent for XML, JSON and YAML attachments.
@@ -118,7 +114,7 @@ class Attachment:
                 return _attachment_txt(body)
 
 
-def _attachment_json(text: str | Dict, indent: int = 4) -> Attachment:
+def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding a JSON document.
     """
@@ -185,7 +181,7 @@ def _attachment_csv(text: str, delimiter=',') -> Attachment:
     return Attachment(body=text, mime=Mime.text_csv, inner_html=inner_html)
 
 
-def _attachment_uri_list(text: str | List[str]) -> Attachment:
+def _attachment_uri_list(text: str | list[str]) -> Attachment:
     """
     Returns an attachment object with a uri list.
     """

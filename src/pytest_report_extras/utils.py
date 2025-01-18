@@ -9,8 +9,6 @@ import subprocess
 import sys
 import traceback
 import uuid
-from typing import List
-from typing import Tuple
 # from . import Attachment
 
 
@@ -102,7 +100,7 @@ def get_full_page_screenshot_chromium(driver) -> bytes:
     return base64.urlsafe_b64decode(base_64_png['data'])
 
 
-def get_screenshot(target, full_page=True, page_source=False) -> Tuple(bytes, str):
+def get_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -133,7 +131,7 @@ def get_screenshot(target, full_page=True, page_source=False) -> Tuple(bytes, st
     return image, source
 
 
-def _get_selenium_screenshot(target, full_page=True, page_source=False) -> Tuple(bytes, str):
+def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -178,7 +176,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> Tuple
     return image, source
 
 
-def _get_playwright_screenshot(target, full_page=True, page_source=False) -> Tuple(bytes, str):
+def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -497,8 +495,8 @@ def decorate_uri(uri: str) -> str:
         return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{uri}</a>'
 
 
-def decorate_uri_list(uris: List[str]) -> str:
-    """ Applies CSS class to a list of uri attachment. """
+def decorate_uri_list(uris: list[str]) -> str:
+    """ Applies CSS class to a list of uri attachments. """
     links = ""
     for uri in uris:
         if uri is not None and uri != '':
