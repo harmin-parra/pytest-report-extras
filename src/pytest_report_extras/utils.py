@@ -44,7 +44,7 @@ def check_lists_length(report, fx_extras):
     message = ('"images", "comments" and "sources" lists don\'t have the same length.\n'
                "Screenshots won't be logged for this test in pytest-html report.\n")
     if not (len(fx_extras.images) == len(fx_extras.comments) == len(fx_extras.sources)):
-        log_error_message(report, message)
+        log_error(report, message)
         return False
     else:
         return True
@@ -153,7 +153,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
         from selenium.webdriver.edge.webdriver import WebDriver as WebDriver_Edge
         from selenium.webdriver.remote.webelement import WebElement
     else:
-        print("Selenium module is not installed.", file=sys.stderr)
+        log_error(None, "Selenium module is not installed.")
         return image, source
 
     if isinstance(target, WebElement):
@@ -197,7 +197,7 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
         from playwright.sync_api import Locator
         assert isinstance(target, Page) or isinstance(target, Locator)
     else:
-        print("Playwright module is not installed.", file=sys.stderr)
+        log_error(None, "Playwright module is not installed.")
         return image, source
 
     if isinstance(target, Page):
@@ -233,10 +233,10 @@ def get_image_link(report_html: str, index: int, image: bytes) -> str:
         f = open(filename, 'wb')
         f.write(image)
         f.close()
-    except Exception as err:
-        trace = traceback.format_exc()
+    except Exception as error:
+        # trace = traceback.format_exc()
         link = None  # f"images{os.sep}error.png"
-        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
+        log_error(None, f"Error reading file: {filename}", error)
     finally:
         return link
 
@@ -264,10 +264,10 @@ def get_source_link(report_html: str, index: int, source: str) -> str:
         f = open(filename, 'w', encoding="utf-8")
         f.write(source)
         f.close()
-    except Exception as err:
-        trace = traceback.format_exc()
+    except Exception as error:
+        # trace = traceback.format_exc()
         link = None
-        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
+        log_error(None, f"Error reading file: {filename}", error)
     finally:
         return link
 
@@ -296,8 +296,9 @@ def get_download_link(report_html: str, target: str | bytes = None) -> str:
             f.write(target)
             f.close()
         return f"downloads{os.sep}{filename}"
-    except:
-        raise
+    except Exception as error:
+        log_error(None, f"Error copying file to 'downloads' folder:", error)
+        return None
 
 
 #
@@ -464,7 +465,7 @@ def decorate_image(uri: str, single_page: bool) -> str:
 
 def decorate_image_from_file(uri: str) -> str:
     clazz = "extras_image"
-    if uri is None:
+    if uri in (None, ''):
         return ""
     return f'<a href="{uri}" target="_blank" rel="noopener noreferrer"><img src ="{uri}" class="{clazz}"></a>'
 
@@ -518,8 +519,21 @@ def decorate_attachment(attachment) -> str:
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
 
 
-def log_error_message(report, message):
-    """ Appends error message in stderr section of a test report. """
+def log_error(report, message: str, error: Exception=None):
+    """
+    Appends error message in stderr section of a test report.
+
+    Args:
+        report (TestReport): The test report returned by pytest (optional).
+        message (str): The message to log.
+        error (Exception): The exception to log.
+    """
+    if report is None:
+        if error is None:
+            print(str(message) + '\n', file=sys.stderr)
+        else:
+            print(f"{message}\n{error}\n", file=sys.stderr)
+        return
     try:
         i = -1
         for x in range(len(report.sections)):

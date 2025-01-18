@@ -13,6 +13,7 @@ Changelog
 **Improvement**
 
 * CSS style sheet is automatically added if ``--css`` option is not provided.
+* Usage errors are logged in the standard error descriptor ('stderr').
 
 
 1.2.2
