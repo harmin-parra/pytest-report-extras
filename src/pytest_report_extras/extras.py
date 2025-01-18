@@ -280,6 +280,10 @@ class Extras:
             except Exception as err:
                 body = f"Error reading file: {source}\n{err}"
                 mime = Mime.text_plain
+        if not Mime.is_image(mime) and isinstance(body, bytes):
+            f = self.add_to_downloads(body)
+            body = [f]
+            mime = Mime.text_uri_list
         if mime == Mime.text_html:
             try:
                 encoded_bytes = base64.b64encode(body.encode('utf-8'))

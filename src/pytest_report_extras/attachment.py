@@ -45,6 +45,10 @@ class Mime:
     def is_image(mime: str):
         return mime is not None and mime.startswith("image/")
 
+    @staticmethod
+    def is_not_image(mime: str):
+        return not Mime.is_image(mime)
+
 
 class Attachment:
     """
