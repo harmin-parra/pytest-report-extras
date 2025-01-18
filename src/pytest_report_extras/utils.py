@@ -490,11 +490,10 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_pre"
     clazz_frm = "extras_iframe"
-    if attachment.inner_html is None:
-        if attachment.body in (None, ""):
-            return ""
-        else:
-            return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
+    if attachment.body in (None, "") and attachment.inner_html in (None, ""):
+        return ""
+    if attachment.inner_html in (None, ""):
+        return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
     else:
         if attachment.mime == "text/html":
             return f'<iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
