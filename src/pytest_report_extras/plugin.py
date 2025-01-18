@@ -331,7 +331,7 @@ def pytest_runtest_makereport(item, call):
                     fx_report.images[-1],
                     fx_report.sources[-1],
                     fx_single_page,
-                    event_class
+                    f"extras_{event_class}"
                 )
 
             # Add horizontal line between the header and the comments/screenshots

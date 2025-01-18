@@ -380,11 +380,11 @@ def append_header(call, report, extras, pytest_html,
 def escape_html(text, quote=False) -> str:
     """ Escapes HTML characters in a text. """
     if text is None:
-        return ""
+        return None
     return html.escape(str(text), quote)
 
 
-def get_table_row_tag(comment, image, source, single_page, clazz_comment="comment") -> str:
+def get_table_row_tag(comment: str, image: str, source: str, single_page: bool, clazz="extras_comment") -> str:
     """
     Returns the HTML table row of a test step.
 
@@ -393,13 +393,12 @@ def get_table_row_tag(comment, image, source, single_page, clazz_comment="commen
         image (str): The screenshot anchor element.
         source (str): The page source anchor element.
         single_page (bool): Whether to generate the HTML report in a single page.
-        clazz_comment (str): The CSS class to apply to the comment table cell.
+        clazz (str): The CSS class to apply to the comment table cell.
 
     Returns:
         str: The <tr> element.
     """
-    clazz = f"extras_{clazz_comment}"
-    if isinstance(comment, str):
+    if comment not in (None, ""):
         comment = decorate_label(comment, clazz)
     else:
         comment = ""

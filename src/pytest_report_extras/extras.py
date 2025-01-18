@@ -122,8 +122,7 @@ class Extras:
         else:  # data is not None
             image, source = data, None
 
-        comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment
+        comment = utils.escape_html(comment) if escape_html else comment
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -173,8 +172,7 @@ class Extras:
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 
-        comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment
+        comment = utils.escape_html(comment) if escape_html else comment
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -217,7 +215,8 @@ class Extras:
             except:
                 image = None
         # suffix for file names
-        index = 0 if self._fx_single_page or (image is None and source is None) else counter()
+        index = (0 if self._fx_single_page or (image is None and source is None)
+                 else counter())
         # Get the image uri
         if image is not None:
             if self._fx_single_page is False:
