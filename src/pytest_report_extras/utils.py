@@ -79,7 +79,7 @@ def create_assets(report_html, single_page):
 # Persistence functions
 #
 def get_full_page_screenshot_chromium(driver):
-    """ Returns the full page screenshot in PNG format as bytes when using the Chromium browser. """
+    """ Returns the full-page screenshot in PNG format as bytes when using the Chromium WebDriver. """
     # get window size
     page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
     # parameters needed for full page screenshot
@@ -425,9 +425,9 @@ def decorate_label(label, clazz) -> str:
 
 '''
 def decorate_anchors(image, source):
+    """ Applies CSS style to a screenshot and page source anchor elements. """
     if image is None:
         return ''
-    """ Applies CSS style to a screenshot and page source anchor elements. """
     image = decorate_image(image)
     if source is not None:
         source = decorate_page_source(source)
