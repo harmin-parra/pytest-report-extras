@@ -373,7 +373,7 @@ def pytest_configure(config):
     global fx_issue_key, fx_issue_link, fx_html, fx_allure
     fx_issue_link = config.getini("extras_issue_link_pattern")
     fx_issue_key = config.getini("extras_issue_key_pattern")
-    fx_html = config.getoption("--html", default=None)
+    fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
 
     try:
