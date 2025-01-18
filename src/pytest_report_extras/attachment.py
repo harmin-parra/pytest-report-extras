@@ -6,8 +6,11 @@ import re
 import xml.parsers.expat as expat
 import xml.dom.minidom as xdom
 import yaml
-from typing import Dict
-from typing import List
+from typing import (
+    Dict,
+    List,
+    Self
+)
 from . import utils
 
 
@@ -80,7 +83,7 @@ class Attachment:
         mime: str = Mime.text_plain,
         indent: int = 4,
         delimiter=',',
-    ):
+    ) -> Self:
         """
         Parses the content/body of an attachment.
 
