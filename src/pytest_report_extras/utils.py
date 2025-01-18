@@ -9,7 +9,8 @@ import subprocess
 import sys
 import traceback
 import uuid
-from typing import List, Tuple
+from typing import List
+from typing import Tuple
 # from . import Attachment
 
 
