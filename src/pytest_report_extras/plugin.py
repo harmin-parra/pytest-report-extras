@@ -178,7 +178,7 @@ def pytest_runtest_makereport(item, call):
     """
     global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
     global fx_issue_link, fx_issue_key, fx_html, fx_allure
-    #fx_issue_link = fx_issue_key = fx_html = fx_allure = None
+    # fx_issue_link = fx_issue_key = fx_html = fx_allure = None
     wasfailed = False
     wasxpassed = False
     wasxfailed = False
