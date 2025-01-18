@@ -100,7 +100,7 @@ def report_css(request):
 def description_tag(request):
     """ The HTML tag for the description of each test. """
     tag = request.config.getini("extras_description_tag")
-    return tag if tag in ("h1", "h2", "h3", "p", "pre") else "h2"
+    return tag if tag in ("h1", "h2", "h3", "p", "pre") else "pre"
 
 
 @pytest.fixture(scope='session')
