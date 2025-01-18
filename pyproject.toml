@@ -32,14 +32,5 @@ keywords = [
 ]
 
 
-[project.urls]
-Donate = "https://www.buymeacoffee.com/harmin"
-Homepage = "https://pypi.org/project/pytest-report-extras/"
-Documentation = "https://pytest-report-extras.readthedocs.io/stable/"
-Repository = "https://github.com/harmin-parra/pytest-report-extras"
-Bug = "https://github.com/harmin-parra/pytest-report-extras/issues"
-Changelog = "https://pytest-report-extras.readthedocs.io/stable/changelog.html"
-
-
 [project.entry-points.pytest11]
 pytest_report_extras = "pytest_report_extras.plugin"
