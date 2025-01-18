@@ -284,7 +284,7 @@ class Extras:
                 encoded_bytes = base64.b64encode(body.encode('utf-8'))
                 encoded_str = encoded_bytes.decode('utf-8')
                 inner_html = f"data:text/html;base64,{encoded_str}"
-                return Attachment(body=body, source=source, mime=mime, inner_html=inner_html)
+                return Attachment(body=body, mime=mime, inner_html=inner_html)
             except Exception as err:
                 body = f"Error encoding HTML body\n{err}"
                 mime = Mime.text_plain

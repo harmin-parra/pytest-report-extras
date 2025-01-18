@@ -498,8 +498,6 @@ def decorate_attachment(attachment) -> str:
     else:
         if attachment.mime == "text/html":
             return f'<iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
-        if attachment.mime.startswith("image"):
-            return attachment.inner_html
         else:
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
 
