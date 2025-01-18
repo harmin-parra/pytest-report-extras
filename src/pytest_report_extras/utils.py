@@ -284,7 +284,7 @@ def get_download_link(report_html: str, target: str | bytes = None) -> str:
     Returns:
         The relative path to the HTML report folder of the saved file.
     """
-    if target is None:
+    if target in (None, ''):
         return None
     filename = str(uuid.uuid4())
     try:
@@ -398,10 +398,7 @@ def get_table_row_tag(comment: str, image: str, source: str, single_page: bool, 
     Returns:
         str: The <tr> element.
     """
-    if comment not in (None, ""):
-        comment = decorate_label(comment, clazz)
-    else:
-        comment = ""
+    comment = decorate_label(comment, clazz)
     if image is not None:
         image = decorate_image(image, single_page)
         if source is not None:
@@ -438,6 +435,8 @@ def decorate_label(label, clazz) -> str:
     Returns:
         The <span> element decorated with the CSS class.
     """
+    if label in (None, ''):
+        return ""
     return f'<span class="{clazz}">{label}</span>'
 
 
@@ -472,14 +471,14 @@ def decorate_image_from_file(uri: str) -> str:
 
 def decorate_image_from_base64(uri: str) -> str:
     clazz = "extras_image"
-    if uri is None:
+    if uri in (None, ''):
         return ""
     return f'<img src ="{uri}" class="{clazz}">'
 
 
 def decorate_page_source(filename) -> str:
     """ Applies CSS class to a page source anchor element. """
-    if filename is None:
+    if filename in (None, ''):
         return ""
     clazz = "extras_page_src"
     return f'<a href="{filename}" target="_blank" rel="noopener noreferrer" class="{clazz}">[page source]</a>'
@@ -487,7 +486,7 @@ def decorate_page_source(filename) -> str:
 
 def decorate_uri(uri: str) -> str:
     """ Applies CSS class to a uri anchor element. """
-    if uri is None or uri == '':
+    if uri in (None, ''):
         return ""
     if uri.startswith("downloads"):
         return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{pathlib.Path(uri).name}</a>'
@@ -499,7 +498,7 @@ def decorate_uri_list(uris: list[str]) -> str:
     """ Applies CSS class to a list of uri attachments. """
     links = ""
     for uri in uris:
-        if uri is not None and uri != '':
+        if uri not in (None, ''):
             links += decorate_uri(uri) + "<br>"
     return links
 
