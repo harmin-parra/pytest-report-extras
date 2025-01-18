@@ -172,6 +172,8 @@ class Extras:
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 
+        if comment is None:
+            comment = ""
         comment = utils.escape_html(comment) if escape_html else comment
 
         # Add extras to Allure report if allure-pytest plugin is being used.
