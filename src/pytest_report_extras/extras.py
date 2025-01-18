@@ -1,8 +1,6 @@
 import base64
 import html
 import importlib
-from typing import Dict
-from typing import List
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
@@ -142,7 +140,7 @@ class Extras:
     def attach(
         self,
         comment: str,
-        body: str | bytes | Dict | List[str] = None,
+        body: str | bytes | dict | list[str] = None,
         source: str = None,
         mime: str = None,
         csv_delimiter=',',
@@ -156,9 +154,9 @@ class Extras:
 
         Args:
             comment (str): The comment of the test step.
-            body (str | bytes | Dict | List[str]): The content/body of the attachment.
-                Can be of type 'Dict' for JSON mime type.
-                Can be of type 'List[str]' for uri-list mime type.
+            body (str | bytes | dict | list[str]): The content/body of the attachment.
+                Can be of type 'dict' for JSON mime type.
+                Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source to attach.
             mime (str): The attachment mime type.
@@ -200,13 +198,13 @@ class Extras:
 
     def _save_image(self, image: bytes | str, source: str, mime=None):
         """
-        Saves the pytest-html 'extras': screenshot, comment and webpage source.
+        Saves a screenshot and a webpage source.
         The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
             image (bytes | str): The screenshot as bytes or base64 string.
-            source (str): The webpage source code.
+            source (str): The webpage source.
         """
         link_image = None
         link_source = None
@@ -240,7 +238,7 @@ class Extras:
 
     def _get_attachment(
         self,
-        body: str | Dict | List[str] | bytes = None,
+        body: str | dict | list[str] | bytes = None,
         source: str = None,
         mime: str = None,
         delimiter=',',
@@ -249,16 +247,16 @@ class Extras:
         Creates an attachment.
 
         Args:
-            body (str | bytes | Dict | List[str]): The content/body of the attachment.
-                Can be of type 'Dict' for JSON mime type.
-                Can be of type 'List[str]' for uri-list mime type.
+            body (str | bytes | dict | list[str]): The content/body of the attachment.
+                Can be of type 'dict' for JSON mime type.
+                Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source to attach.
             mime (str): The attachment mime type.
             delimiter (str): The delimiter for CSV documents.
 
         Returns:
-            An attachment object.
+            An attachment instance.
         """
         if source is not None:
             try:

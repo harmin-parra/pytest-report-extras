@@ -9,7 +9,6 @@ import subprocess
 import sys
 import traceback
 import uuid
-from typing import List
 # from . import Attachment
 
 
@@ -78,7 +77,7 @@ def create_assets(report_html, single_page):
 #
 # Persistence functions
 #
-def get_full_page_screenshot_chromium(driver):
+def get_full_page_screenshot_chromium(driver) -> bytes:
     """ Returns the full-page screenshot in PNG format as bytes when using the Chromium WebDriver. """
     # get window size
     page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
@@ -101,14 +100,17 @@ def get_full_page_screenshot_chromium(driver):
     return base64.urlsafe_b64decode(base_64_png['data'])
 
 
-def get_screenshot(target, full_page=True, page_source=False):
+def get_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
     """
-    Returns the screenshot in PNG format as bytes and the HTML source code.
+    Returns the screenshot in PNG format as bytes and the webpage source.
 
     Args:
         target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
         full_page (bool): Whether to take a full-page screenshot if the target is a WebDriver or Page.
         page_source (bool): Whether to gather webpage sources.
+
+    Returns:
+        The image as bytes and the webpage source if applicable.
     """
     image = None
     source = None
@@ -129,14 +131,17 @@ def get_screenshot(target, full_page=True, page_source=False):
     return image, source
 
 
-def _get_selenium_screenshot(target, full_page=True, page_source=False):
+def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
     """
-    Returns the screenshot in PNG format as bytes and the HTML source code.
+    Returns the screenshot in PNG format as bytes and the webpage source.
 
     Args:
         target (WebDriver | WebElement): The target of the screenshot.
         full_page (bool): Whether to take a full-page screenshot if the target is a WebDriver instance.
         page_source (bool): Whether to gather webpage sources.
+
+    Returns:
+        The image as bytes and the webpage source if applicable.
     """
     image = None
     source = None
@@ -171,14 +176,17 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False):
     return image, source
 
 
-def _get_playwright_screenshot(target, full_page=True, page_source=False):
+def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
     """
-    Returns a screenshot in PNG format as bytes.
+    Returns the screenshot in PNG format as bytes and the webpage source.
 
     Args:
         target (Page | Locator): The target of the screenshot.
         full_page (bool): Whether to take a full-page screenshot if the target is a Page instance.
         page_source (bool): Whether to gather webpage sources.
+
+    Returns:
+        The image as bytes and the webpage source if applicable.
     """
     image = None
     source = None
@@ -201,14 +209,17 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False):
     return image, source
 
 
-def get_image_link(report_html, index, image):
+def get_image_link(report_html: str, index: int, image: bytes) -> str:
     """
-    Saves an image in the 'images' folder and returns its relative path to the report folder.
+    Saves an image in the 'images' folder and returns its relative path to the HTML report folder.
 
     Args:
-        report_html (str): The report folder.
+        report_html (str): The HTML report folder.
         index (int): The file name suffix.
         image (bytes): The image to save.
+
+    Returns:
+        The relative path to the HTML report folder of the saved image.
     """
     if image is None:
         return None
@@ -229,14 +240,17 @@ def get_image_link(report_html, index, image):
         return link
 
 
-def get_source_link(report_html, index, source):
+def get_source_link(report_html: str, index: int, source: str) -> str:
     """
-    Saves a webpage source in the 'sources' folder and returns its relative path to the report folder.
+    Saves a webpage source in the 'sources' folder and returns its relative path to the HTML report folder.
 
     Args:
-        report_html (str): The report folder.
+        report_html (str): The HTML report folder.
         index (int): The file name suffix.
         source (str): The webpage source to save.
+
+    Returns:
+        The relative path to the HTML report folder of the saved webpage source.
     """
     if source is None:
         return None
@@ -257,13 +271,17 @@ def get_source_link(report_html, index, source):
         return link
 
 
-def get_download_link(report_html, target: str | bytes = None):
+def get_download_link(report_html: str, target: str | bytes = None) -> str:
     """
-    Saves a file or bytes in the 'downloads' folder and returns its relative path to the report folder.
+    Saves a copy of a file or the bytes in the 'downloads' folder 
+    and returns its relative path to the HTML report folder.
 
     Args:
-        report_html (str): The report folder.
-        target (file | bytes): The name of the file or the bytes to save.
+        report_html (str): The HTML report folder.
+        target (str | bytes): The name of the file to copy or the bytes to save.
+
+    Returns:
+        The relative path to the HTML report folder of the saved file.
     """
     if target is None:
         return None
@@ -477,8 +495,8 @@ def decorate_uri(uri: str) -> str:
         return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{uri}</a>'
 
 
-def decorate_uri_list(uris: List[str]) -> str:
-    """ Applies CSS class to a list of uri attachment. """
+def decorate_uri_list(uris: list[str]) -> str:
+    """ Applies CSS class to a list of uri attachments. """
     links = ""
     for uri in uris:
         if uri is not None and uri != '':
