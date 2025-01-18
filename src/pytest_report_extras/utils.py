@@ -79,7 +79,7 @@ def create_assets(report_html, single_page):
 # Persistence functions
 #
 def get_full_page_screenshot_chromium(driver):
-    """ Returns the full page screenshot in PNG format as bytes when using the Chromium browser. """
+    """ Returns the full-page screenshot in PNG format as bytes when using the Chromium WebDriver. """
     # get window size
     page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
     # parameters needed for full page screenshot
@@ -293,7 +293,7 @@ def append_header(call, report, extras, pytest_html,
         call (CallInfo): Information of the test call.
         report (TestReport): The test report returned by pytest.
         extras (List): The test extras.
-        pytest_html (module): The pytest-html plugin.
+        pytest_html (ModuleType): The pytest-html plugin.
         description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
     """
@@ -425,9 +425,9 @@ def decorate_label(label, clazz) -> str:
 
 '''
 def decorate_anchors(image, source):
+    """ Applies CSS style to a screenshot and page source anchor elements. """
     if image is None:
         return ''
-    """ Applies CSS style to a screenshot and page source anchor elements. """
     image = decorate_image(image)
     if source is not None:
         source = decorate_page_source(source)
@@ -490,16 +490,13 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_pre"
     clazz_frm = "extras_iframe"
-    if attachment.inner_html is None:
-        if attachment.body in (None, ""):
-            return ""
-        else:
-            return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
+    if attachment.body in (None, "") and attachment.inner_html in (None, ""):
+        return ""
+    if attachment.inner_html in (None, ""):
+        return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
     else:
         if attachment.mime == "text/html":
             return f'<iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
-        if attachment.mime.startswith("image"):
-            return attachment.inner_html
         else:
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
 

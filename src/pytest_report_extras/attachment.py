@@ -58,6 +58,17 @@ class Attachment:
         mime: str = None,
         inner_html: str = None
     ):
+        """
+        Args:
+            body (str | List[str] | bytes): The content/body of the body (optional).
+                Can be of type 'Dict' for JSON mime type.
+                Can be of type 'List[str]' for uri-list mime type.
+                Can be of type 'bytes' for image mime type.
+            source (str): The filepath of the source (optional).
+            mime (str): The mime type (optional).
+            inner_html: The inner_html to display the attachment in the HTML report.
+                        Used for mime types: text/csv, text/html, text/uri-list and also for unsupported mime types.
+        """
         self.body = body
         self.source = source
         self.mime = mime
@@ -65,11 +76,26 @@ class Attachment:
 
     @staticmethod
     def parse_body(
-        body: str | List[str] = None,
+        body: str | List[str] | bytes = None,
         mime: str = Mime.text_plain,
         indent: int = 4,
         delimiter=',',
     ):
+        """
+        Parses the content/body of an attachment.
+
+        Args:
+            body (str | List[str] | bytes): The content/body of the body (optional).
+                Can be of type 'Dict' for JSON mime type.
+                Can be of type 'List[str]' for uri-list mime type.
+                Can be of type 'bytes' for image mime type.
+            mime (str): The mime type (optional).
+            indent: The indent for XML, JSON and YAML attachments.
+            delimiter (str): The delimiter for CSV documents.
+
+        Returns:
+            An Attachment object representing the attachment.
+        """
         if body is not None and isinstance(body, List):
             mime = Mime.text_uri_list
         if Mime.is_image(mime):
