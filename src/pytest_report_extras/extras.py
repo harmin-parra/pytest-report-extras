@@ -200,13 +200,13 @@ class Extras:
 
     def _save_image(self, image: bytes | str, source: str, mime=None):
         """
-        Saves the pytest-html 'extras': screenshot, comment and webpage source.
+        Saves a screenshot and a webpage source.
         The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
             image (bytes | str): The screenshot as bytes or base64 string.
-            source (str): The webpage source code.
+            source (str): The webpage source.
         """
         link_image = None
         link_source = None
@@ -258,7 +258,7 @@ class Extras:
             delimiter (str): The delimiter for CSV documents.
 
         Returns:
-            An attachment object.
+            An attachment instance.
         """
         if source is not None:
             try:
