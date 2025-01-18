@@ -293,7 +293,7 @@ def append_header(call, report, extras, pytest_html,
         call (CallInfo): Information of the test call.
         report (TestReport): The test report returned by pytest.
         extras (List): The test extras.
-        pytest_html (module): The pytest-html plugin.
+        pytest_html (ModuleType): The pytest-html plugin.
         description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
     """
