@@ -48,14 +48,6 @@ def pytest_addoption(parser):
     )
 
 
-# Global variables to store key fixtures to handle issue links in setup failures
-# Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
-fx_issue_link = None
-fx_issue_key = None
-fx_html = None
-fx_allure = None
-
-
 #
 # Read test parameters
 #
@@ -71,9 +63,7 @@ def screenshots(request):
 @pytest.fixture(scope='session')
 def report_html(request):
     """ The folder storing the pytest-html report """
-    global fx_html
-    fx_html = utils.get_folder(request.config.getoption("--html", default=None))
-    return fx_html
+    return utils.get_folder(request.config.getoption("--html", default=None))
 
 
 @pytest.fixture(scope='session')
@@ -85,9 +75,7 @@ def single_page(request):
 @pytest.fixture(scope='session')
 def report_allure(request):
     """ Whether the allure-pytest plugin is being used """
-    global fx_allure
-    fx_allure = request.config.getoption("--alluredir", default=None) is not None
-    return fx_allure
+    return request.config.getoption("--alluredir", default=None)
 
 
 @pytest.fixture(scope='session')
@@ -122,17 +110,13 @@ def sources(request):
 @pytest.fixture(scope='session')
 def issue_link_pattern(request):
     """ The issue link pattern. """
-    global fx_issue_link
-    fx_issue_link = request.config.getini("extras_issue_link_pattern")
-    return fx_issue_link
+    return request.config.getini("extras_issue_link_pattern")
 
 
 @pytest.fixture(scope='session')
 def issue_key_pattern(request):
     """ The issue link pattern. """
-    global fx_issue_key
-    fx_issue_key = request.config.getini("extras_issue_key_pattern")
-    return fx_issue_key
+    return request.config.getini("extras_issue_key_pattern")
 
 
 @pytest.fixture(scope='session')
@@ -194,6 +178,7 @@ def pytest_runtest_makereport(item, call):
     """
     global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
     global fx_issue_link, fx_issue_key, fx_html, fx_allure
+    #fx_issue_link = fx_issue_key = fx_html = fx_allure = None
     wasfailed = False
     wasxpassed = False
     wasxfailed = False
@@ -381,7 +366,16 @@ def pytest_runtest_makereport(item, call):
 def pytest_configure(config):
     """ 
     Add CSS file to --css request option for pytest-html
+    Set global variables.
     """
+    # Global variables to store key fixtures to handle issue links in setup failures
+    # Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
+    global fx_issue_key, fx_issue_link, fx_html, fx_allure
+    fx_issue_link = config.getini("extras_issue_link_pattern")
+    fx_issue_key = config.getini("extras_issue_key_pattern")
+    fx_html = utils.get_folder(config.getoption("--html", default=None))
+    fx_allure = config.getoption("--alluredir", default=None)
+
     try:
         report_css = config.getoption("--css", default=[])
         resources_path = pathlib.Path(__file__).parent.joinpath("resources")
