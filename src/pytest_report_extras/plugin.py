@@ -100,7 +100,7 @@ def report_css(request):
 def description_tag(request):
     """ The HTML tag for the description of each test. """
     tag = request.config.getini("extras_description_tag")
-    return tag if tag in ("h1", "h2", "h3", "p", "pre") else "h2"
+    return tag if tag in ("h1", "h2", "h3", "p", "pre") else "pre"
 
 
 @pytest.fixture(scope='session')
@@ -331,7 +331,7 @@ def pytest_runtest_makereport(item, call):
                     fx_report.images[-1],
                     fx_report.sources[-1],
                     fx_single_page,
-                    event_class
+                    f"extras_{event_class}"
                 )
 
             # Add horizontal line between the header and the comments/screenshots

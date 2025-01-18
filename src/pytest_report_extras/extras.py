@@ -1,6 +1,7 @@
 import base64
 import html
 import importlib
+from typing import Literal
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
@@ -22,12 +23,13 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_html, single_page, screenshots, sources, report_allure, indent):
+    def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last"],
+                 sources: bool, report_allure: str, indent: int):
         """
         Args:
             report_html (str): The HTML report folder.
             single_page (bool): Whether to generate the HTML report in a single webpage.
-            screenshots (str): The screenshot strategy (all or last).
+            screenshots (str): The screenshot strategy. Possible values: 'all' or 'last'.
             sources (bool): Whether to gather webpage sources.
             report_allure (str): The Allure report folder.
             indent: The indent to use to format XML, JSON and YAML documents.
@@ -120,8 +122,7 @@ class Extras:
         else:  # data is not None
             image, source = data, None
 
-        comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment
+        comment = utils.escape_html(comment) if escape_html else comment
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -171,8 +172,9 @@ class Extras:
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
             return
 
-        comment = "" if comment is None else comment
-        comment = html.escape(comment, quote=True) if escape_html else comment
+        if comment is None:
+            comment = ""
+        comment = utils.escape_html(comment) if escape_html else comment
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -183,8 +185,8 @@ class Extras:
                         allure.attach(attachment.body, name=comment, attachment_type=attachment.mime)
                     elif attachment.source is not None:
                         allure.attach.file(attachment.source)
-                except Exception as err:
-                    allure.attach(str(err), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
+                except Exception as error:
+                    allure.attach(str(error), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
@@ -212,10 +214,12 @@ class Extras:
         if isinstance(image, str):
             try:
                 image = base64.b64decode(image.encode())
-            except:
+            except Exception as error:
+                utils.log_error(None, "Error encoding image string:", error)
                 image = None
         # suffix for file names
-        index = 0 if self._fx_single_page or (image is None and source is None) else counter()
+        index = (0 if self._fx_single_page or (image is None and source is None)
+                 else counter())
         # Get the image uri
         if image is not None:
             if self._fx_single_page is False:
@@ -224,7 +228,8 @@ class Extras:
                 mime = "image/*" if mime is None else mime
                 try:
                     data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
-                except:
+                except Exception as error:
+                    utils.log_error(None, "Error encoding string:", error)
                     data_uri = None
                 link_image = data_uri
         # Get the webpage source uri
@@ -274,17 +279,23 @@ class Extras:
                         f = open(source, 'r')
                         body = f.read()
                         f.close()
-            except Exception as err:
-                body = f"Error reading file: {source}\n{err}"
+            except Exception as error:
+                body = f"Error reading file: {source}\n{error}"
+                utils.log_error(None, f"Error reading file: {source}", error)
                 mime = Mime.text_plain
+        if not Mime.is_image(mime) and isinstance(body, bytes):
+            f = self.add_to_downloads(body)
+            body = [f]
+            mime = Mime.text_uri_list
         if mime == Mime.text_html:
             try:
                 encoded_bytes = base64.b64encode(body.encode('utf-8'))
                 encoded_str = encoded_bytes.decode('utf-8')
                 inner_html = f"data:text/html;base64,{encoded_str}"
                 return Attachment(body=body, mime=mime, inner_html=inner_html)
-            except Exception as err:
-                body = f"Error encoding HTML body\n{err}"
+            except Exception as error:
+                body = f"Error encoding HTML body\n{error}"
+                utils.log_error(None, "Error encoding HTML body", error)
                 mime = Mime.text_plain
         return Attachment.parse_body(body, mime, self._indent, delimiter)
 

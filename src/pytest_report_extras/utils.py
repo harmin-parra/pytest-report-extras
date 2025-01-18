@@ -9,6 +9,7 @@ import subprocess
 import sys
 import traceback
 import uuid
+from typing import Literal
 # from . import Attachment
 
 
@@ -43,7 +44,7 @@ def check_lists_length(report, fx_extras):
     message = ('"images", "comments" and "sources" lists don\'t have the same length.\n'
                "Screenshots won't be logged for this test in pytest-html report.\n")
     if not (len(fx_extras.images) == len(fx_extras.comments) == len(fx_extras.sources)):
-        log_error_message(report, message)
+        log_error(report, message)
         return False
     else:
         return True
@@ -152,7 +153,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
         from selenium.webdriver.edge.webdriver import WebDriver as WebDriver_Edge
         from selenium.webdriver.remote.webelement import WebElement
     else:
-        print("Selenium module is not installed.", file=sys.stderr)
+        log_error(None, "Selenium module is not installed.")
         return image, source
 
     if isinstance(target, WebElement):
@@ -196,7 +197,7 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
         from playwright.sync_api import Locator
         assert isinstance(target, Page) or isinstance(target, Locator)
     else:
-        print("Playwright module is not installed.", file=sys.stderr)
+        log_error(None, "Playwright module is not installed.")
         return image, source
 
     if isinstance(target, Page):
@@ -232,10 +233,10 @@ def get_image_link(report_html: str, index: int, image: bytes) -> str:
         f = open(filename, 'wb')
         f.write(image)
         f.close()
-    except Exception as err:
-        trace = traceback.format_exc()
+    except Exception as error:
+        # trace = traceback.format_exc()
         link = None  # f"images{os.sep}error.png"
-        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
+        log_error(None, f"Error reading file: {filename}", error)
     finally:
         return link
 
@@ -263,10 +264,10 @@ def get_source_link(report_html: str, index: int, source: str) -> str:
         f = open(filename, 'w', encoding="utf-8")
         f.write(source)
         f.close()
-    except Exception as err:
-        trace = traceback.format_exc()
+    except Exception as error:
+        # trace = traceback.format_exc()
         link = None
-        print(f"{str(err)}\n\n{trace}", file=sys.stderr)
+        log_error(None, f"Error reading file: {filename}", error)
     finally:
         return link
 
@@ -283,7 +284,7 @@ def get_download_link(report_html: str, target: str | bytes = None) -> str:
     Returns:
         The relative path to the HTML report folder of the saved file.
     """
-    if target is None:
+    if target in (None, ''):
         return None
     filename = str(uuid.uuid4())
     try:
@@ -295,22 +296,23 @@ def get_download_link(report_html: str, target: str | bytes = None) -> str:
             f.write(target)
             f.close()
         return f"downloads{os.sep}{filename}"
-    except:
-        raise
+    except Exception as error:
+        log_error(None, f"Error copying file to 'downloads' folder:", error)
+        return None
 
 
 #
 # Auxiliary functions for the report generation
 #
 def append_header(call, report, extras, pytest_html,
-                  description, description_tag):
+                  description: str, description_tag: Literal["h1", "h2", "h3", "p", "pre"]):
     """
     Appends the description and the test execution exception trace, if any, to a test report.
 
     Args:
         call (CallInfo): Information of the test call.
         report (TestReport): The test report returned by pytest.
-        extras (List): The test extras.
+        extras (list): The test extras.
         pytest_html (ModuleType): The pytest-html plugin.
         description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
@@ -379,11 +381,11 @@ def append_header(call, report, extras, pytest_html,
 def escape_html(text, quote=False) -> str:
     """ Escapes HTML characters in a text. """
     if text is None:
-        return ""
+        return None
     return html.escape(str(text), quote)
 
 
-def get_table_row_tag(comment, image, source, single_page, clazz_comment="comment") -> str:
+def get_table_row_tag(comment: str, image: str, source: str, single_page: bool, clazz="extras_comment") -> str:
     """
     Returns the HTML table row of a test step.
 
@@ -392,16 +394,12 @@ def get_table_row_tag(comment, image, source, single_page, clazz_comment="commen
         image (str): The screenshot anchor element.
         source (str): The page source anchor element.
         single_page (bool): Whether to generate the HTML report in a single page.
-        clazz_comment (str): The CSS class to apply to the comment table cell.
+        clazz (str): The CSS class to apply to the comment table cell.
 
     Returns:
         str: The <tr> element.
     """
-    clazz = f"extras_{clazz_comment}"
-    if isinstance(comment, str):
-        comment = decorate_label(comment, clazz)
-    else:
-        comment = ""
+    comment = decorate_label(comment, clazz)
     if image is not None:
         image = decorate_image(image, single_page)
         if source is not None:
@@ -438,6 +436,8 @@ def decorate_label(label, clazz) -> str:
     Returns:
         The <span> element decorated with the CSS class.
     """
+    if label in (None, ''):
+        return ""
     return f'<span class="{clazz}">{label}</span>'
 
 
@@ -465,21 +465,21 @@ def decorate_image(uri: str, single_page: bool) -> str:
 
 def decorate_image_from_file(uri: str) -> str:
     clazz = "extras_image"
-    if uri is None:
+    if uri in (None, ''):
         return ""
     return f'<a href="{uri}" target="_blank" rel="noopener noreferrer"><img src ="{uri}" class="{clazz}"></a>'
 
 
 def decorate_image_from_base64(uri: str) -> str:
     clazz = "extras_image"
-    if uri is None:
+    if uri in (None, ''):
         return ""
     return f'<img src ="{uri}" class="{clazz}">'
 
 
 def decorate_page_source(filename) -> str:
     """ Applies CSS class to a page source anchor element. """
-    if filename is None:
+    if filename in (None, ''):
         return ""
     clazz = "extras_page_src"
     return f'<a href="{filename}" target="_blank" rel="noopener noreferrer" class="{clazz}">[page source]</a>'
@@ -487,7 +487,7 @@ def decorate_page_source(filename) -> str:
 
 def decorate_uri(uri: str) -> str:
     """ Applies CSS class to a uri anchor element. """
-    if uri is None or uri == '':
+    if uri in (None, ''):
         return ""
     if uri.startswith("downloads"):
         return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{pathlib.Path(uri).name}</a>'
@@ -499,7 +499,7 @@ def decorate_uri_list(uris: list[str]) -> str:
     """ Applies CSS class to a list of uri attachments. """
     links = ""
     for uri in uris:
-        if uri is not None and uri != '':
+        if uri not in (None, ''):
             links += decorate_uri(uri) + "<br>"
     return links
 
@@ -519,8 +519,21 @@ def decorate_attachment(attachment) -> str:
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
 
 
-def log_error_message(report, message):
-    """ Appends error message in stderr section of a test report. """
+def log_error(report, message: str, error: Exception=None):
+    """
+    Appends error message in stderr section of a test report.
+
+    Args:
+        report (TestReport): The test report returned by pytest (optional).
+        message (str): The message to log.
+        error (Exception): The exception to log.
+    """
+    if report is None:
+        if error is None:
+            print(str(message) + '\n', file=sys.stderr)
+        else:
+            print(f"{message}\n{error}\n", file=sys.stderr)
+        return
     try:
         i = -1
         for x in range(len(report.sections)):
