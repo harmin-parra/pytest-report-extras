@@ -1,6 +1,7 @@
 import base64
 import html
 import importlib
+from typing import Literal
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
@@ -22,12 +23,13 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_html, single_page, screenshots, sources, report_allure, indent):
+    def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last"],
+                 sources: bool, report_allure: str, indent: int):
         """
         Args:
             report_html (str): The HTML report folder.
             single_page (bool): Whether to generate the HTML report in a single webpage.
-            screenshots (str): The screenshot strategy (all or last).
+            screenshots (str): The screenshot strategy. Possible values: 'all' or 'last'.
             sources (bool): Whether to gather webpage sources.
             report_allure (str): The Allure report folder.
             indent: The indent to use to format XML, JSON and YAML documents.

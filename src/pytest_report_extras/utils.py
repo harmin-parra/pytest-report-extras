@@ -9,6 +9,7 @@ import subprocess
 import sys
 import traceback
 import uuid
+from typing import Literal
 # from . import Attachment
 
 
@@ -303,14 +304,14 @@ def get_download_link(report_html: str, target: str | bytes = None) -> str:
 # Auxiliary functions for the report generation
 #
 def append_header(call, report, extras, pytest_html,
-                  description, description_tag):
+                  description: str, description_tag: Literal["h1", "h2", "h3", "p", "pre"]):
     """
     Appends the description and the test execution exception trace, if any, to a test report.
 
     Args:
         call (CallInfo): Information of the test call.
         report (TestReport): The test report returned by pytest.
-        extras (List): The test extras.
+        extras (list): The test extras.
         pytest_html (ModuleType): The pytest-html plugin.
         description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
