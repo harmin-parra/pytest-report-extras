@@ -519,7 +519,7 @@ def decorate_attachment(attachment) -> str:
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
 
 
-def log_error(report, message: str, error: Exception=None):
+def log_error(report, message: str, error: Exception = None):
     """
     Appends error message in stderr section of a test report.
 

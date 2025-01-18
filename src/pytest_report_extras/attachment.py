@@ -133,7 +133,6 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding an XML document.
     """
-    result = None
     try:
         result = xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', '')).toprettyxml(indent=" " * indent)
         result = '\n'.join(line for line in result.splitlines() if not re.match(r"^\s*<!--.*?-->\s*\n*$", line))
@@ -168,7 +167,6 @@ def _attachment_csv(text: str, delimiter=',') -> Attachment:
     """
     Returns an attachment object with a string holding a CVS document.
     """
-    inner_html = None
     try:
         f = io.StringIO(text)
         csv_reader = csv.reader(f, delimiter=delimiter)
