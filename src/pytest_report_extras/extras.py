@@ -197,15 +197,16 @@ class Extras:
             self._save_image(None, None)
             self.comments.append(comment)
 
-    def _save_image(self, image: bytes | str, source: str, mime=None):
+    def _save_image(self, image: bytes | str, source: str, mime: str = None):
         """
-        Saves a screenshot and a webpage source.
+        Saves a screenshot and a webpage source when using the pytest-html plugin.
         The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
             image (bytes | str): The screenshot as bytes or base64 string.
             source (str): The webpage source.
+            mime (str): The mime type of the image to save.
         """
         link_image = None
         link_source = None
