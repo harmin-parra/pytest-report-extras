@@ -116,6 +116,14 @@ class Attachment:
             case _:
                 return _attachment_txt(body)
 
+    def __str__(self):
+        return (
+            f"body: {self.body}\n"
+            f"source: {self.source}\n"
+            f"mime: {self.mime}\n"
+            f"inner_html: {self.inner_html}\n"
+        )
+
 
 def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
     """
