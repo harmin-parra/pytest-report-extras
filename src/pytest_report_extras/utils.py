@@ -154,7 +154,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
         from selenium.webdriver.remote.webelement import WebElement
     else:
         log_error(None, "Selenium module is not installed.")
-        return image, source
+        return None, None
 
     if isinstance(target, WebElement):
         image = target.screenshot_as_png
@@ -198,7 +198,7 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
         assert isinstance(target, Page) or isinstance(target, Locator)
     else:
         log_error(None, "Playwright module is not installed.")
-        return image, source
+        return None, None
 
     if isinstance(target, Page):
         image = target.screenshot(full_page=full_page)
@@ -378,7 +378,7 @@ def append_header(call, report, extras, pytest_html,
     report.extras = extras
 
 
-def escape_html(text, quote=False) -> str:
+def escape_html(text, quote=False):
     """ Escapes HTML characters in a text. """
     if text is None:
         return None

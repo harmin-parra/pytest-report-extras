@@ -138,6 +138,14 @@ def report(request, report_html, single_page, screenshots, sources, report_allur
 #
 # Hookers
 #
+
+# Global variables to store key fixtures to handle issue links in setup failures
+# Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
+fx_issue_key = None
+fx_issue_link = None
+fx_html = None
+fx_allure = None
+
 # Global variables to override exit code
 passed = 0
 failed = 0
@@ -368,8 +376,6 @@ def pytest_configure(config):
     Add CSS file to --css request option for pytest-html
     Set global variables.
     """
-    # Global variables to store key fixtures to handle issue links in setup failures
-    # Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
     global fx_issue_key, fx_issue_link, fx_html, fx_allure
     fx_issue_link = config.getini("extras_issue_link_pattern")
     fx_issue_key = config.getini("extras_issue_key_pattern")
