@@ -1,5 +1,4 @@
 import base64
-import html
 import importlib
 from typing import Literal
 from . import utils
