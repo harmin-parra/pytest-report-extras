@@ -385,7 +385,7 @@ def escape_html(text, quote=False):
     return html.escape(str(text), quote)
 
 
-def get_table_row_tag(comment: str, image: str, source: str, single_page: bool, clazz="extras_comment") -> str:
+def get_table_row_tag(comment: str, image: str, source: str, attachment, single_page: bool, clazz="extras_comment") -> str:
     """
     Returns the HTML table row of a test step.
 
@@ -393,13 +393,18 @@ def get_table_row_tag(comment: str, image: str, source: str, single_page: bool, 
         comment (str): The comment of the test step.
         image (str): The screenshot anchor element.
         source (str): The page source anchor element.
+        attachment (Attachment): The attachment of the test step.
         single_page (bool): Whether to generate the HTML report in a single page.
         clazz (str): The CSS class to apply to the comment table cell.
 
     Returns:
         str: The <tr> element.
     """
-    comment = decorate_label(comment, clazz)
+    if comment is None:
+        comment = ""
+    else:
+        comment += decorate_attachment(attachment)
+        comment = decorate_label(comment, clazz)
     if image is not None:
         image = decorate_image(image, single_page)
         if source is not None:
@@ -508,9 +513,16 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_pre"
     clazz_frm = "extras_iframe"
-    if attachment.body in (None, "") and attachment.inner_html in (None, ""):
+    if attachment is None:
         return ""
-    if attachment.inner_html in (None, ""):
+    attachment.body = '' if attachment.body in (None, '') else attachment.body
+    attachment.inner_html = '' if attachment.inner_html in (None, '') else attachment.inner_html
+    if attachment.body == '' and attachment.inner_html == '':
+        return ""
+    # downloadable file with unknown mime type
+    if attachment.mime is None and attachment.source is not None:
+        return ' ' + attachment.inner_html
+    if attachment.inner_html == '':
         return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
     else:
         if attachment.mime == "text/html":

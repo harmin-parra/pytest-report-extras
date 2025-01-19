@@ -293,6 +293,7 @@ def pytest_runtest_makereport(item, call):
                     fx_report.comments[i],
                     fx_report.images[i],
                     fx_report.sources[i],
+                    fx_report.attachments[i],
                     fx_single_page
                 )
 
@@ -304,6 +305,7 @@ def pytest_runtest_makereport(item, call):
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
+                    fx_report.attachments[-1],
                     fx_single_page
                 )
 
@@ -323,6 +325,7 @@ def pytest_runtest_makereport(item, call):
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
+                    fx_report.attachments[-1],
                     fx_single_page,
                     f"extras_{event_class}"
                 )

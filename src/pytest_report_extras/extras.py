@@ -36,6 +36,7 @@ class Extras:
         self.images = []
         self.sources = []
         self.comments = []
+        self.attachments = []
         self.links = []
         self.target = None
         self._fx_screenshots = screenshots
@@ -136,6 +137,7 @@ class Extras:
         if self._html:
             self._save_image(image, source, mime)
             self.comments.append(comment)
+            self.attachments.append(None)
 
     def attach(
         self,
@@ -189,13 +191,10 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            if attachment is not None:
-                if attachment.body is None and attachment.mime is None and attachment.source is not None:
-                    comment += ' ' + attachment.inner_html
-                else:
-                    comment += '\n' + utils.decorate_attachment(attachment)
             self._save_image(None, None)
             self.comments.append(comment)
+            self.attachments.append(attachment)
+            
 
     def _save_image(self, image: bytes | str, source: str, mime: str = None):
         """
