@@ -1,8 +1,8 @@
 import pathlib
 from typing import Literal
 from typing import Optional
-# from plugin.attachment import Attachment
-from plugin.utils import escape_html
+# from .attachment import Attachment
+from .utils import escape_html
 
 
 #
