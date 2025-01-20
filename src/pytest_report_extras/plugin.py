@@ -2,7 +2,6 @@ import importlib
 import pathlib
 import pytest
 import re
-from . import utils
 from . import decorators
 from . import utils
 from .extras import Extras
