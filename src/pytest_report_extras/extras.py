@@ -225,7 +225,7 @@ class Extras:
         # Get the image uri
         if image is not None:
             if self._fx_single_page is False:
-                link_image = utils.get_image_link(self._html, index, image)
+                link_image = utils.save_image_and_get_link(self._html, index, image)
             else:
                 mime = "image/*" if mime is None else mime
                 try:
@@ -237,7 +237,7 @@ class Extras:
         # Get the webpage source uri
         if source is not None:
             if self._fx_single_page is False:
-                link_source = utils.get_source_link(self._html, index, source)
+                link_source = utils.save_source_and_get_link(self._html, index, source)
             else:
                 link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
         self.images.append(link_image)
@@ -321,4 +321,4 @@ class Extras:
         Returns:
             The uri of the downloadable file.
         """
-        return utils.get_download_link(self._html, target)
+        return utils.save_file_and_get_link(self._html, target)

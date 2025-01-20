@@ -78,30 +78,7 @@ def create_assets(report_html, single_page):
 #
 # Persistence functions
 #
-def get_full_page_screenshot_chromium(driver) -> bytes:
-    """ Returns the full-page screenshot in PNG format as bytes when using the Chromium WebDriver. """
-    # get window size
-    page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
-    # parameters needed for full page screenshot
-    # note we are setting the width and height of the viewport to screenshot, same as the site's content size
-    screenshot_config = {
-        'captureBeyondViewport': True,
-        'fromSurface': True,
-        'format': "png",
-        'clip': {
-            'x': 0,
-            'y': 0,
-            'width': page_rect['contentSize']['width'],
-            'height': page_rect['contentSize']['height'],
-            'scale': 1,
-        },
-    }
-    # Dictionary with 1 key: data
-    base_64_png = driver.execute_cdp_cmd("Page.captureScreenshot", screenshot_config)
-    return base64.urlsafe_b64decode(base_64_png['data'])
-
-
-def get_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
+def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -164,7 +141,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
             else:
                 if type(target) in (WebDriver_Chrome, WebDriver_Chromium, WebDriver_Edge):
                     try:
-                        image = get_full_page_screenshot_chromium(target)
+                        image = _get_full_page_screenshot_chromium(target)
                     except:
                         image = target.get_screenshot_as_png()
                 else:
@@ -208,7 +185,30 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
     return image, source
 
 
-def get_image_link(report_html: str, index: int, image: bytes) -> str:
+def _get_full_page_screenshot_chromium(driver) -> bytes:
+    """ Returns the full-page screenshot in PNG format as bytes when using the Chromium WebDriver. """
+    # get window size
+    page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
+    # parameters needed for full page screenshot
+    # note we are setting the width and height of the viewport to screenshot, same as the site's content size
+    screenshot_config = {
+        'captureBeyondViewport': True,
+        'fromSurface': True,
+        'format': "png",
+        'clip': {
+            'x': 0,
+            'y': 0,
+            'width': page_rect['contentSize']['width'],
+            'height': page_rect['contentSize']['height'],
+            'scale': 1,
+        },
+    }
+    # Dictionary with 1 key: data
+    base_64_png = driver.execute_cdp_cmd("Page.captureScreenshot", screenshot_config)
+    return base64.urlsafe_b64decode(base_64_png['data'])
+
+
+def save_image_and_get_link(report_html: str, index: int, image: bytes) -> Optional[str]:
     """
     Saves an image in the 'images' folder and returns its relative path to the HTML report folder.
 
@@ -239,7 +239,7 @@ def get_image_link(report_html: str, index: int, image: bytes) -> str:
         return link
 
 
-def get_source_link(report_html: str, index: int, source: str) -> str:
+def save_source_and_get_link(report_html: str, index: int, source: str) -> Optional[str]:
     """
     Saves a webpage source in the 'sources' folder and returns its relative path to the HTML report folder.
 
@@ -270,7 +270,7 @@ def get_source_link(report_html: str, index: int, source: str) -> str:
         return link
 
 
-def get_download_link(report_html: str, target: str | bytes = None) -> str:
+def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Optional[str]:
     """
     Saves a copy of a file or the bytes in the 'downloads' folder 
     and returns its relative path to the HTML report folder.
