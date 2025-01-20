@@ -13,7 +13,7 @@ from typing import Optional
 
 
 #
-# Auxiliary functions to check options and fixtures
+# Auxiliary functions
 #
 def check_options(htmlpath, allurepath):
     """ Verifies if the --html or --alluredir option has been set by the user. """
@@ -73,6 +73,13 @@ def create_assets(report_html, single_page):
     # resources_path = pathlib.Path(__file__).parent.joinpath("resources")
     # error_img = pathlib.Path(resources_path, "error.png")
     # shutil.copy(str(error_img), f"{folder}images")
+
+
+def escape_html(text: Optional[str], quote=False) -> Optional[str]:
+    """ Escapes HTML characters in a text. """
+    if text is None:
+        return None
+    return html.escape(str(text), quote)
 
 
 #
@@ -299,13 +306,9 @@ def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Opti
         return None
 
 
-def escape_html(text: Optional[str], quote=False) -> Optional[str]:
-    """ Escapes HTML characters in a text. """
-    if text is None:
-        return None
-    return html.escape(str(text), quote)
-
-
+#
+# Logger function
+#
 def log_error(report, message: str, error: Exception = None):
     """
     Appends error message in stderr section of a test report.
