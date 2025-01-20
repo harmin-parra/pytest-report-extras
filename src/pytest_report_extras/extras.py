@@ -1,6 +1,8 @@
 import base64
 import importlib
 from typing import Literal
+from typing import Optional
+from . import decorators
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
@@ -91,6 +93,7 @@ class Extras:
         Adds a step with an image in the report.
         The image/screenshot is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
+        The 'target' and 'data' parameters are exclusive.
 
         Args:
             comment (str): The comment of the test step.
@@ -197,6 +200,8 @@ class Extras:
             
 
     def _save_image(self, image: bytes | str, source: str, mime: str = None):
+
+    def _save_image(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
         """
         Saves a screenshot and a webpage source when using the pytest-html plugin.
         The image is saved in <report_html>/images folder.

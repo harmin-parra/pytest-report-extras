@@ -9,8 +9,7 @@ import subprocess
 import sys
 import traceback
 import uuid
-from typing import Literal
-# from . import Attachment
+from typing import Optional
 
 
 #
@@ -26,7 +25,7 @@ def check_options(htmlpath, allurepath):
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
-def get_folder(filepath):
+def get_folder(filepath) -> Optional[str]:
     """
     Returns the folder of a filepath.
 
@@ -44,6 +43,10 @@ def check_lists_length(report, fx_extras):
     message = ('"images", "comments" and "sources" lists don\'t have the same length.\n'
                "Screenshots won't be logged for this test in pytest-html report.\n")
     if not (len(fx_extras.images) == len(fx_extras.comments) == len(fx_extras.sources)):
+def check_lists_length(report, fx_extras) -> bool:
+    """ Verifies if the image, comment, page source and attachment lists have the same length """
+    message = ('"images", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
+               "Steps won't be logged for this test in pytest-html report.\n")
         log_error(report, message)
         return False
     else:
@@ -128,11 +131,10 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, st
             from playwright.sync_api import Locator
             if isinstance(target, Page) or isinstance(target, Locator):
                 image, source = _get_playwright_screenshot(target, full_page, page_source)
-    
     return image, source
 
 
-def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
+def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -177,7 +179,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
     return image, source
 
 
-def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
+def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -206,7 +208,6 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
             source = target.content()
     else:
         image = target.screenshot()
-
     return image, source
 
 
