@@ -124,6 +124,7 @@ class Extras:
             mime = "image/png"
         else:  # data is not None
             image, source = data, None
+            mime = "image/*" if mime is None else mime
 
         comment = utils.escape_html(comment) if escape_html else comment
 
@@ -198,9 +199,6 @@ class Extras:
             self.comments.append(comment)
             self.attachments.append(attachment)
             
-
-    def _save_image(self, image: bytes | str, source: str, mime: str = None):
-
     def _save_image(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
         """
         Saves a screenshot and a webpage source when using the pytest-html plugin.

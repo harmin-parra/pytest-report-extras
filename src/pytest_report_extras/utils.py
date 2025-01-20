@@ -38,15 +38,12 @@ def get_folder(filepath) -> Optional[str]:
     return folder
 
 
-def check_lists_length(report, fx_extras):
-    """ Verifies if the images, comments and page sources lists have the same length """
-    message = ('"images", "comments" and "sources" lists don\'t have the same length.\n'
-               "Screenshots won't be logged for this test in pytest-html report.\n")
-    if not (len(fx_extras.images) == len(fx_extras.comments) == len(fx_extras.sources)):
 def check_lists_length(report, fx_extras) -> bool:
     """ Verifies if the image, comment, page source and attachment lists have the same length """
     message = ('"images", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
                "Steps won't be logged for this test in pytest-html report.\n")
+    if not (len(fx_extras.images) == len(fx_extras.comments) == 
+            len(fx_extras.sources) == len(fx_extras.attachments)):
         log_error(report, message)
         return False
     else:
