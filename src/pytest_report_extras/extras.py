@@ -270,7 +270,7 @@ class Extras:
                 if mime is None:
                     inner_html = None
                     if self._html:
-                        inner_html = utils.decorate_uri(self.add_to_downloads(source))
+                        inner_html = decorators.decorate_uri(self.add_to_downloads(source))
                     return Attachment(source=source, inner_html=inner_html)
                 else:
                     if Mime.is_image(mime):

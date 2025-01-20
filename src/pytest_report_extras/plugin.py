@@ -3,6 +3,8 @@ import pathlib
 import pytest
 import re
 from . import utils
+from . import decorators
+from . import utils
 from .extras import Extras
 
 
@@ -97,7 +99,7 @@ def indent(request):
     indent = request.config.getini("extras_attachment_indent")
     try:
         return int(indent)
-    except:
+    except ValueError:
         return 4
 
 
@@ -276,7 +278,7 @@ def pytest_runtest_makereport(item, call):
 
             # Append test description and execution exception trace, if any.
             description = item.function.__doc__ if hasattr(item, 'function') else None
-            utils.append_header(call, report, extras, pytest_html, description, fx_description_tag)
+            decorators.append_header(call, report, extras, pytest_html, description, fx_description_tag)
 
             if not utils.check_lists_length(report, fx_report):
                 return
@@ -289,7 +291,7 @@ def pytest_runtest_makereport(item, call):
 
             # Add steps in the report
             for i in range(len(fx_report.images)):
-                rows += utils.get_table_row_tag(
+                rows += decorators.get_table_row_tag(
                     fx_report.comments[i],
                     fx_report.images[i],
                     fx_report.sources[i],
@@ -301,7 +303,7 @@ def pytest_runtest_makereport(item, call):
             if fx_screenshots == "last" and failure is False and target is not None:
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot", target)
-                rows += utils.get_table_row_tag(
+                rows += decorators.get_table_row_tag(
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
@@ -321,7 +323,7 @@ def pytest_runtest_makereport(item, call):
                     event_label = "skip"
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot before {event_label}", target)
-                rows += utils.get_table_row_tag(
+                rows += decorators.get_table_row_tag(
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
