@@ -6,14 +6,18 @@ Changelog
 1.3.0
 =====
 
-**Change**
+**Feature**
 
-* Remove deprecated code.
+* Possibility to define issue link pattern and add issue links to the report.
 
 **Improvement**
 
 * A default CSS style sheet is automatically added if ``--css`` option is not provided.
 * Usage errors are logged in the standard error stream ('stderr').
+
+**Change**
+
+* Remove deprecated code.
 
 
 1.2.2
