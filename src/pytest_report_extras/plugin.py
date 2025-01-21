@@ -221,7 +221,7 @@ def pytest_runtest_makereport(item, call):
                 and hasattr(call, 'excinfo')
                 and call.excinfo is not None
                 and hasattr(call.excinfo.value, 'msg')):
-            issues = re.sub(r"[^\w-]", " ",  call.excinfo.value.msg).split()
+            issues = re.sub(r"[,.:=()\[\]]", " ",  call.excinfo.value.msg).split()
             wasskipped = True
             skipped += 1
         # For setup fixture
@@ -256,10 +256,10 @@ def pytest_runtest_makereport(item, call):
         if (hasattr(call, 'excinfo')
                 and call.excinfo is not None
                 and hasattr(call.excinfo.value, 'msg')):
-            issues = re.sub(r"[^\w-]", " ",  call.excinfo.value.msg).split()
+            issues = re.sub(r",.:=()\[\]", " ",  call.excinfo.value.msg).split()
         # For tests with the pytest.mark.xfail fixture
         elif hasattr(report, 'wasxfail'):
-            issues = re.sub(r"[^\w-]", " ",  report.wasxfail).split()
+            issues = re.sub(r",.:=()\[\]", " ",  report.wasxfail).split()
 
         # Add extras to the pytest-html report
         # if the test item is using the 'report' fixtures and the pytest-html plugin
