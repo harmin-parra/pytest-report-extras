@@ -6,6 +6,7 @@ import re
 import xml.dom.minidom as xdom
 import yaml
 from typing import List
+from . import decorators
 from . import utils
 
 
@@ -116,6 +117,14 @@ class Attachment:
             case _:
                 return _attachment_txt(body)
 
+    def __str__(self):
+        return (
+            f"body: {self.body}\n"
+            f"source: {self.source}\n"
+            f"mime: {self.mime}\n"
+            f"inner_html: {self.inner_html}\n"
+        )
+
 
 def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
     """
@@ -199,7 +208,7 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
         elif isinstance(text, List):
             body = '\n'.join(text)
             uri_list = text
-        inner_html = utils.decorate_uri_list(uri_list)
+        inner_html = decorators.decorate_uri_list(uri_list)
         return Attachment(body=body, mime=Mime.text_uri_list, inner_html=inner_html)
     except Exception as error:
         utils.log_error(None, "Error parsing uri list:", error)

@@ -2,6 +2,7 @@ import importlib
 import pathlib
 import pytest
 import re
+from . import decorators
 from . import utils
 from .extras import Extras
 
@@ -97,7 +98,7 @@ def indent(request):
     indent = request.config.getini("extras_attachment_indent")
     try:
         return int(indent)
-    except:
+    except ValueError:
         return 4
 
 
@@ -138,6 +139,14 @@ def report(request, report_html, single_page, screenshots, sources, report_allur
 #
 # Hookers
 #
+
+# Global variables to store key fixtures to handle issue links in setup failures
+# Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
+fx_issue_key = None
+fx_issue_link = None
+fx_html = None
+fx_allure = None
+
 # Global variables to override exit code
 passed = 0
 failed = 0
@@ -212,7 +221,7 @@ def pytest_runtest_makereport(item, call):
                 and hasattr(call, 'excinfo')
                 and call.excinfo is not None
                 and hasattr(call.excinfo.value, 'msg')):
-            issues = re.sub(r"[^\w-]", " ",  call.excinfo.value.msg).split()
+            issues = re.sub(r"[,.:=()\[\]]", " ",  call.excinfo.value.msg).split()
             wasskipped = True
             skipped += 1
         # For setup fixture
@@ -247,10 +256,10 @@ def pytest_runtest_makereport(item, call):
         if (hasattr(call, 'excinfo')
                 and call.excinfo is not None
                 and hasattr(call.excinfo.value, 'msg')):
-            issues = re.sub(r"[^\w-]", " ",  call.excinfo.value.msg).split()
+            issues = re.sub(r",.:=()\[\]", " ",  call.excinfo.value.msg).split()
         # For tests with the pytest.mark.xfail fixture
         elif hasattr(report, 'wasxfail'):
-            issues = re.sub(r"[^\w-]", " ",  report.wasxfail).split()
+            issues = re.sub(r",.:=()\[\]", " ",  report.wasxfail).split()
 
         # Add extras to the pytest-html report
         # if the test item is using the 'report' fixtures and the pytest-html plugin
@@ -268,7 +277,7 @@ def pytest_runtest_makereport(item, call):
 
             # Append test description and execution exception trace, if any.
             description = item.function.__doc__ if hasattr(item, 'function') else None
-            utils.append_header(call, report, extras, pytest_html, description, fx_description_tag)
+            decorators.append_header(call, report, extras, pytest_html, description, fx_description_tag)
 
             if not utils.check_lists_length(report, fx_report):
                 return
@@ -281,10 +290,11 @@ def pytest_runtest_makereport(item, call):
 
             # Add steps in the report
             for i in range(len(fx_report.images)):
-                rows += utils.get_table_row_tag(
+                rows += decorators.get_table_row_tag(
                     fx_report.comments[i],
                     fx_report.images[i],
                     fx_report.sources[i],
+                    fx_report.attachments[i],
                     fx_single_page
                 )
 
@@ -292,10 +302,11 @@ def pytest_runtest_makereport(item, call):
             if fx_screenshots == "last" and failure is False and target is not None:
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot", target)
-                rows += utils.get_table_row_tag(
+                rows += decorators.get_table_row_tag(
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
+                    fx_report.attachments[-1],
                     fx_single_page
                 )
 
@@ -311,10 +322,11 @@ def pytest_runtest_makereport(item, call):
                     event_label = "skip"
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot before {event_label}", target)
-                rows += utils.get_table_row_tag(
+                rows += decorators.get_table_row_tag(
                     fx_report.comments[-1],
                     fx_report.images[-1],
                     fx_report.sources[-1],
+                    fx_report.attachments[-1],
                     fx_single_page,
                     f"extras_{event_class}"
                 )
@@ -368,8 +380,6 @@ def pytest_configure(config):
     Add CSS file to --css request option for pytest-html
     Set global variables.
     """
-    # Global variables to store key fixtures to handle issue links in setup failures
-    # Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
     global fx_issue_key, fx_issue_link, fx_html, fx_allure
     fx_issue_link = config.getini("extras_issue_link_pattern")
     fx_issue_key = config.getini("extras_issue_key_pattern")

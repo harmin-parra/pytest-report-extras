@@ -1,7 +1,8 @@
 import base64
-import html
 import importlib
 from typing import Literal
+from typing import Optional
+from . import decorators
 from . import utils
 from .attachment import Attachment
 from .attachment import Mime
@@ -37,6 +38,7 @@ class Extras:
         self.images = []
         self.sources = []
         self.comments = []
+        self.attachments = []
         self.links = []
         self.target = None
         self._fx_screenshots = screenshots
@@ -91,6 +93,7 @@ class Extras:
         Adds a step with an image in the report.
         The image/screenshot is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
+        The 'target' and 'data' parameters are exclusive.
 
         Args:
             comment (str): The comment of the test step.
@@ -121,6 +124,7 @@ class Extras:
             mime = "image/png"
         else:  # data is not None
             image, source = data, None
+            mime = "image/*" if mime is None else mime
 
         comment = utils.escape_html(comment) if escape_html else comment
 
@@ -137,6 +141,7 @@ class Extras:
         if self._html:
             self._save_image(image, source, mime)
             self.comments.append(comment)
+            self.attachments.append(None)
 
     def attach(
         self,
@@ -190,23 +195,20 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            if attachment is not None:
-                if attachment.body is None and attachment.mime is None and attachment.source is not None:
-                    comment += ' ' + attachment.inner_html
-                else:
-                    comment += '\n' + utils.decorate_attachment(attachment)
             self._save_image(None, None)
             self.comments.append(comment)
-
-    def _save_image(self, image: bytes | str, source: str, mime=None):
+            self.attachments.append(attachment)
+            
+    def _save_image(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
         """
-        Saves a screenshot and a webpage source.
+        Saves a screenshot and a webpage source when using the pytest-html plugin.
         The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
 
         Args:
             image (bytes | str): The screenshot as bytes or base64 string.
             source (str): The webpage source.
+            mime (str): The mime type of the image to save.
         """
         link_image = None
         link_source = None
@@ -223,7 +225,7 @@ class Extras:
         # Get the image uri
         if image is not None:
             if self._fx_single_page is False:
-                link_image = utils.get_image_link(self._html, index, image)
+                link_image = utils.save_image_and_get_link(self._html, index, image)
             else:
                 mime = "image/*" if mime is None else mime
                 try:
@@ -235,7 +237,7 @@ class Extras:
         # Get the webpage source uri
         if source is not None:
             if self._fx_single_page is False:
-                link_source = utils.get_source_link(self._html, index, source)
+                link_source = utils.save_source_and_get_link(self._html, index, source)
             else:
                 link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
         self.images.append(link_image)
@@ -268,7 +270,7 @@ class Extras:
                 if mime is None:
                     inner_html = None
                     if self._html:
-                        inner_html = utils.decorate_uri(self.add_to_downloads(source))
+                        inner_html = decorators.decorate_uri(self.add_to_downloads(source))
                     return Attachment(source=source, inner_html=inner_html)
                 else:
                     if Mime.is_image(mime):
@@ -319,4 +321,4 @@ class Extras:
         Returns:
             The uri of the downloadable file.
         """
-        return utils.get_download_link(self._html, target)
+        return utils.save_file_and_get_link(self._html, target)

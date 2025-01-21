@@ -50,6 +50,14 @@ Accepted values: any positive integer.
 
 Default value: ``4``
 
+----
+
+* ``extras_issue_link_pattern``
+
+The pattern for the issues links (example: https://bugtracker.com/issues/{})
+
+Default value: None
+
 
 API
 ===
@@ -67,26 +75,26 @@ To add a step with screenshot:
       page_source: bool = False,                  # Whether to include the webpage HTML source.
       escape_html: bool = False                   # Whether to escape HTML characters in the comment.
   )
-  
+
 To add a step with attachment:
 
 .. code-block:: python
 
   attach(
       comment: str,                                 # Comment of the test step.
-      body: str | bytes | Dict | List[str] = None,  # The content/body of the attachment.
+      body: str | bytes | dict | list[str] = None,  # The content/body of the attachment.
       source: str = None,                           # The filepath of the attachment.
-      mime: str | Mime = None,                      # The attachment mime type.
+      mime: str = None,                             # The attachment mime type.
       escape_html: bool = False                     # Whether to escape HTML characters in the comment.
   )
-  
+
   # Type of body parameter:
   #    str: - for XML, JSON, YAML, CSV or TXT attachments
   #         - for image attachments if it is a base64 string
   #    bytes: for image attachments
-  #    Dict: for JSON attachments
-  #    List[str]: for list-uri attachments
-  
+  #    dict: for JSON attachments
+  #    list[str]: for list-uri attachments
+
   # The supported mime types are:
   #    report.Mime.image_bmp          or "image/png"
   #    report.Mime.image_gif          or "image/gif"
@@ -111,7 +119,14 @@ To add a link to the report:
       uri: str,              # The uri.
       name: str = None       # The text of the anchor tag.
   )
-  
+
+
+To add issue links to a report:
+
+.. code-block:: python
+
+  @pytest.mark.issues("<issue keys separated by comma>")
+
 
 Limitations
 ===========
@@ -160,6 +175,7 @@ Sample ``pytest.ini`` file
   extras_attachment_indent = 4
   extras_screenshots = all
   extras_sources = False
+  extras_issue_link_pattern = http://bugtracker.com/{}
 
 
 Sample code
@@ -206,17 +222,9 @@ Sample code
       """
       This is a test adding XML & JSON attachments
       """
-      xml_body = """
-          <note>  
-              <to>John</to>  
-              <from>Diana</from>  
-              <heading>Reminder</heading>  
-              <body>Don't forget me this weekend!</body>  
-          </note>"""
-          
       report.attach(
-          "This is a XML document:",
-          body=xml_body,
+          comment="This is a XML document:",
+          body="<root><child>text</child></root>",
           mime=report.Mime.application_xml
       )
 	  
@@ -238,6 +246,15 @@ Sample code
       report.link("https://en.wikipedia.org")
       report.link("https://wikipedia.org", "Wikipedia")
       report.link(uri="https://wikipedia.org", name="Wikipedia")
+
+
+* Example adding issue links
+
+.. code-block:: python
+
+  @pytest.mark.issues("TEST-123, TEST-987")
+  def test_issue_links(report)
+    # code....
 
 
 Sample CSS file

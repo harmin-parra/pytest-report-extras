@@ -9,12 +9,11 @@ import subprocess
 import sys
 import traceback
 import uuid
-from typing import Literal
-# from . import Attachment
+from typing import Optional
 
 
 #
-# Auxiliary functions to check options and fixtures
+# Auxiliary functions
 #
 def check_options(htmlpath, allurepath):
     """ Verifies if the --html or --alluredir option has been set by the user. """
@@ -26,7 +25,7 @@ def check_options(htmlpath, allurepath):
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
-def get_folder(filepath):
+def get_folder(filepath) -> Optional[str]:
     """
     Returns the folder of a filepath.
 
@@ -39,11 +38,12 @@ def get_folder(filepath):
     return folder
 
 
-def check_lists_length(report, fx_extras):
-    """ Verifies if the images, comments and page sources lists have the same length """
-    message = ('"images", "comments" and "sources" lists don\'t have the same length.\n'
-               "Screenshots won't be logged for this test in pytest-html report.\n")
-    if not (len(fx_extras.images) == len(fx_extras.comments) == len(fx_extras.sources)):
+def check_lists_length(report, fx_extras) -> bool:
+    """ Verifies if the image, comment, page source and attachment lists have the same length """
+    message = ('"images", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
+               "Steps won't be logged for this test in pytest-html report.\n")
+    if not (len(fx_extras.images) == len(fx_extras.comments) == 
+            len(fx_extras.sources) == len(fx_extras.attachments)):
         log_error(report, message)
         return False
     else:
@@ -75,33 +75,17 @@ def create_assets(report_html, single_page):
     # shutil.copy(str(error_img), f"{folder}images")
 
 
+def escape_html(text: Optional[str], quote=False) -> Optional[str]:
+    """ Escapes HTML characters in a text. """
+    if text is None:
+        return None
+    return html.escape(str(text), quote)
+
+
 #
 # Persistence functions
 #
-def get_full_page_screenshot_chromium(driver) -> bytes:
-    """ Returns the full-page screenshot in PNG format as bytes when using the Chromium WebDriver. """
-    # get window size
-    page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
-    # parameters needed for full page screenshot
-    # note we are setting the width and height of the viewport to screenshot, same as the site's content size
-    screenshot_config = {
-        'captureBeyondViewport': True,
-        'fromSurface': True,
-        'format': "png",
-        'clip': {
-            'x': 0,
-            'y': 0,
-            'width': page_rect['contentSize']['width'],
-            'height': page_rect['contentSize']['height'],
-            'scale': 1,
-        },
-    }
-    # Dictionary with 1 key: data
-    base_64_png = driver.execute_cdp_cmd("Page.captureScreenshot", screenshot_config)
-    return base64.urlsafe_b64decode(base_64_png['data'])
-
-
-def get_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
+def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -128,11 +112,10 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, st
             from playwright.sync_api import Locator
             if isinstance(target, Page) or isinstance(target, Locator):
                 image, source = _get_playwright_screenshot(target, full_page, page_source)
-    
     return image, source
 
 
-def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
+def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -154,7 +137,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
         from selenium.webdriver.remote.webelement import WebElement
     else:
         log_error(None, "Selenium module is not installed.")
-        return image, source
+        return None, None
 
     if isinstance(target, WebElement):
         image = target.screenshot_as_png
@@ -165,7 +148,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
             else:
                 if type(target) in (WebDriver_Chrome, WebDriver_Chromium, WebDriver_Edge):
                     try:
-                        image = get_full_page_screenshot_chromium(target)
+                        image = _get_full_page_screenshot_chromium(target)
                     except:
                         image = target.get_screenshot_as_png()
                 else:
@@ -177,7 +160,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
     return image, source
 
 
-def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tuple[bytes, str]:
+def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
 
@@ -198,7 +181,7 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
         assert isinstance(target, Page) or isinstance(target, Locator)
     else:
         log_error(None, "Playwright module is not installed.")
-        return image, source
+        return None, None
 
     if isinstance(target, Page):
         image = target.screenshot(full_page=full_page)
@@ -206,11 +189,33 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
             source = target.content()
     else:
         image = target.screenshot()
-
     return image, source
 
 
-def get_image_link(report_html: str, index: int, image: bytes) -> str:
+def _get_full_page_screenshot_chromium(driver) -> bytes:
+    """ Returns the full-page screenshot in PNG format as bytes when using the Chromium WebDriver. """
+    # get window size
+    page_rect = driver.execute_cdp_cmd("Page.getLayoutMetrics", {})
+    # parameters needed for full page screenshot
+    # note we are setting the width and height of the viewport to screenshot, same as the site's content size
+    screenshot_config = {
+        'captureBeyondViewport': True,
+        'fromSurface': True,
+        'format': "png",
+        'clip': {
+            'x': 0,
+            'y': 0,
+            'width': page_rect['contentSize']['width'],
+            'height': page_rect['contentSize']['height'],
+            'scale': 1,
+        },
+    }
+    # Dictionary with 1 key: data
+    base_64_png = driver.execute_cdp_cmd("Page.captureScreenshot", screenshot_config)
+    return base64.urlsafe_b64decode(base_64_png['data'])
+
+
+def save_image_and_get_link(report_html: str, index: int, image: bytes) -> Optional[str]:
     """
     Saves an image in the 'images' folder and returns its relative path to the HTML report folder.
 
@@ -241,7 +246,7 @@ def get_image_link(report_html: str, index: int, image: bytes) -> str:
         return link
 
 
-def get_source_link(report_html: str, index: int, source: str) -> str:
+def save_source_and_get_link(report_html: str, index: int, source: str) -> Optional[str]:
     """
     Saves a webpage source in the 'sources' folder and returns its relative path to the HTML report folder.
 
@@ -272,7 +277,7 @@ def get_source_link(report_html: str, index: int, source: str) -> str:
         return link
 
 
-def get_download_link(report_html: str, target: str | bytes = None) -> str:
+def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Optional[str]:
     """
     Saves a copy of a file or the bytes in the 'downloads' folder 
     and returns its relative path to the HTML report folder.
@@ -302,223 +307,8 @@ def get_download_link(report_html: str, target: str | bytes = None) -> str:
 
 
 #
-# Auxiliary functions for the report generation
+# Logger function
 #
-def append_header(call, report, extras, pytest_html,
-                  description: str, description_tag: Literal["h1", "h2", "h3", "p", "pre"]):
-    """
-    Appends the description and the test execution exception trace, if any, to a test report.
-
-    Args:
-        call (CallInfo): Information of the test call.
-        report (TestReport): The test report returned by pytest.
-        extras (list): The test extras.
-        pytest_html (ModuleType): The pytest-html plugin.
-        description (str): The test function docstring.
-        description_tag (str): The HTML tag to use.
-    """
-    clazz = "extras_exception"
-    # Append description
-    if description is not None:
-        description = escape_html(description).strip().replace('\n', "<br>")
-        description = description.strip().replace('\n', "<br>")
-        extras.append(pytest_html.extras.html(f'<{description_tag} class="extras_description">{description}</{description_tag}>'))
-
-    # Catch explicit pytest.fail and pytest.skip calls
-    if (
-        hasattr(call, 'excinfo') and
-        call.excinfo is not None and
-        call.excinfo.typename in ('Failed', 'Skipped') and
-        hasattr(call.excinfo, "value") and
-        hasattr(call.excinfo.value, "msg")
-    ):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">{escape_html(call.excinfo.typename)}</span><br>'
-            f"reason = {escape_html(call.excinfo.value.msg)}"
-            "</pre>"
-            )
-        )
-    # Catch XFailed tests
-    if report.skipped and hasattr(report, 'wasxfail'):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">XFailed</span><br>'
-            f"reason = {escape_html(report.wasxfail)}"
-            "</pre>"
-            )
-        )
-    # Catch XPassed tests
-    if report.passed and hasattr(report, 'wasxfail'):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">XPassed</span><br>'
-            f"reason = {escape_html(report.wasxfail)}"
-            "</pre>"
-            )
-        )
-    # Catch explicit pytest.xfail calls and runtime exceptions in failed tests
-    if (
-        hasattr(call, 'excinfo') and
-        call.excinfo is not None and
-        call.excinfo.typename not in ('Failed', 'Skipped') and
-        hasattr(call.excinfo, '_excinfo') and
-        call.excinfo._excinfo is not None and
-        isinstance(call.excinfo._excinfo, tuple) and
-        len(call.excinfo._excinfo) > 1
-    ):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">Exception:</span><br>'
-            f"{escape_html(call.excinfo.typename)}<br>"
-            f"{escape_html(call.excinfo._excinfo[1])}"
-            "</pre>"
-            )
-        )
-    report.extras = extras
-
-
-def escape_html(text, quote=False) -> str:
-    """ Escapes HTML characters in a text. """
-    if text is None:
-        return None
-    return html.escape(str(text), quote)
-
-
-def get_table_row_tag(comment: str, image: str, source: str, single_page: bool, clazz="extras_comment") -> str:
-    """
-    Returns the HTML table row of a test step.
-
-    Args:
-        comment (str): The comment of the test step.
-        image (str): The screenshot anchor element.
-        source (str): The page source anchor element.
-        single_page (bool): Whether to generate the HTML report in a single page.
-        clazz (str): The CSS class to apply to the comment table cell.
-
-    Returns:
-        str: The <tr> element.
-    """
-    comment = decorate_label(comment, clazz)
-    if image is not None:
-        image = decorate_image(image, single_page)
-        if source is not None:
-            source = decorate_page_source(source)
-            return (
-                f"<tr>"
-                f"<td>{comment}</td>"
-                f'<td class="extras_td"><div class="extras_td_div">{image}<br>{source}</div></td>'
-                f"</tr>"
-            )
-        else:
-            return (
-                f"<tr>"
-                f"<td>{comment}</td>"
-                f'<td class="extras_td"><div class="extras_td_div">{image}</div></td>'
-                "</tr>"
-            )
-    else:
-        return (
-            f"<tr>"
-            f'<td colspan="2">{comment}</td>'
-            f"</tr>"
-        )
-
-
-def decorate_label(label, clazz) -> str:
-    """
-    Applies a CSS style to a text.
-
-    Args:
-        label (str): The text to decorate.
-        clazz (str): The CSS class to apply.
-
-    Returns:
-        The <span> element decorated with the CSS class.
-    """
-    if label in (None, ''):
-        return ""
-    return f'<span class="{clazz}">{label}</span>'
-
-
-'''
-def decorate_anchors(image, source):
-    """ Applies CSS style to a screenshot and page source anchor elements. """
-    if image is None:
-        return ''
-    image = decorate_image(image)
-    if source is not None:
-        source = decorate_page_source(source)
-        return f'<div class="extras_div">{image}<br>{source}</div>'
-    else:
-        return image
-'''
-
-
-def decorate_image(uri: str, single_page: bool) -> str:
-    """ Applies CSS class to an image anchor element. """
-    if single_page:
-        return decorate_image_from_base64(uri)
-    else:
-        return decorate_image_from_file(uri)
-
-
-def decorate_image_from_file(uri: str) -> str:
-    clazz = "extras_image"
-    if uri in (None, ''):
-        return ""
-    return f'<a href="{uri}" target="_blank" rel="noopener noreferrer"><img src ="{uri}" class="{clazz}"></a>'
-
-
-def decorate_image_from_base64(uri: str) -> str:
-    clazz = "extras_image"
-    if uri in (None, ''):
-        return ""
-    return f'<img src ="{uri}" class="{clazz}">'
-
-
-def decorate_page_source(filename) -> str:
-    """ Applies CSS class to a page source anchor element. """
-    if filename in (None, ''):
-        return ""
-    clazz = "extras_page_src"
-    return f'<a href="{filename}" target="_blank" rel="noopener noreferrer" class="{clazz}">[page source]</a>'
-
-
-def decorate_uri(uri: str) -> str:
-    """ Applies CSS class to a uri anchor element. """
-    if uri in (None, ''):
-        return ""
-    if uri.startswith("downloads"):
-        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{pathlib.Path(uri).name}</a>'
-    else:
-        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{uri}</a>'
-
-
-def decorate_uri_list(uris: list[str]) -> str:
-    """ Applies CSS class to a list of uri attachments. """
-    links = ""
-    for uri in uris:
-        if uri not in (None, ''):
-            links += decorate_uri(uri) + "<br>"
-    return links
-
-
-def decorate_attachment(attachment) -> str:
-    """ Applies CSS class to an attachment. """
-    clazz_pre = "extras_pre"
-    clazz_frm = "extras_iframe"
-    if attachment.body in (None, "") and attachment.inner_html in (None, ""):
-        return ""
-    if attachment.inner_html in (None, ""):
-        return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
-    else:
-        if attachment.mime == "text/html":
-            return f'<iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
-        else:
-            return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
-
-
 def log_error(report, message: str, error: Exception = None):
     """
     Appends error message in stderr section of a test report.
