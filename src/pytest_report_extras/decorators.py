@@ -223,7 +223,7 @@ def decorate_attachment(attachment) -> str:
     if attachment.body == '' and attachment.inner_html == '':
         return ""
     # downloadable file with unknown mime type
-    if attachment.mime is None and attachment.source is not None:
+    if attachment.mime is None and attachment.inner_html is not None:
         return ' ' + attachment.inner_html
     if attachment.inner_html == '':
         return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
