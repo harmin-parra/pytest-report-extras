@@ -75,7 +75,7 @@ def create_assets(report_html, single_page):
     # shutil.copy(str(error_img), f"{folder}images")
 
 
-def escape_html(text: Optional[str], quote=False) -> Optional[str]:
+def escape_html(text, quote=False) -> Optional[str]:
     """ Escapes HTML characters in a text. """
     if text is None:
         return None
@@ -309,7 +309,7 @@ def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Opti
 #
 # Logger function
 #
-def log_error(report: pytest.TestReport, message: str, error: Exception = None):
+def log_error(report: pytest.TestReport | None, message: str, error: Exception = None):
     """
     Appends error message in stderr section of a test report.
 
