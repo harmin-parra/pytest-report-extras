@@ -23,7 +23,6 @@ class Extras:
     """
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
-
     def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last"],
                  sources: bool, report_allure: str, indent: int):
         """

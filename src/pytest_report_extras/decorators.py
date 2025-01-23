@@ -1,7 +1,6 @@
 import pathlib
 from typing import Literal
 from typing import Optional
-# from .attachment import Attachment
 from .utils import escape_html
 
 
@@ -14,10 +13,10 @@ def append_header(call, report, extras, pytest_html,
     Appends the description and the test execution exception trace, if any, to a test report.
 
     Args:
-        call (CallInfo): Information of the test call.
-        report (TestReport): The test report returned by pytest.
+        call (pytest.CallInfo): Information of the test call.
+        report (pytest.TestReport): The test report returned by pytest.
         extras (list): The test extras.
-        pytest_html (ModuleType): The pytest-html plugin.
+        pytest_html (types.ModuleType): The pytest-html plugin.
         description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
     """

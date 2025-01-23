@@ -38,7 +38,7 @@ def get_folder(filepath) -> Optional[str]:
     return folder
 
 
-def check_lists_length(report, fx_extras) -> bool:
+def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
     """ Verifies if the image, comment, page source and attachment lists have the same length """
     message = ('"images", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
                "Steps won't be logged for this test in pytest-html report.\n")
@@ -309,7 +309,7 @@ def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Opti
 #
 # Logger function
 #
-def log_error(report, message: str, error: Exception = None):
+def log_error(report: pytest.TestReport, message: str, error: Exception = None):
     """
     Appends error message in stderr section of a test report.
 
