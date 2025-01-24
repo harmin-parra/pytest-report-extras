@@ -108,8 +108,8 @@ def issue_link_pattern(request):
 
 
 @pytest.fixture(scope='session')
-def check_options(request, report_html, report_allure, single_page):
-    """ Verifies preconditions before using this plugin. """
+def check_options(report_html, report_allure, single_page):
+    """ Verifies preconditions and create assets before using this plugin. """
     utils.check_options(report_html, report_allure)
     if report_html is not None:
         utils.create_assets(report_html, single_page)
@@ -119,7 +119,7 @@ def check_options(request, report_html, report_allure, single_page):
 # Test fixture
 #
 @pytest.fixture(scope='function')
-def report(request, report_html, single_page, screenshots, sources, report_allure, indent, check_options):
+def report(report_html, single_page, screenshots, sources, report_allure, indent, check_options):
     return Extras(report_html, single_page, screenshots, sources, report_allure, indent)
 
 
@@ -133,45 +133,12 @@ fx_html = None
 fx_allure = None
 fx_issue_link = None
 
-# Global variables to override exit code
-passed = 0
-failed = 0
-xfailed = 0
-skipped = 0
-xpassed = 0
-error_setup = 0
-error_teardown = 0
-
-
-@pytest.hookimpl(trylast=True)
-def pytest_sessionfinish(session, exitstatus):
-    """
-    Override exit code 0 and add exit codes 6 and 7.
-    0: All tests are passed or xpassed and there were no errors.
-         (all tests were executed and got a 'passed' outcome).
-    6: No failed tests but there were:
-         - xfailed or xpassed tests
-         - setup or teardown errors
-    7: All tests are passed or xpassed and there were teardown errors.
-         (all tests were executed and got a 'passed' outcome but a teardown failed).
-    """
-    global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
-    if (passed + xpassed >= 0) and (failed + skipped + error_setup == 0):
-        if error_teardown == 0:
-            session.exitstatus = 0
-        else:
-            session.exitstatus = 7
-    if (xfailed + skipped + error_setup + error_teardown > 0) and failed == 0:
-        session.exitstatus = 6
-    # print(f"\n{failed} failed, {passed} passed, {skipped} skipped, {xfailed} xfailed, {xpassed} xpassed, {error_setup + error_teardown} errors")
-
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     """
     Complete pytest-html report with extras and Allure report with attachments.
     """
-    global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
     global fx_html, fx_allure, fx_issue_link
     wasfailed = False
     wasxpassed = False
@@ -183,54 +150,36 @@ def pytest_runtest_makereport(item, call):
     report = outcome.get_result()
     extras = getattr(report, 'extras', [])
 
-    # Comment lines below to deal with issue links even if 'report' fixture is not being used.
+    # Add issues in marker as links
+    marker = item.iter_markers(name="issues")
+    marker = next(marker, None)
+    if marker is not None and len(marker.args) > 0 and fx_issue_link is not None:
+        issues = marker.args[0].replace(' ', '').split(',')
+        for issue in issues:
+            if fx_html is not None and pytest_html is not None:
+                extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
+            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+                import allure
+                from allure_commons.types import LinkType
+                allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.LINK, name=issue)
+
+
     # Exit if the test is not using the 'report' fixtures
-    # if not ("request" in item.funcargs and "report" in item.funcargs):
-    #     return
-
-    try:
-        feature_request = item.funcargs['request']
-        fx_html = feature_request.getfixturevalue("report_html")
-        fx_allure = feature_request.getfixturevalue("report_allure")
-        fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
-    except:
-        pass
-
-    # Update status variables
-    if call.when == 'setup':
-        # For tests with the pytest.mark.skip fixture
-        if (report.skipped
-                and hasattr(call, 'excinfo')
-                and call.excinfo is not None
-                and hasattr(call.excinfo.value, 'msg')):
-            wasskipped = True
-            skipped += 1
-        # For setup fixture
-        if report.failed and call.excinfo is not None:
-            error_setup += 1
-
-    # Update status variables
-    if call.when == 'teardown':
-        if report.failed and call.excinfo is not None:
-            error_teardown += 1
+    if not ("request" in item.funcargs and "report" in item.funcargs):
+        # report.extras = extras
+        return
 
     if report.when == 'call':
         xfail = hasattr(report, "wasxfail")
         # Update status variables
         if report.failed:
             wasfailed = True
-            failed += 1
         if report.skipped and not xfail:
             wasskipped = True
-            skipped += 1
         if report.skipped and xfail:
             wasxfailed = True
-            xfailed += 1
         if report.passed and xfail:
             wasxpassed = True
-            xpassed += 1
-        if report.passed and not xfail:
-            passed += 1
 
         # Add extras to the pytest-html report
         # if the test item is using the 'report' fixtures and the pytest-html plugin
@@ -238,12 +187,19 @@ def pytest_runtest_makereport(item, call):
                 and fx_html is not None and pytest_html is not None):
 
             # Get test fixture values
-            feature_request = item.funcargs['request']
-            fx_report = feature_request.getfixturevalue("report")
-            fx_single_page = feature_request.getfixturevalue("single_page")
-            fx_description_tag = feature_request.getfixturevalue("description_tag")
-            fx_screenshots = feature_request.getfixturevalue("screenshots")
-            target = fx_report.target
+            try:
+                feature_request = item.funcargs['request']
+                fx_report = feature_request.getfixturevalue("report")
+                fx_single_page = feature_request.getfixturevalue("single_page")
+                fx_description_tag = feature_request.getfixturevalue("description_tag")
+                fx_screenshots = feature_request.getfixturevalue("screenshots")
+                # fx_html = feature_request.getfixturevalue("report_html")
+                # fx_allure = feature_request.getfixturevalue("report_allure")
+                # fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
+                target = fx_report.target
+            except Exception as error:
+                utils.log_error(report, "Could not retrieve test fixtures", error)
+                return
 
             # Append test description and execution exception trace, if any.
             description = item.function.__doc__ if hasattr(item, 'function') else None
@@ -327,19 +283,6 @@ def pytest_runtest_makereport(item, call):
                         allure.dynamic.link(link[0], name=link[1])
                     else:
                         allure.dynamic.link(link[0], name=link[0])
-
-    # Add issues in marker as links
-    marker = item.iter_markers(name="issues")
-    marker = next(marker, None)
-    if marker is not None and len(marker.args) > 0 and fx_issue_link is not None:
-        issues = marker.args[0].replace(' ', '').split(',')
-        for issue in issues:
-            if fx_html is not None and pytest_html is not None:
-                extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
-            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
-                import allure
-                from allure_commons.types import LinkType
-                allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.LINK, name=issue)
 
     report.extras = extras
 
