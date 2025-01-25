@@ -166,7 +166,7 @@ def pytest_runtest_makereport(item, call):
 
     # Exit if the test is not using the 'report' fixtures
     if not ("request" in item.funcargs and "report" in item.funcargs):
-        # report.extras = extras
+        report.extras = extras
         return
 
     if report.when == 'call':
