@@ -156,6 +156,8 @@ def pytest_runtest_makereport(item, call):
     if marker is not None and len(marker.args) > 0 and fx_issue_link is not None:
         issues = marker.args[0].replace(' ', '').split(',')
         for issue in issues:
+            if issue in (None, ''):
+                continue            
             if fx_html is not None and pytest_html is not None:
                 extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
             if fx_allure is not None and importlib.util.find_spec('allure') is not None:
