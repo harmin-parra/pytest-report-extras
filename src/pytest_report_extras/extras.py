@@ -101,6 +101,8 @@ class Extras:
                 Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source to attach.
             mime (str): The attachment mime type.
+            source (str): The filepath of the source of the attachment.
+            mime (str): The mime type of the attachment.
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
@@ -179,6 +181,8 @@ class Extras:
                 Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source to attach.
             mime (str): The attachment mime type.
+            source (str): The filepath of the source of the attachment.
+            mime (str): The mime type of the attachment.
             delimiter (str): The delimiter for CSV documents.
 
         Returns:
@@ -238,10 +242,10 @@ class Extras:
         Args:
             comment (str): The comment of the test step.
             image (bytes | str): The image as bytes or base64 string..
-            source (str):: The webpage HTML source code.
-            mime (str): The mime type of the image.
+            source (str): The webpage source code.
+            attachment (Attachment): The attachment.
+            mime (str): The mime type of the attachment.
             escape_html (bool): Whether to escape HTML characters in the comment.
-
         """
         comment = utils.escape_html(comment) if escape_html else comment
 
@@ -268,7 +272,7 @@ class Extras:
 
         Otherwise, saves the data URI schema of the image and the webpage source.
 
-        The image and source HTML anchor 'html' attribute are saved in the
+        The image and source 'html' attributes of the <a> HTML elements are saved in the
           'images' and 'source' lists of the 'report' fixture.
 
         Args:

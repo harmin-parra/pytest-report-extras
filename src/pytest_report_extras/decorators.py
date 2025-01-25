@@ -91,7 +91,7 @@ def get_table_row_tag(
         comment (str): The comment of the test step.
         image (str): The screenshot anchor element.
         source (str): The page source anchor element.
-        attachment (Attachment): The attachment of the test step.
+        attachment (Attachment): The attachment.
         single_page (bool): Whether to generate the HTML report in a single page.
         clazz (str): The CSS class to apply to the comment table cell.
 
