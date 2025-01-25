@@ -175,7 +175,7 @@ Sample ``pytest.ini`` file
   extras_attachment_indent = 4
   extras_screenshots = all
   extras_sources = False
-  extras_issue_link_pattern = ``http://bugtracker.com/{}``
+  extras_issue_link_pattern = http://bugtracker.com/{}
 
 
 Sample code
