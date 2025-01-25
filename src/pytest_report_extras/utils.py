@@ -310,22 +310,21 @@ def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Opti
 # Logger function
 #
 def log_error(
-        report: pytest.TestReport | None,
-        message: str,
-        error: Exception | None = None
-    ):
+    report: pytest.TestReport | None,
+    message: str,
+    error: Exception | None = None
+):
     """
     Appends error message in stderr section of a test report.
 
     Args:
-        report (TestReport): The test report returned by pytest (optional).
+        report (pytest.TestReport): The test report returned by pytest (optional).
         message (str): The message to log.
         error (Exception): The exception to log (optional).
     """
     message = f"{message}\n" if error is None else f"{message}\n{error}\n"
     if report is None:
         print(message, file=sys.stderr)
-        return
     else:
         try:
             i = -1
@@ -341,4 +340,4 @@ def log_error(
             else:
                 report.sections.append(('Captured stderr call', message))
         except:
-            pass
+            print(message, file=sys.stderr)

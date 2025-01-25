@@ -163,7 +163,6 @@ def pytest_runtest_makereport(item, call):
                 from allure_commons.types import LinkType
                 allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.LINK, name=issue)
 
-
     # Exit if the test is not using the 'report' fixtures
     if not ("request" in item.funcargs and "report" in item.funcargs):
         report.extras = extras
