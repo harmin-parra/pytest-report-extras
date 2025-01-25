@@ -78,6 +78,41 @@ class Extras:
             escape_html=escape_html
         )
 
+    def attach(
+        self,
+        comment: str,
+        body: str | bytes | dict | list[str] = None,
+        source: str = None,
+        mime: str = None,
+        csv_delimiter=',',
+        escape_html: bool = False
+    ):
+        """
+        Adds a step with an attachment to the report.
+        The image is saved in <report_html>/images folder.
+        The webpage source is saved in <report_html>/sources folder.
+        The 'body' and 'source' parameters are exclusive.
+
+        Args:
+            comment (str): The comment of the test step.
+            body (str | bytes | dict | list[str]): The content/body of the attachment.
+                Can be of type 'dict' for JSON mime type.
+                Can be of type 'list[str]' for uri-list mime type.
+                Can be of type 'bytes' for image mime type.
+            source (str): The filepath of the source to attach.
+            mime (str): The attachment mime type.
+            csv_delimiter (str): The delimiter for CSV documents.
+            escape_html (bool): Whether to escape HTML characters in the comment.
+        """
+        if Mime.is_unsupported(mime):
+            mime = None
+        attachment = self._get_attachment(body, source, mime, csv_delimiter)
+        mime = attachment.mime
+        if Mime.is_image(mime):  # Treat attachment of images like screenshots
+            self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
+        else:
+            self._add_extras(comment, None, None, attachment, mime, escape_html)
+
     def _add_image_step(
         self,
         comment: str,
@@ -125,122 +160,7 @@ class Extras:
             image, source = data, None
             mime = "image/*" if mime is None else mime
 
-        comment = utils.escape_html(comment) if escape_html else comment
-
-        # Add extras to Allure report if allure-pytest plugin is being used.
-        if self._allure and importlib.util.find_spec('allure') is not None:
-            import allure
-            if image is not None:
-                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
-                # Attach the webpage source
-                if source is not None:
-                    allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
-
-        # Add extras to pytest-html report if pytest-html plugin is being used.
-        if self._html:
-            self._save_image(image, source, mime)
-            self.comments.append(comment)
-            self.attachments.append(None)
-
-    def attach(
-        self,
-        comment: str,
-        body: str | bytes | dict | list[str] = None,
-        source: str = None,
-        mime: str = None,
-        csv_delimiter=',',
-        escape_html: bool = False
-    ):
-        """
-        Adds a step with an attachment to the report.
-        The image is saved in <report_html>/images folder.
-        The webpage source is saved in <report_html>/sources folder.
-        The 'body' and 'source' parameters are exclusive.
-
-        Args:
-            comment (str): The comment of the test step.
-            body (str | bytes | dict | list[str]): The content/body of the attachment.
-                Can be of type 'dict' for JSON mime type.
-                Can be of type 'list[str]' for uri-list mime type.
-                Can be of type 'bytes' for image mime type.
-            source (str): The filepath of the source to attach.
-            mime (str): The attachment mime type.
-            csv_delimiter (str): The delimiter for CSV documents.
-            escape_html (bool): Whether to escape HTML characters in the comment.
-        """
-        if Mime.is_unsupported(mime):
-            mime = None
-        attachment = self._get_attachment(body, source, mime, csv_delimiter)
-        mime = attachment.mime
-        if Mime.is_image(mime):
-            self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
-            return
-
-        if comment is None:
-            comment = ""
-        comment = utils.escape_html(comment) if escape_html else comment
-
-        # Add extras to Allure report if allure-pytest plugin is being used.
-        if self._allure and importlib.util.find_spec('allure') is not None:
-            import allure
-            if attachment is not None:
-                try:
-                    if attachment.body is not None:
-                        allure.attach(attachment.body, name=comment, attachment_type=attachment.mime)
-                    elif attachment.source is not None:
-                        allure.attach.file(attachment.source)
-                except Exception as error:
-                    allure.attach(str(error), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
-
-        # Add extras to pytest-html report if pytest-html plugin is being used.
-        if self._html:
-            self._save_image(None, None)
-            self.comments.append(comment)
-            self.attachments.append(attachment)
-            
-    def _save_image(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
-        """
-        Saves a screenshot and a webpage source when using the pytest-html plugin.
-        The image is saved in <report_html>/images folder.
-        The webpage source is saved in <report_html>/sources folder.
-
-        Args:
-            image (bytes | str): The screenshot as bytes or base64 string.
-            source (str): The webpage source.
-            mime (str): The mime type of the image to save.
-        """
-        link_image = None
-        link_source = None
-
-        if isinstance(image, str):
-            try:
-                image = base64.b64decode(image.encode())
-            except Exception as error:
-                utils.log_error(None, "Error encoding image string:", error)
-                image = None
-        # suffix for file names
-        index = (0 if self._fx_single_page or (image is None and source is None)
-                 else counter())
-        # Get the image uri
-        if image is not None:
-            if self._fx_single_page is False:
-                link_image = utils.save_image_and_get_link(self._html, index, image)
-            else:
-                mime = "image/*" if mime is None else mime
-                try:
-                    data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
-                except Exception as error:
-                    utils.log_error(None, "Error encoding string:", error)
-                    data_uri = None
-                link_image = data_uri
-        # Get the webpage source uri
-        if source is not None:
-            if self._fx_single_page is False:
-                link_source = utils.save_source_and_get_link(self._html, index, source)
-            else:
-                link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
-        self.images.append(link_image)
-        self.sources.append(link_source)
+        self._add_extras(comment, image, source, None, mime, escape_html)
 
     def _get_attachment(
         self,
@@ -302,6 +222,92 @@ class Extras:
                 utils.log_error(None, "Error encoding HTML body", error)
                 mime = Mime.text_plain
         return Attachment.parse_body(body, mime, self._indent, delimiter)
+
+    def _add_extras(
+        self,
+        comment: str,
+        image: Optional[bytes],
+        source: Optional[str],
+        attachment: Optional[Attachment],
+        mime: Optional[str],
+        escape_html: bool
+    ):
+        """
+        Adds the comment, image, webpage source and attachment to the lists of the 'report' fixture.
+
+        Args:
+            comment (str): The comment of the test step.
+            image (bytes | str): The image as bytes or base64 string..
+            source (str):: The webpage HTML source code.
+            mime (str): The mime type of the image that was passed as bytes.
+            escape_html (bool): Whether to escape HTML characters in the comment.
+
+        """
+        comment = utils.escape_html(comment) if escape_html else comment
+
+        # Add extras to Allure report if allure-pytest plugin is being used.
+        if self._allure and importlib.util.find_spec('allure') is not None:
+            import allure
+            if image is not None:
+                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
+                # Attach the webpage source
+                if source is not None:
+                    allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
+
+        # Add extras to pytest-html report if pytest-html plugin is being used.
+        if self._html:
+            self._save_image(image, source, mime)
+            self.comments.append(comment)
+            self.attachments.append(attachment)
+
+    def _save_image(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
+        """
+        Saves a screenshot and a webpage source when using the --self-contained-html option of pytest-html plugin
+        The image is saved in <report_html>/images folder.
+        The webpage source is saved in <report_html>/sources folder.
+
+        Otherwise, saves the data URI schema of the image and the webpage source.
+
+        The image and source HTML anchor 'html' attribute are saved in the
+          'images' and 'source' lists of the 'report' fixture.
+
+        Args:
+            image (bytes | str): The image as bytes or base64 string.
+            source (str): The webpage source.
+            mime (str): The mime type of the image to save.
+        """
+        link_image = None
+        link_source = None
+
+        if isinstance(image, str):
+            try:
+                image = base64.b64decode(image.encode())
+            except Exception as error:
+                utils.log_error(None, "Error encoding image string:", error)
+                image = None
+        # suffix for file names
+        index = (0 if self._fx_single_page or (image is None and source is None)
+                 else counter())
+        # Get the image uri
+        if image is not None:
+            if self._fx_single_page is False:
+                link_image = utils.save_image_and_get_link(self._html, index, image)
+            else:
+                mime = "image/*" if mime is None else mime
+                try:
+                    data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
+                except Exception as error:
+                    utils.log_error(None, "Error encoding string:", error)
+                    data_uri = None
+                link_image = data_uri
+        # Get the webpage source uri
+        if source is not None:
+            if self._fx_single_page is False:
+                link_source = utils.save_source_and_get_link(self._html, index, source)
+            else:
+                link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
+        self.images.append(link_image)
+        self.sources.append(link_source)
 
     def link(self, uri: str, name: str = None):
         """
