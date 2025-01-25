@@ -254,7 +254,7 @@ Sample code
 
   @pytest.mark.issues("TEST-123, TEST-987")
   def test_issue_links(report)
-    # code....
+      # test code
 
 
 Sample CSS file
