@@ -256,11 +256,11 @@ class Extras:
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
-            self._save_image(image, source, mime)
+            self._save_image_source(image, source, mime)
             self.comments.append(comment)
             self.attachments.append(attachment)
 
-    def _save_image(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
+    def _save_image_source(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
         """
         Saves a screenshot and a webpage source when using the --self-contained-html option of pytest-html plugin
         The image is saved in <report_html>/images folder.
