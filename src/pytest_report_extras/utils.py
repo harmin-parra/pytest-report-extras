@@ -38,7 +38,7 @@ def get_folder(filepath) -> Optional[str]:
     return folder
 
 
-def check_lists_length(report, fx_extras) -> bool:
+def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
     """ Verifies if the image, comment, page source and attachment lists have the same length """
     message = ('"images", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
                "Steps won't be logged for this test in pytest-html report.\n")
@@ -75,7 +75,7 @@ def create_assets(report_html, single_page):
     # shutil.copy(str(error_img), f"{folder}images")
 
 
-def escape_html(text: Optional[str], quote=False) -> Optional[str]:
+def escape_html(text, quote=False) -> Optional[str]:
     """ Escapes HTML characters in a text. """
     if text is None:
         return None
@@ -309,33 +309,35 @@ def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Opti
 #
 # Logger function
 #
-def log_error(report, message: str, error: Exception = None):
+def log_error(
+    report: pytest.TestReport | None,
+    message: str,
+    error: Exception | None = None
+):
     """
     Appends error message in stderr section of a test report.
 
     Args:
-        report (TestReport): The test report returned by pytest (optional).
+        report (pytest.TestReport): The test report returned by pytest (optional).
         message (str): The message to log.
-        error (Exception): The exception to log.
+        error (Exception): The exception to log (optional).
     """
+    message = f"{message}\n" if error is None else f"{message}\n{error}\n"
     if report is None:
-        if error is None:
-            print(str(message) + '\n', file=sys.stderr)
-        else:
-            print(f"{message}\n{error}\n", file=sys.stderr)
-        return
-    try:
-        i = -1
-        for x in range(len(report.sections)):
-            if "stderr call" in report.sections[x][0]:
-                i = x
-                break
-        if i != -1:
-            report.sections[i] = (
-                report.sections[i][0],
-                report.sections[i][1] + '\n' + message + '\n'
-            )
-        else:
-            report.sections.append(('Captured stderr call', message))
-    except:
-        pass
+        print(message, file=sys.stderr)
+    else:
+        try:
+            i = -1
+            for x in range(len(report.sections)):
+                if "stderr call" in report.sections[x][0]:
+                    i = x
+                    break
+            if i != -1:
+                report.sections[i] = (
+                    report.sections[i][0],
+                    report.sections[i][1] + '\n' + message + '\n'
+                )
+            else:
+                report.sections.append(('Captured stderr call', message))
+        except:
+            print(message, file=sys.stderr)

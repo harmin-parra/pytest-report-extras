@@ -1,7 +1,6 @@
 import importlib
 import pathlib
 import pytest
-import re
 from . import decorators
 from . import utils
 from .extras import Extras
@@ -40,12 +39,6 @@ def pytest_addoption(parser):
         type="string",
         default=None,
         help="The issue link pattern. Example: https://jira.com/issues/{}",
-    )
-    parser.addini(
-        "extras_issue_key_pattern",
-        type="string",
-        default=None,
-        help="The issue key pattern. Example: PROJ-\\d{1,4}",
     )
 
 
@@ -115,14 +108,8 @@ def issue_link_pattern(request):
 
 
 @pytest.fixture(scope='session')
-def issue_key_pattern(request):
-    """ The issue link pattern. """
-    return request.config.getini("extras_issue_key_pattern")
-
-
-@pytest.fixture(scope='session')
-def check_options(request, report_html, report_allure, single_page):
-    """ Verifies preconditions before using this plugin. """
+def check_options(report_html, report_allure, single_page):
+    """ Verifies preconditions and create assets before using this plugin. """
     utils.check_options(report_html, report_allure)
     if report_html is not None:
         utils.create_assets(report_html, single_page)
@@ -132,7 +119,7 @@ def check_options(request, report_html, report_allure, single_page):
 # Test fixture
 #
 @pytest.fixture(scope='function')
-def report(request, report_html, single_page, screenshots, sources, report_allure, indent, check_options):
+def report(report_html, single_page, screenshots, sources, report_allure, indent, check_options):
     return Extras(report_html, single_page, screenshots, sources, report_allure, indent)
 
 
@@ -142,42 +129,9 @@ def report(request, report_html, single_page, screenshots, sources, report_allur
 
 # Global variables to store key fixtures to handle issue links in setup failures
 # Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
-fx_issue_key = None
-fx_issue_link = None
 fx_html = None
 fx_allure = None
-
-# Global variables to override exit code
-passed = 0
-failed = 0
-xfailed = 0
-skipped = 0
-xpassed = 0
-error_setup = 0
-error_teardown = 0
-
-
-@pytest.hookimpl(trylast=True)
-def pytest_sessionfinish(session, exitstatus):
-    """
-    Override exit code 0 and add exit codes 6 and 7.
-    0: All tests are passed or xpassed and there were no errors.
-         (all tests were executed and got a 'passed' outcome).
-    6: No failed tests but there were:
-         - xfailed or xpassed tests
-         - setup or teardown errors
-    7: All tests are passed or xpassed and there were teardown errors.
-         (all tests were executed and got a 'passed' outcome but a teardown failed).
-    """
-    global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
-    if (passed + xpassed >= 0) and (failed + skipped + error_setup == 0):
-        if error_teardown == 0:
-            session.exitstatus = 0
-        else:
-            session.exitstatus = 7
-    if (xfailed + skipped + error_setup + error_teardown > 0) and failed == 0:
-        session.exitstatus = 6
-    # print(f"\n{failed} failed, {passed} passed, {skipped} skipped, {xfailed} xfailed, {xpassed} xpassed, {error_setup + error_teardown} errors")
+fx_issue_link = None
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -185,9 +139,7 @@ def pytest_runtest_makereport(item, call):
     """
     Complete pytest-html report with extras and Allure report with attachments.
     """
-    global skipped, failed, xfailed, passed, xpassed, error_setup, error_teardown
-    global fx_issue_link, fx_issue_key, fx_html, fx_allure
-    # fx_issue_link = fx_issue_key = fx_html = fx_allure = None
+    global fx_html, fx_allure, fx_issue_link
     wasfailed = False
     wasxpassed = False
     wasxfailed = False
@@ -197,69 +149,36 @@ def pytest_runtest_makereport(item, call):
     pytest_html = item.config.pluginmanager.getplugin('html')
     report = outcome.get_result()
     extras = getattr(report, 'extras', [])
-    issues = []
-    links = []
 
-    # Comment lines below to deal with issue links even if 'report' fixture is not being used.
+    # Add issues in marker as links
+    marker = item.iter_markers(name="issues")
+    marker = next(marker, None)
+    if marker is not None and len(marker.args) > 0 and fx_issue_link is not None:
+        issues = marker.args[0].replace(' ', '').split(',')
+        for issue in issues:
+            if fx_html is not None and pytest_html is not None:
+                extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
+            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+                import allure
+                from allure_commons.types import LinkType
+                allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.LINK, name=issue)
+
     # Exit if the test is not using the 'report' fixtures
-    # if not ("request" in item.funcargs and "report" in item.funcargs):
-    #     return
-
-    try:
-        feature_request = item.funcargs['request']
-        fx_html = feature_request.getfixturevalue("report_html")
-        fx_allure = feature_request.getfixturevalue("report_allure")
-        fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
-        fx_issue_key = feature_request.getfixturevalue("issue_key_pattern")
-    except:
-        pass
-
-    # Update status variables
-    if call.when == 'setup':
-        # For tests with the pytest.mark.skip fixture
-        if (report.skipped
-                and hasattr(call, 'excinfo')
-                and call.excinfo is not None
-                and hasattr(call.excinfo.value, 'msg')):
-            issues = re.sub(r"[,.:=()\[\]]", " ",  call.excinfo.value.msg).split()
-            wasskipped = True
-            skipped += 1
-        # For setup fixture
-        if report.failed and call.excinfo is not None:
-            error_setup += 1
-
-    # Update status variables
-    if call.when == 'teardown':
-        if report.failed and call.excinfo is not None:
-            error_teardown += 1
+    if not ("request" in item.funcargs and "report" in item.funcargs):
+        report.extras = extras
+        return
 
     if report.when == 'call':
         xfail = hasattr(report, "wasxfail")
         # Update status variables
         if report.failed:
             wasfailed = True
-            failed += 1
         if report.skipped and not xfail:
             wasskipped = True
-            skipped += 1
         if report.skipped and xfail:
             wasxfailed = True
-            xfailed += 1
         if report.passed and xfail:
             wasxpassed = True
-            xpassed += 1
-        if report.passed and not xfail:
-            passed += 1
-
-        # Check for issue links to add
-        # For tests with pytest.fail, pytest.xfail or pytest.skip call
-        if (hasattr(call, 'excinfo')
-                and call.excinfo is not None
-                and hasattr(call.excinfo.value, 'msg')):
-            issues = re.sub(r",.:=()\[\]", " ",  call.excinfo.value.msg).split()
-        # For tests with the pytest.mark.xfail fixture
-        elif hasattr(report, 'wasxfail'):
-            issues = re.sub(r",.:=()\[\]", " ",  report.wasxfail).split()
 
         # Add extras to the pytest-html report
         # if the test item is using the 'report' fixtures and the pytest-html plugin
@@ -267,13 +186,19 @@ def pytest_runtest_makereport(item, call):
                 and fx_html is not None and pytest_html is not None):
 
             # Get test fixture values
-            feature_request = item.funcargs['request']
-            fx_report = feature_request.getfixturevalue("report")
-            fx_single_page = feature_request.getfixturevalue("single_page")
-            fx_description_tag = feature_request.getfixturevalue("description_tag")
-            fx_screenshots = feature_request.getfixturevalue("screenshots")
-            target = fx_report.target
-            links = fx_report.links
+            try:
+                feature_request = item.funcargs['request']
+                fx_report = feature_request.getfixturevalue("report")
+                fx_single_page = feature_request.getfixturevalue("single_page")
+                fx_description_tag = feature_request.getfixturevalue("description_tag")
+                fx_screenshots = feature_request.getfixturevalue("screenshots")
+                # fx_html = feature_request.getfixturevalue("report_html")
+                # fx_allure = feature_request.getfixturevalue("report_allure")
+                # fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
+                target = fx_report.target
+            except Exception as error:
+                utils.log_error(report, "Could not retrieve test fixtures", error)
+                return
 
             # Append test description and execution exception trace, if any.
             description = item.function.__doc__ if hasattr(item, 'function') else None
@@ -344,32 +269,19 @@ def pytest_runtest_makereport(item, call):
                 )
                 extras.append(pytest_html.extras.html(table))
 
-        # Add links to the report(s)
-        for link in links:
-            if fx_html is not None and pytest_html is not None:
-                if link[1] not in (None, ""):
-                    extras.append(pytest_html.extras.url(link[0], name=link[1]))
-                else:
-                    extras.append(pytest_html.extras.url(link[0], name=link[0]))
-            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
-                import allure
-                if link[1] not in (None, ""):
-                    allure.dynamic.link(link[0], name=link[1])
-                else:
-                    allure.dynamic.link(link[0], name=link[0])
-
-    # Identify issue patterns and add issue links to the report(s)
-    if fx_issue_key is not None and fx_issue_link is not None:
-        for issue in issues:
-            if re.match(rf"^{fx_issue_key}$", issue):
-                # Add extras to HTML report if pytest-html plugin is being used.
+            # Add links to the report(s)
+            for link in fx_report.links:
                 if fx_html is not None and pytest_html is not None:
-                    extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
-                # Add extras to Allure report if allure-pytest plugin is being used.
+                    if link[1] not in (None, ""):
+                        extras.append(pytest_html.extras.url(link[0], name=link[1]))
+                    else:
+                        extras.append(pytest_html.extras.url(link[0], name=link[0]))
                 if fx_allure is not None and importlib.util.find_spec('allure') is not None:
                     import allure
-                    from allure_commons.types import LinkType
-                    allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.LINK, name=issue)
+                    if link[1] not in (None, ""):
+                        allure.dynamic.link(link[0], name=link[1])
+                    else:
+                        allure.dynamic.link(link[0], name=link[0])
 
     report.extras = extras
 
@@ -380,11 +292,11 @@ def pytest_configure(config):
     Add CSS file to --css request option for pytest-html
     Set global variables.
     """
-    global fx_issue_key, fx_issue_link, fx_html, fx_allure
-    fx_issue_link = config.getini("extras_issue_link_pattern")
-    fx_issue_key = config.getini("extras_issue_key_pattern")
+    global fx_html, fx_allure, fx_issue_link
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
+    fx_issue_link = config.getini("extras_issue_link_pattern")
+    config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
 
     try:
         report_css = config.getoption("--css", default=[])

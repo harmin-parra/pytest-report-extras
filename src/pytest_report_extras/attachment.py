@@ -202,9 +202,11 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
     try:
         uri_list = None
         body = None
+        # getting links from file content
         if isinstance(text, str):
             body = text
             uri_list = text.split('\n')
+        # getting links from list
         elif isinstance(text, List):
             body = '\n'.join(text)
             uri_list = text

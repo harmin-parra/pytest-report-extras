@@ -23,7 +23,6 @@ class Extras:
     """
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
-
     def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last"],
                  sources: bool, report_allure: str, indent: int):
         """
@@ -33,7 +32,7 @@ class Extras:
             screenshots (str): The screenshot strategy. Possible values: 'all' or 'last'.
             sources (bool): Whether to gather webpage sources.
             report_allure (str): The Allure report folder.
-            indent: The indent to use to format XML, JSON and YAML documents.
+            indent (int): The indent to use to format XML, JSON and YAML documents.
         """
         self.images = []
         self.sources = []
@@ -265,10 +264,10 @@ class Extras:
         Returns:
             An attachment instance.
         """
+        inner_html = None
         if source is not None:
             try:
                 if mime is None:
-                    inner_html = None
                     if self._html:
                         inner_html = decorators.decorate_uri(self.add_to_downloads(source))
                     return Attachment(source=source, inner_html=inner_html)
@@ -286,9 +285,12 @@ class Extras:
                 utils.log_error(None, f"Error reading file: {source}", error)
                 mime = Mime.text_plain
         if not Mime.is_image(mime) and isinstance(body, bytes):
-            f = self.add_to_downloads(body)
-            body = [f]
-            mime = Mime.text_uri_list
+            if self._html:
+                inner_html = decorators.decorate_uri(self.add_to_downloads(body))
+            return Attachment(body=body, inner_html=inner_html)
+            # f = self.add_to_downloads(body)
+            # body = [f]
+            # mime = Mime.text_uri_list
         if mime == Mime.text_html:
             try:
                 encoded_bytes = base64.b64encode(body.encode('utf-8'))

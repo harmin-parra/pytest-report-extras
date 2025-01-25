@@ -8,7 +8,7 @@ Changelog
 
 **Feature**
 
-* Possibility to define issue link pattern and add issue links to the report.
+* Possibility to define an issue link pattern and add issue links to the report.
 
 **Improvement**
 

@@ -56,7 +56,7 @@ Default value: ``4``
 
 The pattern for the issues links (example: https://bugtracker.com/issues/{})
 
-Default value: None
+Default value: ``None``
 
 
 API
@@ -88,7 +88,7 @@ To add a step with attachment:
       escape_html: bool = False                     # Whether to escape HTML characters in the comment.
   )
 
-  # Type of body parameter:
+  # Type of 'body'' parameter:
   #    str: - for XML, JSON, YAML, CSV or TXT attachments
   #         - for image attachments if it is a base64 string
   #    bytes: for image attachments
