@@ -99,8 +99,6 @@ class Extras:
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
-            source (str): The filepath of the source to attach.
-            mime (str): The attachment mime type.
             source (str): The filepath of the source of the attachment.
             mime (str): The mime type of the attachment.
             csv_delimiter (str): The delimiter for CSV documents.
@@ -179,8 +177,6 @@ class Extras:
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
-            source (str): The filepath of the source to attach.
-            mime (str): The attachment mime type.
             source (str): The filepath of the source of the attachment.
             mime (str): The mime type of the attachment.
             delimiter (str): The delimiter for CSV documents.
