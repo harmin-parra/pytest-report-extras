@@ -32,7 +32,6 @@ def append_header(call, report, extras, pytest_html,
         hasattr(call, 'excinfo') and
         call.excinfo is not None and
         call.excinfo.typename in ('Failed', 'Skipped') and
-        hasattr(call.excinfo, "value") and
         hasattr(call.excinfo.value, "msg")
     ):
         extras.append(pytest_html.extras.html(
@@ -64,17 +63,13 @@ def append_header(call, report, extras, pytest_html,
     if (
         hasattr(call, 'excinfo') and
         call.excinfo is not None and
-        call.excinfo.typename not in ('Failed', 'Skipped') and
-        hasattr(call.excinfo, '_excinfo') and
-        call.excinfo._excinfo is not None and
-        isinstance(call.excinfo._excinfo, tuple) and
-        len(call.excinfo._excinfo) > 1
+        call.excinfo.typename not in ('Failed', 'Skipped')
     ):
         extras.append(pytest_html.extras.html(
             "<pre>"
             f'<span class="{clazz}">Exception:</span><br>'
             f"{escape_html(call.excinfo.typename)}<br>"
-            f"{escape_html(call.excinfo._excinfo[1])}"
+            f"{escape_html(call.excinfo.value)}"
             "</pre>"
             )
         )
