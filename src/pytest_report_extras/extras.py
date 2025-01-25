@@ -135,7 +135,7 @@ class Extras:
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             data (bytes): The image to attach as bytes.
-            mime (str): The mime type of the image that was passed as bytes.
+            mime (str): The mime type of the image.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         if target is not None:
@@ -239,7 +239,7 @@ class Extras:
             comment (str): The comment of the test step.
             image (bytes | str): The image as bytes or base64 string..
             source (str):: The webpage HTML source code.
-            mime (str): The mime type of the image that was passed as bytes.
+            mime (str): The mime type of the image.
             escape_html (bool): Whether to escape HTML characters in the comment.
 
         """
@@ -274,7 +274,7 @@ class Extras:
         Args:
             image (bytes | str): The image as bytes or base64 string.
             source (str): The webpage source.
-            mime (str): The mime type of the image to save.
+            mime (str): The mime type of the image.
         """
         link_image = None
         link_source = None
