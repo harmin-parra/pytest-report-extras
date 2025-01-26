@@ -6,6 +6,7 @@ import re
 import xml.dom.minidom as xdom
 import yaml
 from typing import List
+# from typing import Self (pyhton 3.11)
 from . import decorators
 from . import utils
 
@@ -79,16 +80,16 @@ class Attachment:
 
     @staticmethod
     def parse_body(
-        body: str | list[str] | bytes = None,
+        body: str | dict | list[str] | bytes,
         mime: str = Mime.text_plain,
         indent: int = 4,
         delimiter=',',
-    ):
+    ): # -> Self | None:
         """
         Parses the content/body of an attachment.
 
         Args:
-            body (str | dict | list[str] | bytes): The content/body of the body (optional).
+            body (str | dict | list[str] | bytes): The content/body of the body.
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
@@ -99,6 +100,8 @@ class Attachment:
         Returns:
             An Attachment object representing the attachment.
         """
+        if body is None:
+            return None
         if body is not None and isinstance(body, List):
             mime = Mime.text_uri_list
         if Mime.is_image(mime):
@@ -117,7 +120,7 @@ class Attachment:
             case _:
                 return _attachment_txt(body)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"body: {self.body}\n"
             f"source: {self.source}\n"
@@ -147,8 +150,6 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
         result = '\n'.join(line for line in result.splitlines() if not re.match(r"^\s*<!--.*?-->\s*\n*$", line))
         return Attachment(body=result, mime=Mime.application_xml)
     except Exception as error:
-        if text is None:
-            text = 'None'
         utils.log_error(None, "Error formatting XML:", error)
         return Attachment(body="Error formatting XML:\n" + str(text), mime=Mime.text_plain)
 

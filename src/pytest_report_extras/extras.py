@@ -107,7 +107,7 @@ class Extras:
         if Mime.is_unsupported(mime):
             mime = None
         attachment = self._get_attachment(body, source, mime, csv_delimiter)
-        mime = attachment.mime
+        mime = attachment.mime if attachment is not None else None
         if Mime.is_image(mime):  # Treat attachment of images like screenshots
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
         else:
@@ -261,9 +261,15 @@ class Extras:
                         allure.attach.file(attachment.source)
                 except Exception as err:
                     allure.attach(str(err), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
+            elif comment is not None:
+                allure.attach('', name=comment, attachment_type=allure.attachment_type.TEXT)
+                
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
+            if comment is None and image is None and attachment is None:
+                utils.log_error(None, "Empty test step will be ignored.", None)
+                return
             self._save_image_source(image, source, mime)
             self.comments.append(comment)
             self.attachments.append(attachment)

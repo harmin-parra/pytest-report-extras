@@ -241,7 +241,7 @@ def save_image_and_get_link(report_html: str, index: int, image: bytes) -> Optio
     except Exception as error:
         # trace = traceback.format_exc()
         link = None  # f"images{os.sep}error.png"
-        log_error(None, f"Error reading file: {filename}", error)
+        log_error(None, f"Error creating file: {link}", error)
     finally:
         return link
 
@@ -272,7 +272,7 @@ def save_source_and_get_link(report_html: str, index: int, source: str) -> Optio
     except Exception as error:
         # trace = traceback.format_exc()
         link = None
-        log_error(None, f"Error reading file: {filename}", error)
+        log_error(None, f"Error creating file: {link}", error)
     finally:
         return link
 
@@ -329,7 +329,7 @@ def log_error(
         try:
             i = -1
             for x in range(len(report.sections)):
-                if "stderr call" in report.sections[x][0]:
+                if "stderr" in report.sections[x][0]:
                     i = x
                     break
             if i != -1:
