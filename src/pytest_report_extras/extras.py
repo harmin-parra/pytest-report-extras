@@ -111,7 +111,7 @@ class Extras:
         if Mime.is_image(mime):  # Treat attachment of images like screenshots
             self._add_image_step(comment=comment, data=attachment.body, mime=mime, escape_html=escape_html)
         else:
-            self._add_extras(comment, None, None, attachment, mime, escape_html)
+            self._add_extra(comment, None, None, attachment, mime, escape_html)
 
     def _add_image_step(
         self,
@@ -160,7 +160,7 @@ class Extras:
             image, source = data, None
             mime = "image/*" if mime is None else mime
 
-        self._add_extras(comment, image, source, None, mime, escape_html)
+        self._add_extra(comment, image, source, None, mime, escape_html)
 
     def _get_attachment(
         self,
@@ -223,7 +223,7 @@ class Extras:
                 mime = Mime.text_plain
         return Attachment.parse_body(body, mime, self._indent, delimiter)
 
-    def _add_extras(
+    def _add_extra(
         self,
         comment: str,
         image: Optional[bytes],
@@ -275,7 +275,7 @@ class Extras:
 
     def _save_image_source(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
         """
-        When using the --self-contained-html option of pytest-html plugin, saves the screenshot and webpage source.
+        When not using the --self-contained-html option, saves the screenshot and webpage source.
         The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
         The relative filepaths of the files are appended in the 'images' and 'sources' lists of the 'report' fixture.
