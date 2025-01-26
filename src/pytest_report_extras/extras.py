@@ -258,7 +258,7 @@ class Extras:
                     if attachment.body is not None:
                         allure.attach(attachment.body, name=comment, attachment_type=mime)
                     elif attachment.source is not None:
-                        allure.attach.file(attachment.source)
+                        allure.attach.file(attachment.source, name=comment)
                 except Exception as err:
                     allure.attach(str(err), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
             elif comment is not None:
