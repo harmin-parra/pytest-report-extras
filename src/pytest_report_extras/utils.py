@@ -326,18 +326,14 @@ def log_error(
     if report is None:
         print(message, file=sys.stderr)
     else:
-        try:
-            i = -1
-            for x in range(len(report.sections)):
-                if "stderr" in report.sections[x][0]:
-                    i = x
-                    break
-            if i != -1:
+        found = False
+        for i in range(len(report.sections)):
+            if "stderr" in report.sections[i][0]:
                 report.sections[i] = (
                     report.sections[i][0],
                     report.sections[i][1] + '\n' + message + '\n'
                 )
-            else:
-                report.sections.append(('Captured stderr call', message))
-        except:
-            print(message, file=sys.stderr)
+                found = True
+                break
+        if not found:
+            report.sections.append(('Captured stderr call', message))
