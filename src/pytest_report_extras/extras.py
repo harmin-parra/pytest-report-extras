@@ -275,11 +275,11 @@ class Extras:
 
     def _save_image_source(self, image: Optional[bytes | str], source: Optional[str], mime: str = "image/*"):
         """
-        Saves a screenshot and a webpage source when using the --self-contained-html option of pytest-html plugin
+        When using the --self-contained-html option of pytest-html plugin, saves the screenshot and webpage source.
         The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
         The relative filepaths of the files are appended in the 'images' and 'sources' lists of the 'report' fixture.
-        When not using the --self-contained-html option, appends the data URI schema of the image and the source.
+        When using the --self-contained-html option, appends the data URI schema of the image and the source.
 
         Args:
             image (bytes | str): The image as bytes or base64 string.
