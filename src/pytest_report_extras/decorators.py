@@ -7,8 +7,8 @@ from .utils import escape_html
 #
 # Auxiliary functions for the report generation
 #
-def append_header(call, report, extras, pytest_html,
-                  description: str, description_tag: Literal["h1", "h2", "h3", "p", "pre"]):
+def append_header(call, report, extras, pytest_html, description: str,
+                  description_tag: Literal["h1", "h2", "h3", "p", "pre"]):
     """
     Appends the description and the test execution exception trace, if any, to a test report.
 
