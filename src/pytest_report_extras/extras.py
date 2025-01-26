@@ -155,7 +155,7 @@ class Extras:
         # Get the 3 parts of the test step: image, comment and source
         if target is not None:
             image, source = utils.get_screenshot(target, full_page, self._fx_sources or page_source)
-            mime = "image/png"
+            mime = Mime.image_png
         else:  # data is not None
             image, source = data, None
             mime = "image/*" if mime is None else mime
@@ -249,10 +249,18 @@ class Extras:
         if self._allure and importlib.util.find_spec('allure') is not None:
             import allure
             if image is not None:
-                allure.attach(image, name=comment, attachment_type=allure.attachment_type.PNG)
-                # Attach the webpage source
+                allure.attach(image, name=comment, attachment_type=mime)
                 if source is not None:
                     allure.attach(source, name="page source", attachment_type=allure.attachment_type.TEXT)
+
+            elif attachment is not None:
+                try:
+                    if attachment.body is not None:
+                        allure.attach(attachment.body, name=comment, attachment_type=mime)
+                    elif attachment.source is not None:
+                        allure.attach.file(attachment.source)
+                except Exception as err:
+                    allure.attach(str(err), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
