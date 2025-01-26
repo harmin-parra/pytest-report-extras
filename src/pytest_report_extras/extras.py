@@ -237,7 +237,7 @@ class Extras:
 
         Args:
             comment (str): The comment of the test step.
-            image (bytes | str): The image as bytes or base64 string..
+            image (bytes | str): The image as bytes or base64 string.
             source (str): The webpage source code.
             attachment (Attachment): The attachment.
             mime (str): The mime type of the attachment.
@@ -263,7 +263,6 @@ class Extras:
                     allure.attach(str(err), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
             elif comment is not None:
                 allure.attach('', name=comment, attachment_type=allure.attachment_type.TEXT)
-                
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
@@ -279,11 +278,8 @@ class Extras:
         Saves a screenshot and a webpage source when using the --self-contained-html option of pytest-html plugin
         The image is saved in <report_html>/images folder.
         The webpage source is saved in <report_html>/sources folder.
-
-        Otherwise, saves the data URI schema of the image and the webpage source.
-
-        The image and source 'html' attributes of the <a> HTML elements are saved in the
-          'images' and 'source' lists of the 'report' fixture.
+        The relative filepaths of the files are appended in the 'images' and 'sources' lists of the 'report' fixture.
+        When not using the --self-contained-html option, appends the data URI schema of the image and the source.
 
         Args:
             image (bytes | str): The image as bytes or base64 string.

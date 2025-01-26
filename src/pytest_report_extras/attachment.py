@@ -6,7 +6,7 @@ import re
 import xml.dom.minidom as xdom
 import yaml
 from typing import List
-# from typing import Self (pyhton 3.11)
+# from typing import Self (python 3.11)
 from . import decorators
 from . import utils
 
@@ -84,7 +84,7 @@ class Attachment:
         mime: str = Mime.text_plain,
         indent: int = 4,
         delimiter=',',
-    ): # -> Self | None:
+    ):  # -> Self | None:
         """
         Parses the content/body of an attachment.
 
