@@ -146,7 +146,8 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
     Returns an attachment object with a string holding an XML document.
     """
     try:
-        result = xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', '')).toprettyxml(indent=" " * indent)
+        result = (xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', ''))
+                  .toprettyxml(indent=" " * indent))
         result = '\n'.join(line for line in result.splitlines() if not re.match(r"^\s*<!--.*?-->\s*\n*$", line))
         return Attachment(body=result, mime=Mime.application_xml)
     except Exception as error:

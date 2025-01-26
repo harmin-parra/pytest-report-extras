@@ -185,7 +185,7 @@ def pytest_runtest_makereport(item, call):
         # Add extras to the pytest-html report
         # if the test item is using the 'report' fixtures and the pytest-html plugin
         if ("request" in item.funcargs and "report" in item.funcargs
-                and fx_html is not None and pytest_html is not None):
+            and fx_html is not None and pytest_html is not None):
 
             # Get test fixture values
             try:

@@ -260,7 +260,7 @@ class Extras:
                     elif attachment.source is not None:
                         allure.attach.file(attachment.source, name=comment)
                 except Exception as err:
-                    allure.attach(str(err), name="Error creating Allure attachment", attachment_type=allure.attachment_type.TEXT)
+                    allure.attach(str(err), name="Error adding attachment", attachment_type=allure.attachment_type.TEXT)
             elif comment is not None:
                 allure.attach('', name=comment, attachment_type=allure.attachment_type.TEXT)
 
@@ -293,7 +293,7 @@ class Extras:
             try:
                 image = base64.b64decode(image.encode())
             except Exception as error:
-                utils.log_error(None, "Error encoding image string:", error)
+                utils.log_error(None, "Error decoding image string:", error)
                 image = None
         # suffix for file names
         index = (0 if self._fx_single_page or (image is None and source is None)
@@ -307,7 +307,7 @@ class Extras:
                 try:
                     data_uri = f"data:{mime};base64,{base64.b64encode(image).decode()}"
                 except Exception as error:
-                    utils.log_error(None, "Error encoding string:", error)
+                    utils.log_error(None, "Error encoding image string:", error)
                     data_uri = None
                 link_image = data_uri
         # Get the webpage source uri

@@ -18,10 +18,10 @@ from typing import Optional
 def check_options(htmlpath, allurepath):
     """ Verifies if the --html or --alluredir option has been set by the user. """
     if htmlpath is None and allurepath is None:
-        msg = ("It seems you are using pytest-report-extras plugin.\n"
-               "pytest-html or pytest-allure plugin is required.\n"
-               "'--html' or '--alluredir' option is missing.\n")
-        print(msg, file=sys.stderr)
+        message = ("It seems you are using pytest-report-extras plugin.\n"
+                   "pytest-html or pytest-allure plugin is required.\n"
+                   "'--html' or '--alluredir' option is missing.\n")
+        print(message, file=sys.stderr)
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
