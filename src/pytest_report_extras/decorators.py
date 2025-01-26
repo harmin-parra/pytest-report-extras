@@ -100,10 +100,8 @@ def get_table_row_tag(
     """
     if comment is None:
         comment = ""
-    else:
-        comment += decorate_attachment(attachment)
-        comment = decorate_label(comment, clazz)
     if image is not None:
+        comment = decorate_label(comment, clazz)
         image = decorate_image(image, single_page)
         if source is not None:
             source = decorate_page_source(source)
@@ -120,7 +118,9 @@ def get_table_row_tag(
                 f'<td class="extras_td"><div class="extras_td_div">{image}</div></td>'
                 "</tr>"
             )
-    else:
+    else:  # attachment is not None
+        comment += decorate_attachment(attachment)
+        comment = decorate_label(comment, clazz)
         return (
             f"<tr>"
             f'<td colspan="2">{comment}</td>'
