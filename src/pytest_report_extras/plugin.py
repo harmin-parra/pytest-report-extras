@@ -159,11 +159,11 @@ def pytest_runtest_makereport(item, call):
             if issue in (None, ''):
                 continue            
             if fx_html is not None and pytest_html is not None:
-                extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=issue))
+                extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=f"&#128030; {issue}"))
             if fx_allure is not None and importlib.util.find_spec('allure') is not None:
                 import allure
                 from allure_commons.types import LinkType
-                allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.LINK, name=issue)
+                allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.ISSUE, name=issue)
 
     # Exit if the test is not using the 'report' fixtures
     if not ("request" in item.funcargs and "report" in item.funcargs):
@@ -273,17 +273,13 @@ def pytest_runtest_makereport(item, call):
 
             # Add links to the report(s)
             for link in fx_report.links:
+                link_name = link[1] if link[1] not in (None, "") else link[0]
                 if fx_html is not None and pytest_html is not None:
-                    if link[1] not in (None, ""):
-                        extras.append(pytest_html.extras.url(link[0], name=link[1]))
-                    else:
-                        extras.append(pytest_html.extras.url(link[0], name=link[0]))
+                    extras.append(pytest_html.extras.url(link[0], name=f"&#127760; {link_name}"))
                 if fx_allure is not None and importlib.util.find_spec('allure') is not None:
                     import allure
-                    if link[1] not in (None, ""):
-                        allure.dynamic.link(link[0], name=link[1])
-                    else:
-                        allure.dynamic.link(link[0], name=link[0])
+                    from allure_commons.types import LinkType
+                    allure.dynamic.link(link[0], link_type=LinkType.LINK, name=link_name)
 
     report.extras = extras
 

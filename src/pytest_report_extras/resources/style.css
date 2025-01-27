@@ -1,3 +1,7 @@
+.col-links a {
+    text-decoration: none;
+}
+
 .logwrapper {
     min-height: unset;
     max-height: 100px;
