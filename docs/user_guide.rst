@@ -262,6 +262,10 @@ Sample CSS file
 
 .. code-block:: css
 
+  ..col-links a {
+      text-decoration: none;
+  }
+
   .logwrapper {
       max-height: 100px;
   }
