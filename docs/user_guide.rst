@@ -59,6 +59,15 @@ The pattern for the issues links (example: https://bugtracker.com/issues/{})
 Default value: ``None``
 
 
+----
+
+* ``extras_tms_link_pattern``
+
+The pattern for the test-case links (example: https://tms.com/tests/{})
+
+Default value: ``None``
+
+
 API
 ===
 
@@ -121,11 +130,16 @@ To add a link to the report:
   )
 
 
-To add issue links to a report:
+To add links to the report:
 
 .. code-block:: python
 
   @pytest.mark.issues("<issue keys separated by comma>")
+  @pytest.mark.tms("<test-case keys separated by comma>")
+  @pytest.mark.link(url="<url>", name="<name>")
+  @pytest.mark.link(url="<url>")
+  @pytest.mark.link("<url>", "<name>")
+  @pytest.mark.link("<url>")
 
 
 Limitations
@@ -239,21 +253,11 @@ Sample code
 
 .. code-block:: python
 
-  def test_links(report):
-      """
-      This is a test adding links
-      """
-      report.link("https://en.wikipedia.org")
-      report.link("https://wikipedia.org", "Wikipedia")
-      report.link(uri="https://wikipedia.org", name="Wikipedia")
-
-
-* Example adding issue links
-
-.. code-block:: python
-
-  @pytest.mark.issues("TEST-123, TEST-987")
-  def test_issue_links(report)
+  @pytest.mark.tms("TEST-3, TEST-9")
+  @pytest.mark.issues("PROJ-123, PROJ-456")
+  @pytest.mark.link("https://example.com")
+  @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
+  def test_link_markers(report)
       # test code
 
 

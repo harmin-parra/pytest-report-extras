@@ -8,7 +8,7 @@ Changelog
 
 **Feature**
 
-* Possibility to define an issue link pattern and add issue links to the report.
+* Possibility to define link patterns for issues and test-cases and add links to the report.
 
 **Improvement**
 
@@ -17,7 +17,8 @@ Changelog
 
 **Change**
 
-* Remove deprecated code.
+* Deprecated code has been removed.
+* The ``report.link`` method is going to be deprecated.
 
 
 1.2.2
