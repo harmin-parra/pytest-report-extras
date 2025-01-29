@@ -189,7 +189,7 @@ class Extras:
             try:
                 if mime is None:
                     if self._html:
-                        inner_html = decorators.decorate_uri(self.add_to_downloads(source))
+                        inner_html = decorators.decorate_uri(self._add_to_downloads(source))
                     return Attachment(source=source, inner_html=inner_html)
                 else:
                     if Mime.is_image(mime):
@@ -206,9 +206,9 @@ class Extras:
                 mime = Mime.text_plain
         if Mime.is_not_image(mime) and isinstance(body, bytes):
             if self._html:
-                inner_html = decorators.decorate_uri(self.add_to_downloads(body))
+                inner_html = decorators.decorate_uri(self._add_to_downloads(body))
             return Attachment(body=body, inner_html=inner_html)
-            # f = self.add_to_downloads(body)
+            # f = self._add_to_downloads(body)
             # body = [f]
             # mime = Mime.text_uri_list
         if mime == Mime.text_html:
@@ -319,6 +319,19 @@ class Extras:
         self.images.append(link_image)
         self.sources.append(link_source)
 
+    def _add_to_downloads(self, target: str | bytes = None) -> str:
+        """
+        When using pytest-html, copies a file into the report's download folder, making it available to download.
+
+        Args:
+            target (str | bytes): The file or the bytes content to add into the download folder.
+
+        Returns:
+            The uri of the downloadable file.
+        """
+        return utils.save_file_and_get_link(self._html, target)
+
+    # DEPRECATED CODE
     def link(self, uri: str, name: str = None):
         """
         Adds a link to the report.
