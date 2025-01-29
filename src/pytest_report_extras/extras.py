@@ -24,15 +24,15 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
     def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last"],
-                 sources: bool, report_allure: str, indent: int):
+                 sources: bool, indent: int, report_allure: str):
         """
         Args:
             report_html (str): The HTML report folder.
             single_page (bool): Whether to generate the HTML report in a single webpage.
             screenshots (str): The screenshot strategy. Possible values: 'all' or 'last'.
             sources (bool): Whether to gather webpage sources.
-            report_allure (str): The Allure report folder.
             indent (int): The indent to use to format XML, JSON and YAML documents.
+            report_allure (str): The Allure report folder.
         """
         self.images = []
         self.sources = []
@@ -204,7 +204,7 @@ class Extras:
                 body = f"Error reading file: {source}\n{error}"
                 utils.log_error(None, f"Error reading file: {source}", error)
                 mime = Mime.text_plain
-        if not Mime.is_image(mime) and isinstance(body, bytes):
+        if Mime.is_not_image(mime) and isinstance(body, bytes):
             if self._html:
                 inner_html = decorators.decorate_uri(self.add_to_downloads(body))
             return Attachment(body=body, inner_html=inner_html)

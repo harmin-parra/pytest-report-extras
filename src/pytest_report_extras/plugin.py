@@ -119,8 +119,8 @@ def check_options(report_html, report_allure, single_page):
 # Test fixture
 #
 @pytest.fixture(scope='function')
-def report(report_html, single_page, screenshots, sources, report_allure, indent, check_options):
-    return Extras(report_html, single_page, screenshots, sources, report_allure, indent)
+def report(report_html, single_page, screenshots, sources, indent, report_allure, check_options):
+    return Extras(report_html, single_page, screenshots, sources, indent, report_allure)
 
 
 #
@@ -184,8 +184,8 @@ def pytest_runtest_makereport(item, call):
 
         # Add extras to the pytest-html report
         # if the test item is using the 'report' fixtures and the pytest-html plugin
-        if ("request" in item.funcargs and "report" in item.funcargs
-            and fx_html is not None and pytest_html is not None):
+        if ("request" in item.funcargs and "report" in item.funcargs and
+            fx_html is not None and pytest_html is not None):
 
             # Get test fixture values
             try:
@@ -196,6 +196,7 @@ def pytest_runtest_makereport(item, call):
                 fx_screenshots = feature_request.getfixturevalue("screenshots")
                 # fx_html = feature_request.getfixturevalue("report_html")
                 # fx_allure = feature_request.getfixturevalue("report_allure")
+                # fx_tms_link = feature_request.getfixturevalue("tms_link_pattern")
                 # fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
                 target = fx_report.target
             except Exception as error:

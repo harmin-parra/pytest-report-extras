@@ -15,7 +15,7 @@ def append_header(call, report, extras, pytest_html, description: str,
     Args:
         call (pytest.CallInfo): Information of the test call.
         report (pytest.TestReport): The test report returned by pytest.
-        extras (list): The test extras.
+        extras (List[pytest_html.extras.extra]): The test extras.
         pytest_html (types.ModuleType): The pytest-html plugin.
         description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
@@ -25,7 +25,9 @@ def append_header(call, report, extras, pytest_html, description: str,
     if description is not None:
         description = escape_html(description).strip().replace('\n', "<br>")
         description = description.strip().replace('\n', "<br>")
-        extras.append(pytest_html.extras.html(f'<{description_tag} class="extras_description">{description}</{description_tag}>'))
+        extras.append(pytest_html.extras.html(
+            f'<{description_tag} class="extras_description">{description}</{description_tag}>'
+        ))
 
     # Catch explicit pytest.fail and pytest.skip calls
     if (
