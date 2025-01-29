@@ -58,7 +58,6 @@ The pattern for the issues links (example: https://bugtracker.com/issues/{})
 
 Default value: ``None``
 
-
 ----
 
 * ``extras_tms_link_pattern``
@@ -78,11 +77,11 @@ To add a step with screenshot:
 .. code-block:: python
 
   screenshot(
-      comment: str,                              # Comment of the test step.
+      comment: str,                                # Comment of the test step.
       target: WebDriver | WebElement | Page | Locator = None,  # The page or element.
-      full_page: bool = True,                     # Whether to take a full page screenshot.
-      page_source: bool = False,                  # Whether to include the webpage HTML source.
-      escape_html: bool = False                   # Whether to escape HTML characters in the comment.
+      full_page: bool = True,                      # Whether to take a full page screenshot.
+      page_source: bool = False,                   # Whether to include the webpage HTML source.
+      escape_html: bool = False                    # Whether to escape HTML characters in the comment.
   )
 
 To add a step with attachment:
@@ -266,7 +265,7 @@ Sample CSS file
 
 .. code-block:: css
 
-  ..col-links a {
+  .col-links a {
       text-decoration: none;
   }
 
