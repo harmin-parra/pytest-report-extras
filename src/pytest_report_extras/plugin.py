@@ -38,7 +38,13 @@ def pytest_addoption(parser):
         "extras_issue_link_pattern",
         type="string",
         default=None,
-        help="The issue link pattern. Example: https://jira.com/issues/{}",
+        help="The issue link pattern. Example: https://bugtracker.com/issues/{}",
+    )
+    parser.addini(
+        "extras_tms_link_pattern",
+        type="string",
+        default=None,
+        help="The test case link pattern. Example: https://tms.com/tests/{}",
     )
 
 
@@ -108,6 +114,12 @@ def issue_link_pattern(request):
 
 
 @pytest.fixture(scope='session')
+def tms_link_pattern(request):
+    """ The test case link pattern. """
+    return request.config.getini("extras_tms_link_pattern")
+
+
+@pytest.fixture(scope='session')
 def check_options(report_html, report_allure, single_page):
     """ Verifies preconditions and create assets before using this plugin. """
     utils.check_options(report_html, report_allure)
@@ -131,6 +143,7 @@ def report(report_html, single_page, screenshots, sources, indent, report_allure
 # Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
 fx_html = None
 fx_allure = None
+fx_tms_link = None
 fx_issue_link = None
 
 
@@ -139,7 +152,7 @@ def pytest_runtest_makereport(item, call):
     """
     Complete pytest-html report with extras and Allure report with attachments.
     """
-    global fx_html, fx_allure, fx_issue_link
+    global fx_html, fx_allure, fx_issue_link, fx_tms_link
     wasfailed = False
     wasxpassed = False
     wasxfailed = False
@@ -150,20 +163,10 @@ def pytest_runtest_makereport(item, call):
     report = outcome.get_result()
     extras = getattr(report, 'extras', [])
 
-    # Add issues in marker as links
-    marker = item.iter_markers(name="issues")
-    marker = next(marker, None)
-    if marker is not None and len(marker.args) > 0 and fx_issue_link is not None:
-        issues = marker.args[0].replace(' ', '').split(',')
-        for issue in issues:
-            if issue in (None, ''):
-                continue            
-            if fx_html is not None and pytest_html is not None:
-                extras.append(pytest_html.extras.url(fx_issue_link.replace("{}", issue), name=f"&#128030; {issue}"))
-            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
-                import allure
-                from allure_commons.types import LinkType
-                allure.dynamic.link(fx_issue_link.replace("{}", issue), link_type=LinkType.ISSUE, name=issue)
+    # Add links in markers
+    utils.add_marker_link(item, extras, "issues", fx_issue_link, fx_html, fx_allure)
+    utils.add_marker_link(item, extras, "tms", fx_tms_link, fx_html, fx_allure)
+    utils.add_marker_url(item, extras, fx_html, fx_allure)
 
     # Exit if the test is not using the 'report' fixtures
     if not ("request" in item.funcargs and "report" in item.funcargs):
@@ -272,6 +275,7 @@ def pytest_runtest_makereport(item, call):
                 )
                 extras.append(pytest_html.extras.html(table))
 
+            # DEPRECATED CODE
             # Add links to the report(s)
             for link in fx_report.links:
                 link_name = link[1] if link[1] not in (None, "") else link[0]
@@ -287,15 +291,19 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):
-    """ 
-    Add CSS file to --css request option for pytest-html
-    Set global variables.
     """
-    global fx_html, fx_allure, fx_issue_link
+    Set global variables.
+    Add markers.
+    Add default CSS file to --css option for pytest-html
+    """
+    global fx_html, fx_allure, fx_issue_link, fx_tms_link
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
+    fx_tms_link = config.getini("extras_tms_link_pattern")
     fx_issue_link = config.getini("extras_issue_link_pattern")
     config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
+    config.addinivalue_line("markers", "tms(keys): The list of test case keys to add as links")
+    config.addinivalue_line("markers", "link(url=<url>, name=<name>): The url to add as link")
 
     try:
         report_css = config.getoption("--css", default=[])

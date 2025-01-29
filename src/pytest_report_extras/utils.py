@@ -9,6 +9,7 @@ import subprocess
 import sys
 # import traceback
 import uuid
+from typing import Literal
 from typing import Optional
 
 
@@ -304,6 +305,82 @@ def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Opti
     except Exception as error:
         log_error(None, f"Error copying file to 'downloads' folder:", error)
         return None
+
+
+def add_marker_link(
+    item: pytest.Item,
+    extras,
+    link_type: Literal["issues", "tms"],
+    fx_link: str,
+    fx_html: str,
+    fx_allure: str
+):
+    """
+    Add links from @pytest.mark.issues and @pytest.mark.tms markers.
+    
+    Args:
+        item (pytest.Item): The test item.
+        extras (List[pytest_html.extras.extra]): The test extras.
+        link_type (str): The link type. Possible values: 'issues' and 'tms'.
+        fx_link (str): The link pattern.
+        fx_html (str): The report_html fixture.
+        fx_allure (str): The report_allure fixture.
+    """
+    if fx_link is None or link_type not in ("issues", "tms"):
+        return
+    icons = {
+        "issues": "&#128030;",
+        "tms": "&#128203;",
+    }
+    icon = icons[link_type]
+    pytest_html = item.config.pluginmanager.getplugin('html')
+    marker = item.iter_markers(name=link_type)
+    marker = next(marker, None)
+    if marker is not None and len(marker.args) > 0:
+        keys = marker.args[0].replace(' ', '').split(',')
+        for key in keys:
+            if key in (None, ''):
+                continue            
+            if fx_html is not None and pytest_html is not None:
+                extras.append(pytest_html.extras.url(fx_link.replace("{}", key), name=f"{icon} {key}"))
+            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+                import allure
+                from allure_commons.types import LinkType
+                allure_link_type = LinkType.ISSUE if link_type == "issues" else LinkType.TEST_CASE
+                allure.dynamic.link(fx_link.replace("{}", key), link_type=allure_link_type, name=key)
+
+
+def add_marker_url(
+    item: pytest.Item,
+    extras,
+    fx_html: str,
+    fx_allure: str
+):
+    """
+    Add links from @pytest.mark.link markers.
+    
+    Args:
+        item (pytest.Item): The test item.
+        extras (List[pytest_html.extras.extra]): The test extras.
+        fx_html (str): The report_html fixture.
+        fx_allure (str): The report_allure fixture.
+    """
+    icon = "&#127760;"
+    pytest_html = item.config.pluginmanager.getplugin('html')
+    for marker in item.iter_markers(name="link"):
+        url = marker.args[0] if len(marker.args) > 0 else None
+        name = marker.args[1] if len(marker.args) > 1 else None
+        url = marker.kwargs.get("url", url)
+        name = marker.kwargs.get("name", name)
+        if url in (None, ''):
+            continue            
+        name = url if name is None else name
+        if fx_html is not None and pytest_html is not None:
+            extras.append(pytest_html.extras.url(url, name=f"{icon} {name}"))
+        if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+            import allure
+            from allure_commons.types import LinkType
+            allure.dynamic.link(url, link_type=LinkType.LINK, name=name)
 
 
 #

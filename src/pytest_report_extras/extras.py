@@ -38,7 +38,7 @@ class Extras:
         self.sources = []
         self.comments = []
         self.attachments = []
-        self.links = []
+        self.links = []  # deprecated
         self.target = None
         self._fx_screenshots = screenshots
         self._fx_sources = sources
@@ -340,16 +340,18 @@ class Extras:
             uri (str): The link uri.
             name (str): The link text.
         """
+        # Deprecation warning
+        import warnings
+        warnings.warn(deprecation_msg, DeprecationWarning)
         self.links.append((uri, name))
 
-    def add_to_downloads(self, target: str | bytes = None) -> str:
-        """
-        When using pytest-html, copies a file into the report's download folder, making it available to download.
 
-        Args:
-            target (str | bytes): The file or the bytes content to add into the download folder.
-
-        Returns:
-            The uri of the downloadable file.
-        """
-        return utils.save_file_and_get_link(self._html, target)
+deprecation_msg = """
+        
+report.link method is deprecated and will be removed in the next major version release
+        
+Please use pytest.mark.link marker:
+    @pytest.mark.link("<url>")
+    @pytest.mark.link("<url>", "<name>")
+    @pytest.mark.link(url="<url>", name="<name>")
+"""
