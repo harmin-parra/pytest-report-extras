@@ -172,7 +172,7 @@ class Extras:
         target=None,
         full_page: bool = True,
         page_source: bool = False
-    ) -> tuple[bytes, Optional[str]]:
+    ) -> tuple[Optional[bytes], Optional[str]]:
         """
         Gets the screenshot as bytes and the webpage source if applicable.
 
