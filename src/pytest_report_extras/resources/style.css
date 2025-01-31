@@ -1,3 +1,7 @@
+.col-links a {
+    text-decoration: none;
+}
+
 .logwrapper {
     min-height: unset;
     max-height: 100px;
@@ -16,19 +20,38 @@
     text-align: center;
 }
 
-.extras_separator {
-    height:2px;
-    background-color: gray;
-    /* display: none; */
-}
-
 .extras_description {
     color: black;
-    font-size: x-large
+    font-size: x-large;
+    margin-top: 0px;
+    margin-bottom: 24px;
+}
+
+.extras_params_title {
+    font-size: medium;
+    font-weight: bold;
+    color: black;
+}
+
+.extras_params_key {
+    font-size: 14px;
+    color: #999;
+	padding-left: 30px;
+}
+
+.extras_params_value {
+    font-size: 14px;
+    color: black;
 }
 
 .extras_exception {
     color: red;
+}
+
+.extras_separator {
+    height: 2px;
+    background-color: gray;
+    /* display: none; */
 }
 
 .extras_comment {

@@ -58,6 +58,14 @@ The pattern for the issues links (example: https://bugtracker.com/issues/{})
 
 Default value: ``None``
 
+----
+
+* ``extras_tms_link_pattern``
+
+The pattern for the test-case links (example: https://tms.com/tests/{})
+
+Default value: ``None``
+
 
 API
 ===
@@ -69,11 +77,11 @@ To add a step with screenshot:
 .. code-block:: python
 
   screenshot(
-      comment: str,                              # Comment of the test step.
+      comment: str,                                # Comment of the test step.
       target: WebDriver | WebElement | Page | Locator = None,  # The page or element.
-      full_page: bool = True,                     # Whether to take a full page screenshot.
-      page_source: bool = False,                  # Whether to include the webpage HTML source.
-      escape_html: bool = False                   # Whether to escape HTML characters in the comment.
+      full_page: bool = True,                      # Whether to take a full page screenshot.
+      page_source: bool = False,                   # Whether to include the webpage HTML source.
+      escape_html: bool = False                    # Whether to escape HTML characters in the comment.
   )
 
 To add a step with attachment:
@@ -121,11 +129,16 @@ To add a link to the report:
   )
 
 
-To add issue links to a report:
+To add links to the report:
 
 .. code-block:: python
 
   @pytest.mark.issues("<issue keys separated by comma>")
+  @pytest.mark.tms("<test-case keys separated by comma>")
+  @pytest.mark.link(url="<url>", name="<name>")
+  @pytest.mark.link(url="<url>")
+  @pytest.mark.link("<url>", "<name>")
+  @pytest.mark.link("<url>")
 
 
 Limitations
@@ -141,7 +154,7 @@ Limitations
 Example
 =======
 
-When using the **pytest-html** plugin (with the ``--html`` option), an external CSS file needs be provided with the ``--css`` option.
+When using the **pytest-html** plugin (with the ``--html`` option), an external CSS file may be provided with the ``--css`` option.
 
 
 Command-line invocation
@@ -176,6 +189,7 @@ Sample ``pytest.ini`` file
   extras_screenshots = all
   extras_sources = False
   extras_issue_link_pattern = http://bugtracker.com/{}
+  extras_tms_link_pattern = http://tms.com/tests/{}
 
 
 Sample code
@@ -239,21 +253,11 @@ Sample code
 
 .. code-block:: python
 
-  def test_links(report):
-      """
-      This is a test adding links
-      """
-      report.link("https://en.wikipedia.org")
-      report.link("https://wikipedia.org", "Wikipedia")
-      report.link(uri="https://wikipedia.org", name="Wikipedia")
-
-
-* Example adding issue links
-
-.. code-block:: python
-
-  @pytest.mark.issues("TEST-123, TEST-987")
-  def test_issue_links(report)
+  @pytest.mark.tms("TEST-3, TEST-9")
+  @pytest.mark.issues("PROJ-123, PROJ-456")
+  @pytest.mark.link("https://example.com")
+  @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
+  def test_link_markers(report)
       # test code
 
 
@@ -262,54 +266,82 @@ Sample CSS file
 
 .. code-block:: css
 
+  .col-links a {
+      text-decoration: none;
+  }
+  
   .logwrapper {
+      min-height: unset;
       max-height: 100px;
   }
-
+  
+  .logwrapper .log {
+      min-height: unset;
+  }
+  
   .extras_td {
       width: 320px;
       /* text-align: center; */
   }
-
+  
   .extras_td_div {
       text-align: center;
   }
- 
+  
+  .extras_description {
+      color: black;
+      font-size: x-large;
+      margin-top: 0px;
+      margin-bottom: 24px;
+  }
+  
+  .extras_params_title {
+      font-size: medium;
+      font-weight: bold;
+      color: black;
+  }
+  
+  .extras_params_key {
+      font-size: 14px;
+      color: #999;
+  	padding-left: 30px;
+  }
+  
+  .extras_params_value {
+      font-size: 14px;
+      color: black;
+  }
+  
+  .extras_exception {
+      color: red;
+  }
+  
   .extras_separator {
-      height:2px;
+      height: 2px;
       background-color: gray;
       /* display: none; */
   }
   
- .extras_description {
-    color: black;
-    font-size: larger
-  }
-
-  .extras_exception {
-      color: red;
-  }
-
   .extras_comment {
       font-family: monospace;
       color: blue;
   }
-
+  
   .extras_pre {
       margin-left: 30px;
       color: black;
   }
-
+  
   .extras_failure {
       font-family: monospace;
       color: red;
   }
-
+  
   .extras_skip {
       font-family: monospace;
       color: orange;
   }
-
+  
   .extras_image {
       border: 1px solid black;
       width: 300px;
@@ -317,12 +349,12 @@ Sample CSS file
       object-fit: cover;
       object-position: top;
   }
-
+  
   .extras_page_src {
       font-size: 12px;
       color: #999;
   }
-
+  
   .extras_iframe {
       margin-left: 30px;
       margin-right: 30px;

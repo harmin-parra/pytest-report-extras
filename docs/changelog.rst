@@ -8,16 +8,18 @@ Changelog
 
 **Feature**
 
-* Possibility to define an issue link pattern and add issue links to the report.
+* New **INI** options to define link patterns for issues and test-cases and new decorators to add links to the report.
 
 **Improvement**
 
 * A default CSS style sheet is automatically added if ``--css`` option is not provided.
 * Usage errors are logged in the standard error stream (stderr).
+* Test parameters via the ``@pytest.mark.parametrize`` decorator are added to the report.
 
 **Change**
 
-* Remove deprecated code.
+* Deprecated code has been removed.
+* The ``report.link`` method is going to be deprecated.
 
 
 1.2.2
