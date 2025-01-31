@@ -154,7 +154,7 @@ Limitations
 Example
 =======
 
-When using the **pytest-html** plugin (with the ``--html`` option), an external CSS file needs be provided with the ``--css`` option.
+When using the **pytest-html** plugin (with the ``--html`` option), an external CSS file may be provided with the ``--css`` option.
 
 
 Command-line invocation
@@ -189,6 +189,7 @@ Sample ``pytest.ini`` file
   extras_screenshots = all
   extras_sources = False
   extras_issue_link_pattern = http://bugtracker.com/{}
+  extras_tms_link_pattern = http://tms.com/tests/{}
 
 
 Sample code
