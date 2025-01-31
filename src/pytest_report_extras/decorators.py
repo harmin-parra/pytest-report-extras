@@ -7,28 +7,27 @@ from .utils import escape_html
 #
 # Auxiliary functions for the report generation
 #
-def append_header(call, report, extras, pytest_html, description: str,
+def append_header(item, call, report, extras, pytest_html,
                   description_tag: Literal["h1", "h2", "h3", "p", "pre"]):
     """
-    Appends the description and the test execution exception trace, if any, to a test report.
+    Decorates and appends the test description and execution exception trace, if any, to the report extras.
 
     Args:
+        item (pytest.Item): The test item.
         call (pytest.CallInfo): Information of the test call.
         report (pytest.TestReport): The test report returned by pytest.
-        extras (List[pytest_html.extras.extra]): The test extras.
+        extras (List[pytest_html.extras.extra]): The report extras.
         pytest_html (types.ModuleType): The pytest-html plugin.
-        description (str): The test function docstring.
         description_tag (str): The HTML tag to use.
     """
-    clazz = "extras_exception"
     # Append description
-    if description is not None:
-        description = escape_html(description).strip().replace('\n', "<br>")
-        description = description.strip().replace('\n', "<br>")
-        extras.append(pytest_html.extras.html(
-            f'<{description_tag} class="extras_description">{description}</{description_tag}>'
-        ))
-
+    description = item.function.__doc__ if hasattr(item, 'function') else None
+    extras.append(pytest_html.extras.html(decorate_description(description, description_tag)))
+    # Append parameters
+    parameters = item.callspec.params if hasattr(item, 'callspec') else None
+    extras.append(pytest_html.extras.html(decorate_parameters(parameters)))
+    # Append exception info
+    clazz = "extras_exception"
     # Catch explicit pytest.fail and pytest.skip calls
     if (
         hasattr(call, 'excinfo') and
@@ -75,7 +74,6 @@ def append_header(call, report, extras, pytest_html, description: str,
             "</pre>"
             )
         )
-    report.extras = extras
 
 
 def get_table_row_tag(
@@ -103,7 +101,7 @@ def get_table_row_tag(
     if comment is None:
         comment = ""
     if image is not None:
-        comment = decorate_label(comment, clazz)
+        comment = decorate_comment(comment, clazz)
         image = decorate_image(image, single_page)
         if source is not None:
             source = decorate_page_source(source)
@@ -122,7 +120,7 @@ def get_table_row_tag(
             )
     else:  # attachment is not None
         comment += decorate_attachment(attachment)
-        comment = decorate_label(comment, clazz)
+        comment = decorate_comment(comment, clazz)
         return (
             f"<tr>"
             f'<td colspan="2">{comment}</td>'
@@ -130,20 +128,40 @@ def get_table_row_tag(
         )
 
 
-def decorate_label(label, clazz) -> str:
+def decorate_description(description, description_tag):
+    if description is None:
+        return ""
+    description = escape_html(description).strip().replace('\n', "<br>")
+    description = description.strip().replace('\n', "<br>")
+    return f'<{description_tag} class="extras_description">{description}</{description_tag}>'
+
+
+def decorate_parameters(parameters):
+    """
+    Applies a CSS style to the test parameters
+    """
+    if parameters is None:
+        return ""
+    content = f'<span class="extras_params_title">Parameters</span><br>'
+    for key, value in parameters.items():
+        content += f'<span class="extras_params_key">{key}</span><span class="extras_params_value">: {value}</span><br>'
+    return content
+
+
+def decorate_comment(comment, clazz) -> str:
     """
     Applies a CSS style to a text.
 
     Args:
-        label (str): The text to decorate.
+        comment (str): The text to decorate.
         clazz (str): The CSS class to apply.
 
     Returns:
         The <span> element decorated with the CSS class.
     """
-    if label in (None, ''):
+    if comment in (None, ''):
         return ""
-    return f'<span class="{clazz}">{label}</span>'
+    return f'<span class="{clazz}">{comment}</span>'
 
 
 '''

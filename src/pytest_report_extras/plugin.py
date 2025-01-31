@@ -207,8 +207,7 @@ def pytest_runtest_makereport(item, call):
                 return
 
             # Append test description and execution exception trace, if any.
-            description = item.function.__doc__ if hasattr(item, 'function') else None
-            decorators.append_header(call, report, extras, pytest_html, description, fx_description_tag)
+            decorators.append_header(item, call, report, extras, pytest_html, fx_description_tag)
 
             if not utils.check_lists_length(report, fx_report):
                 return
