@@ -316,7 +316,7 @@ def add_marker_link(
     fx_allure: str
 ):
     """
-    Add links from @pytest.mark.issues and @pytest.mark.tms markers.
+    Add links from @pytest.mark.issues and @pytest.mark.tms decorators.
     
     Args:
         item (pytest.Item): The test item.
@@ -357,7 +357,7 @@ def add_marker_url(
     fx_allure: str
 ):
     """
-    Add links from @pytest.mark.link markers.
+    Add links from @pytest.mark.link decorator.
     
     Args:
         item (pytest.Item): The test item.

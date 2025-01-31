@@ -320,7 +320,7 @@ deprecation_msg = """
         
 report.link method is deprecated and will be removed in the next major version release
         
-Please use pytest.mark.link marker:
+Please use pytest.mark.link decorator:
     @pytest.mark.link("<url>")
     @pytest.mark.link("<url>", "<name>")
     @pytest.mark.link(url="<url>", name="<name>")
