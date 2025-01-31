@@ -268,55 +268,79 @@ Sample CSS file
   .col-links a {
       text-decoration: none;
   }
-
+  
   .logwrapper {
+      min-height: unset;
       max-height: 100px;
   }
-
+  
+  .logwrapper .log {
+      min-height: unset;
+  }
+  
   .extras_td {
       width: 320px;
       /* text-align: center; */
   }
-
+  
   .extras_td_div {
       text-align: center;
   }
- 
+  
+  .extras_description {
+      color: black;
+      font-size: x-large;
+      margin-top: 0px;
+      margin-bottom: 24px;
+  }
+  
+  .extras_params_title {
+      font-size: medium;
+      font-weight: bold;
+      color: black;
+  }
+  
+  .extras_params_key {
+      font-size: 14px;
+      color: #999;
+  	padding-left: 30px;
+  }
+  
+  .extras_params_value {
+      font-size: 14px;
+      color: black;
+  }
+  
+  .extras_exception {
+      color: red;
+  }
+  
   .extras_separator {
-      height:2px;
+      height: 2px;
       background-color: gray;
       /* display: none; */
   }
   
- .extras_description {
-    color: black;
-    font-size: larger
-  }
-
-  .extras_exception {
-      color: red;
-  }
-
   .extras_comment {
       font-family: monospace;
       color: blue;
   }
-
+  
   .extras_pre {
       margin-left: 30px;
       color: black;
   }
-
+  
   .extras_failure {
       font-family: monospace;
       color: red;
   }
-
+  
   .extras_skip {
       font-family: monospace;
       color: orange;
   }
-
+  
   .extras_image {
       border: 1px solid black;
       width: 300px;
@@ -324,12 +348,12 @@ Sample CSS file
       object-fit: cover;
       object-position: top;
   }
-
+  
   .extras_page_src {
       font-size: 12px;
       color: #999;
   }
-
+  
   .extras_iframe {
       margin-left: 30px;
       margin-right: 30px;
