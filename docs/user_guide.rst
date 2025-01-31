@@ -304,7 +304,7 @@ Sample CSS file
   .extras_params_key {
       font-size: 14px;
       color: #999;
-  	padding-left: 30px;
+      padding-left: 30px;
   }
   
   .extras_params_value {
