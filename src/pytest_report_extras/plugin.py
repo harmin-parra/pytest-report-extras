@@ -163,7 +163,7 @@ def pytest_runtest_makereport(item, call):
     report = outcome.get_result()
     extras = getattr(report, 'extras', [])
 
-    # Add links in markers
+    # Add links in decorators
     utils.add_marker_link(item, extras, "issues", fx_issue_link, fx_html, fx_allure)
     utils.add_marker_link(item, extras, "tms", fx_tms_link, fx_html, fx_allure)
     utils.add_marker_url(item, extras, fx_html, fx_allure)
