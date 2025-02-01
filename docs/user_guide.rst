@@ -281,7 +281,6 @@ Sample CSS file
   
   .extras_td {
       width: 320px;
-      /* text-align: center; */
   }
   
   .extras_td_div {
@@ -319,7 +318,6 @@ Sample CSS file
   .extras_separator {
       height: 2px;
       background-color: gray;
-      /* display: none; */
   }
   
   .extras_comment {
