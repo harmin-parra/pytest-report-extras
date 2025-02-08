@@ -140,7 +140,7 @@ def report(report_html, single_page, screenshots, sources, indent, report_allure
 #
 
 # Global variables to store key fixtures to handle issue links in setup failures
-# Workaround for bug https://github.com/pytest-dev/pytest/issues/13101
+# Workaround for https://github.com/pytest-dev/pytest/issues/13101
 fx_html = None
 fx_allure = None
 fx_tms_link = None
@@ -170,7 +170,7 @@ def pytest_runtest_makereport(item, call):
 
     # Exit if the test is not using the 'report' fixtures
     if not ("request" in item.funcargs and "report" in item.funcargs):
-        report.extras = extras
+        report.extras = extras  # add links to the report before exiting
         return
 
     if report.when == 'call':
@@ -261,17 +261,13 @@ def pytest_runtest_makereport(item, call):
                     f"extras_{event_class}"
                 )
 
-            # Add horizontal line between the header and the comments/screenshots
+            # Add horizontal line between the header and the steps table
             if len(extras) > 0 and len(rows) > 0:
                 extras.append(pytest_html.extras.html(f'<hr class="extras_separator">'))
 
-            # Append extras
+            # Append steps table
             if rows != "":
-                table = (
-                    '<table style="width: 100%;">'
-                    + rows +
-                    "</table>"
-                )
+                table = f'<table style="width: 100%;">{rows}</table>'
                 extras.append(pytest_html.extras.html(table))
 
             # DEPRECATED CODE
