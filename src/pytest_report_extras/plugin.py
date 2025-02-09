@@ -26,7 +26,7 @@ def pytest_addoption(parser):
         "extras_description_tag",
         type="string",
         default="pre",
-        help="The HTML tag for the test description. Accepted values: h1, h2, h3, p or pre.",
+        help="The HTML tag for the test description. Accepted values: h1, h2, h3, h4, h5, h6, p or pre.",
     )
     parser.addini(
         "extras_attachment_indent",
@@ -88,12 +88,13 @@ def report_css(request):
 def description_tag(request):
     """ The HTML tag for the description of each test. """
     tag = request.config.getini("extras_description_tag")
-    return tag if tag in ("h1", "h2", "h3", "p", "pre") else "pre"
+    return tag if tag in ("h1", "h2", "h3", "h4", "h5", "h6", "p", "pre") else "pre"
 
 
 @pytest.fixture(scope='session')
 def indent(request):
     """ The indent to use for attachments. """
+    # Workaround for https://github.com/pytest-dev/pytest/issues/11381
     indent = request.config.getini("extras_attachment_indent")
     try:
         return int(indent)
@@ -219,10 +220,10 @@ def pytest_runtest_makereport(item, call):
             failure = wasfailed or wasxfailed or wasxpassed or wasskipped
 
             # Add steps in the report
-            for i in range(len(fx_report.images)):
-                rows += decorators.get_table_row_tag(
+            for i in range(len(fx_report.comments)):
+                rows += decorators.get_table_row(
                     fx_report.comments[i],
-                    fx_report.images[i],
+                    fx_report.multimedia[i],
                     fx_report.sources[i],
                     fx_report.attachments[i],
                     fx_single_page
@@ -232,9 +233,9 @@ def pytest_runtest_makereport(item, call):
             if fx_screenshots == "last" and failure is False and target is not None:
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot", target)
-                rows += decorators.get_table_row_tag(
+                rows += decorators.get_table_row(
                     fx_report.comments[-1],
-                    fx_report.images[-1],
+                    fx_report.multimedia[-1],
                     fx_report.sources[-1],
                     fx_report.attachments[-1],
                     fx_single_page
@@ -252,9 +253,9 @@ def pytest_runtest_makereport(item, call):
                     event_label = "skip"
                 fx_report._fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot before {event_label}", target)
-                rows += decorators.get_table_row_tag(
+                rows += decorators.get_table_row(
                     fx_report.comments[-1],
-                    fx_report.images[-1],
+                    fx_report.multimedia[-1],
                     fx_report.sources[-1],
                     fx_report.attachments[-1],
                     fx_single_page,

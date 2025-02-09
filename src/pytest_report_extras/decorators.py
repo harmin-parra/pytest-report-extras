@@ -8,7 +8,7 @@ from .utils import escape_html
 # Auxiliary functions for the report generation
 #
 def append_header(item, call, report, extras, pytest_html,
-                  description_tag: Literal["h1", "h2", "h3", "p", "pre"]):
+                  description_tag: Literal["h1", "h2", "h3", "h4", "h5", "h6", "p", "pre"]):
     """
     Decorates and appends the test description and execution exception trace, if any, to the report extras.
 
@@ -76,9 +76,9 @@ def append_header(item, call, report, extras, pytest_html,
         )
 
 
-def get_table_row_tag(
+def get_table_row(
     comment: str,
-    image: str,
+    multimedia: str,
     source: str,
     attachment,
     single_page: bool,
@@ -89,7 +89,7 @@ def get_table_row_tag(
 
     Args:
         comment (str): The comment of the test step.
-        image (str): The screenshot anchor element.
+        multimedia (str): The image or video anchor element.
         source (str): The page source anchor element.
         attachment (Attachment): The attachment.
         single_page (bool): Whether to generate the HTML report in a single page.
@@ -100,27 +100,32 @@ def get_table_row_tag(
     """
     if comment is None:
         comment = ""
-    if image is not None:
+    if multimedia is not None:
         comment = decorate_comment(comment, clazz)
-        image = decorate_image(image, single_page)
+        if attachment.mime.startswith("image/svg"):
+            multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
+        elif attachment.mime.startswith("image/"):
+            multimedia = decorate_image(multimedia, single_page)
+        else:  # Mime.is_video(attachment.mime)
+            multimedia = decorate_video(multimedia, attachment.mime)
         if source is not None:
             source = decorate_page_source(source)
             return (
                 f"<tr>"
                 f"<td>{comment}</td>"
-                f'<td class="extras_td"><div class="extras_td_div">{image}<br>{source}</div></td>'
+                f'<td class="extras_td"><div class="extras_td_div">{multimedia}<br>{source}</div></td>'
                 f"</tr>"
             )
         else:
             return (
                 f"<tr>"
                 f"<td>{comment}</td>"
-                f'<td class="extras_td"><div class="extras_td_div">{image}</div></td>'
+                f'<td class="extras_td"><div class="extras_td_div">{multimedia}</div></td>'
                 "</tr>"
             )
-    else:  # attachment is not None
-        comment += decorate_attachment(attachment)
+    else:
         comment = decorate_comment(comment, clazz)
+        comment += decorate_attachment(attachment)
         return (
             f"<tr>"
             f'<td colspan="2">{comment}</td>'
@@ -200,11 +205,21 @@ def decorate_image_from_base64(uri: Optional[str]) -> str:
     return f'<img src ="{uri}" class="{clazz}">'
 
 
+def decorate_image_svg(uri: Optional[str], inner_html: Optional[str], single_page) -> str:
+    """ Applies CSS class to an SVG element. """
+    if uri in (None, '') or inner_html in (None, ''):
+        return ""
+    if single_page:
+        return inner_html
+    else:
+        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{inner_html}></a>'
+
+
 def decorate_page_source(filename: Optional[str]) -> str:
     """ Applies CSS class to a page source anchor element. """
+    clazz = "extras_page_src"
     if filename in (None, ''):
         return ""
-    clazz = "extras_page_src"
     return f'<a href="{filename}" target="_blank" rel="noopener noreferrer" class="{clazz}">[page source]</a>'
 
 
@@ -227,23 +242,35 @@ def decorate_uri_list(uris: list[str]) -> str:
     return links
 
 
+def decorate_video(uri: Optional[str], mime: str) -> str:
+    """ Applies CSS class to a video anchor element. """
+    clazz = "extras_video"
+    if uri in (None, ''):
+        return ""
+    return (
+        f'<video controls class="{clazz}">'
+        f'<source src="{uri}" type="{mime}">'
+        "Your browser does not support the video tag."
+        "</video>"
+    )
+
+
 def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_pre"
     clazz_frm = "extras_iframe"
-    if attachment is None:
+    # clazz_svg = "extras_image_svg"
+    if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '')):
         return ""
-    attachment.body = '' if attachment.body in (None, '') else attachment.body
-    attachment.inner_html = '' if attachment.inner_html in (None, '') else attachment.inner_html
-    if attachment.body == '' and attachment.inner_html == '':
-        return ""
-    # downloadable file with unknown mime type
-    if attachment.mime is None and attachment.inner_html is not None:
-        return ' ' + attachment.inner_html
-    if attachment.inner_html == '':
-        return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
-    else:
+
+    if attachment.inner_html is not None:
+        if attachment.mime is None:  # downloadable file with unknown mime type
+            return ' ' + attachment.inner_html
         if attachment.mime == "text/html":
             return f'<iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
-        else:
+        else:  # text/csv, text/uri-list
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
+    # if attachment.mime.startswith("image/svg"):
+    #     return f'<br><div class="{clazz_svg}">{attachment.body}</div>'
+    else:  # application/*, text/plain
+        return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'

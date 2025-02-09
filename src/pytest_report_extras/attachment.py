@@ -15,6 +15,9 @@ class Mime:
     """
     Class to hold mime type values.
     """
+    application_json = "application/json"
+    application_xml = "application/xml"
+    application_yaml = "application/yaml"
     image_bmp = "image/png"
     image_gif = "image/gif"
     image_jpeg = "image/jpeg"
@@ -25,9 +28,10 @@ class Mime:
     text_html = "text/html"
     text_plain = "text/plain"
     text_uri_list = "text/uri-list"
-    application_json = "application/json"
-    application_xml = "application/xml"
-    application_yaml = "application/yaml"
+    video_mp4 = "video/mp4"
+    video_ogg = "video/ogg"
+    video_ogv = "video/ogv"
+    video_webm = "video/webm"
 
     @staticmethod
     def is_supported(mime: str):
@@ -35,20 +39,41 @@ class Mime:
             Mime.image_bmp, Mime.image_gif, Mime.image_jpeg, Mime.image_png,
             Mime.image_svg_xml, mime == Mime.image_tiff,
             Mime.text_csv, Mime.text_html, Mime.text_plain, Mime.text_uri_list,
+            Mime.video_mp4, Mime.video_ogg, Mime.video_ogv, Mime.video_webm,
             Mime.application_json, Mime.application_xml, Mime.application_yaml
         )
 
     @staticmethod
-    def is_unsupported(mime: str):
-        return not Mime.is_supported(mime)
+    def is_application(mime: str):
+        return mime is not None and mime.startswith("application/")
 
     @staticmethod
     def is_image(mime: str):
         return mime is not None and mime.startswith("image/")
 
     @staticmethod
+    def is_video(mime: str):
+        return mime is not None and mime.startswith("video/")
+
+    @staticmethod
+    def is_multimedia(mime: str):
+        return Mime.is_image(mime) or Mime.is_video(mime)
+
+    @staticmethod
+    def is_unsupported(mime: str):
+        return not Mime.is_supported(mime)
+
+    @staticmethod
     def is_not_image(mime: str):
         return not Mime.is_image(mime)
+
+    @staticmethod
+    def is_not_video(mime: str):
+        return not Mime.is_video(mime)
+
+    @staticmethod
+    def is_not_multimedia(mime: str):
+        return not Mime.is_multimedia(mime)
 
 
 class Attachment:
@@ -86,7 +111,7 @@ class Attachment:
         delimiter=',',
     ):  # -> Self | None:
         """
-        Parses the content/body of an attachment.
+        Creates an attachment from the content/body.
 
         Args:
             body (str | dict | list[str] | bytes): The content/body of the body.
@@ -106,6 +131,8 @@ class Attachment:
             mime = Mime.text_uri_list
         if Mime.is_image(mime):
             return _attachment_image(body, mime)
+        if Mime.is_video(mime):
+            return _attachment_video(body, mime)
         match mime:
             case Mime.application_json:
                 return _attachment_json(body, indent)
@@ -229,4 +256,17 @@ def _attachment_image(data: bytes | str, mime: str) -> Attachment:
         except Exception as error:
             utils.log_error(None, "Error parsing image bytes:", error)
             return Attachment(body="Error parsing image bytes.", mime=Mime.text_plain)
+    return Attachment(body=data, mime=mime)
+
+
+def _attachment_video(data: bytes | str, mime: str) -> Attachment:
+    """
+    Returns an attachment object with bytes representing a video.
+    """
+    if isinstance(data, str):
+        try:
+            data = base64.b64decode(data)
+        except Exception as error:
+            utils.log_error(None, "Error parsing video bytes:", error)
+            return Attachment(body="Error parsing video bytes.", mime=Mime.text_plain)
     return Attachment(body=data, mime=mime)
