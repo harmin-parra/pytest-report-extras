@@ -124,7 +124,10 @@ class Extras:
                 if mime is None:
                     if self._html:
                         inner_html = decorators.decorate_uri(self._add_to_downloads(source))
-                    return Attachment(source=source, inner_html=inner_html)
+                    if inner_html == '':
+                        return Attachment(body="Error copying file", mime=Mime.text_plain)
+                    else:
+                        return Attachment(source=source, inner_html=inner_html)
                 if Mime.is_multimedia(mime) and mime != Mime.image_svg_xml:
                     return Attachment(source=source, mime=mime)
                 else:
@@ -329,10 +332,15 @@ class Extras:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
             if attachment is not None and Mime.is_multimedia(attachment.mime):
+                msg = None
                 if attachment.source is not None:
                     link_multimedia, link_source = self._copy_image_video(attachment.source, mime), None
+                    msg = "Error copying file" if link_multimedia is None else None
                 else:
                     link_multimedia, link_source = self._save_image_video_source(attachment.body, websource, mime)
+                    msg = "Error saving data" if link_multimedia is None else None
+                if msg is not None:
+                    attachment = Attachment(body=msg, mime=Mime.text_plain)
             self.comments.append(comment)
             self.multimedia.append(link_multimedia)
             self.sources.append(link_source)
