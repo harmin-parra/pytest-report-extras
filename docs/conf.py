@@ -24,7 +24,7 @@ copyright = '2024, Harmin Parra Rueda'
 author = 'Harmin Parra Rueda'
 
 # The short X.Y version
-version = '1.4'
+version = '1.3'
 # The full version, including alpha/beta/rc tags
 release = ''
 
