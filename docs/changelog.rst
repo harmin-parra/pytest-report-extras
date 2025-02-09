@@ -3,6 +3,18 @@ Changelog
 =========
 
 
+1.3.1
+=====
+
+**Feature**
+
+* Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``
+
+**Changes**
+
+* Screenshot and webpage source files are named using a uuid generator.
+
+
 1.3.0
 =====
 

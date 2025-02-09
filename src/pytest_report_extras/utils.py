@@ -40,10 +40,10 @@ def get_folder(filepath) -> Optional[str]:
 
 
 def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
-    """ Verifies if the image, comment, page source and attachment lists have the same length """
-    message = ('"images", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
+    """ Verifies if the comment, multimedia, page source and attachment lists have the same length """
+    message = ('"multimedia", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
                "Steps won't be logged for this test in pytest-html report.\n")
-    if not (len(fx_extras.images) == len(fx_extras.comments) == 
+    if not (len(fx_extras.multimedia) == len(fx_extras.comments) == 
             len(fx_extras.sources) == len(fx_extras.attachments)):
         log_error(report, message)
         return False
@@ -52,7 +52,7 @@ def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
 
 
 def create_assets(report_html, single_page):
-    """ Recreate images and webpage sources folders. """
+    """ Recreate report sub-folders. """
     if report_html is None:
         return
     # Recreate report_folder
@@ -64,10 +64,11 @@ def create_assets(report_html, single_page):
     pathlib.Path(f"{folder}downloads").mkdir(parents=True)
     if single_page:
         return
-    # Create page sources folder
+    # Create other folders
     shutil.rmtree(f"{folder}sources", ignore_errors=True)
     pathlib.Path(f"{folder}sources").mkdir(parents=True)
-    # Create images folder
+    shutil.rmtree(f"{folder}videos", ignore_errors=True)
+    pathlib.Path(f"{folder}videos").mkdir(parents=True)
     shutil.rmtree(f"{folder}images", ignore_errors=True)
     pathlib.Path(f"{folder}images").mkdir(parents=True)
     # Copy error.png to images folder
@@ -216,94 +217,72 @@ def _get_full_page_screenshot_chromium(driver) -> bytes:
     return base64.urlsafe_b64decode(base_64_png['data'])
 
 
-def save_image_and_get_link(report_html: str, index: int, image: bytes) -> Optional[str]:
-    """
-    Saves an image in the 'images' folder and returns its relative path to the HTML report folder.
-
-    Args:
-        report_html (str): The HTML report folder.
-        index (int): The file name suffix.
-        image (bytes): The image to save.
-
-    Returns:
-        The relative path to the HTML report folder of the saved image.
-    """
-    if image is None:
-        return None
-    link = f"images{os.sep}image-{index}.png"
-    folder = ""
-    if report_html is not None and report_html != '':
-        folder = f"{report_html}{os.sep}"
-    filename = folder + link
-    try:
-        f = open(filename, 'wb')
-        f.write(image)
-        f.close()
-    except Exception as error:
-        # trace = traceback.format_exc()
-        link = None  # f"images{os.sep}error.png"
-        log_error(None, f"Error creating file: {link}", error)
-    finally:
-        return link
-
-
-def save_source_and_get_link(report_html: str, index: int, source: str) -> Optional[str]:
-    """
-    Saves a webpage source in the 'sources' folder and returns its relative path to the HTML report folder.
-
-    Args:
-        report_html (str): The HTML report folder.
-        index (int): The file name suffix.
-        source (str): The webpage source to save.
-
-    Returns:
-        The relative path to the HTML report folder of the saved webpage source.
-    """
-    if source is None:
-        return None
-    link = f"sources{os.sep}page-{index}.txt"
-    folder = ""
-    if report_html is not None and report_html != '':
-        folder = f"{report_html}{os.sep}"
-    filename = folder + link
-    try:
-        f = open(filename, 'w', encoding="utf-8")
-        f.write(source)
-        f.close()
-    except Exception as error:
-        # trace = traceback.format_exc()
-        link = None
-        log_error(None, f"Error creating file: {link}", error)
-    finally:
-        return link
-
-
-def save_file_and_get_link(report_html: str, target: str | bytes = None) -> Optional[str]:
+def save_file_and_get_link(
+    report_html: str,
+    target: str | bytes,
+    extension: Optional[str],
+    folder: Literal["downloads", "images", "sources", "videos"]
+) -> Optional[str]:
     """
     Saves a copy of a file or the bytes in the 'downloads' folder 
     and returns its relative path to the HTML report folder.
 
     Args:
         report_html (str): The HTML report folder.
-        target (str | bytes): The name of the file to copy or the bytes to save.
+        target (str | bytes): The content in string or bytes to save.
+        extension (str): The extension for the file to copy.
+        folder (str): The destination folder
 
     Returns:
         The relative path to the HTML report folder of the saved file.
     """
     if target in (None, ''):
         return None
-    filename = str(uuid.uuid4())
+    extension = '' if extension is None else '.' + extension 
+    filename = str(uuid.uuid4()) + extension
     try:
-        destination = f"{report_html}{os.sep}downloads{os.sep}{filename}"
-        if isinstance(target, str):
-            subprocess.run(["cp", target, destination]).check_returncode()
-        else:  # bytes
+        destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
+        if isinstance(target, bytes):
             f = open(destination, 'wb')
-            f.write(target)
-            f.close()
-        return f"downloads{os.sep}{filename}"
+        else:
+            f = open(destination, 'wt')
+        f.write(target)
+        f.close()
+        return f"{folder}{os.sep}{filename}"
     except Exception as error:
-        log_error(None, f"Error copying file to 'downloads' folder:", error)
+        log_error(None, f"Error copying file to '{folder}' folder:", error)
+        return None
+
+
+def copy_file_and_get_link(
+    report_html: str,
+    filepath: str,
+    extension: Optional[str],
+    folder: Literal["downloads", "videos", "images"]
+) -> Optional[str]:
+    """
+    Saves a copy of a file or the bytes in the 'downloads' folder 
+    and returns its relative path to the HTML report folder.
+
+    Args:
+        report_html (str): The HTML report folder.
+        filepath (str): The name of the file to copy.
+        extension (str): The extension for the file to copy.
+        folder (str): The destination folder
+
+    Returns:
+        The relative path to the HTML report folder of the saved file.
+    """
+    if filepath in (None, ''):
+        return None
+    extension = '' if extension is None else '.' + extension 
+    filename = str(uuid.uuid4()) + extension
+    try:
+        destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
+        subprocess.run(["cp", filepath, destination]).check_returncode()
+        return f"{folder}{os.sep}{filename}"
+    except Exception as error:
+        log_error(None, f"Error copying file '{filepath}' into folder '{folder}':", error)
         return None
 
 
@@ -311,9 +290,9 @@ def add_marker_link(
     item: pytest.Item,
     extras,
     link_type: Literal["issues", "tms"],
-    fx_link: str,
-    fx_html: str,
-    fx_allure: str
+    fx_link: Optional[str],
+    fx_html: Optional[str],
+    fx_allure: Optional[str]
 ):
     """
     Add links from @pytest.mark.issues and @pytest.mark.tms decorators.
@@ -353,8 +332,8 @@ def add_marker_link(
 def add_marker_url(
     item: pytest.Item,
     extras,
-    fx_html: str,
-    fx_allure: str
+    fx_html: Optional[str],
+    fx_allure: Optional[str]
 ):
     """
     Add links from @pytest.mark.link decorator.

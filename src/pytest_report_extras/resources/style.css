@@ -59,11 +59,6 @@
     font-family: monospace;
 }
 
-.extras_pre {
-    color: black;
-    margin-left: 30px;
-}
-
 .extras_failure {
     color: red;
     font-family: monospace;
@@ -72,6 +67,16 @@
 .extras_skip {
     color: orange;
     font-family: monospace;
+}
+
+.extras_video {
+	width: 300px;
+	height: 170px;
+}
+
+.extras_td svg {
+	width: 300px;
+	height: 170px;
 }
 
 .extras_image {
@@ -85,6 +90,11 @@
 .extras_page_src {
     color: #999;
     font-size: 12px;
+}
+
+.extras_pre {
+    color: black;
+    margin-left: 30px;
 }
 
 .extras_iframe {
