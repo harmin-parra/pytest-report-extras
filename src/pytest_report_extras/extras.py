@@ -58,7 +58,10 @@ class Extras:
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         image, source = self._get_image_source(target, full_page, page_source)
-        self.attach(comment, image, source, None, Mime.image_png, "", escape_html)
+        if target is None:  # A comment alone
+            self.attach(comment, None, None, None, None, "", escape_html)
+        else:
+            self.attach(comment, image, source, None, Mime.image_png, "", escape_html)
 
     def attach(
         self,
@@ -92,7 +95,13 @@ class Extras:
         """
         if Mime.is_unsupported(mime):
             mime = None
-        attachment = self._get_attachment(body, source, mime, csv_delimiter)
+        if body is None and source is None and mime is None:
+            if comment is not None:  # A comment alone
+                attachment = Attachment(body="", mime=Mime.text_plain)
+            else:
+                attachment = None
+        else:
+            attachment = self._get_attachment(body, source, mime, csv_delimiter)
         mime = attachment.mime if attachment is not None else None
         self._add_extra(comment, websource, attachment, mime, escape_html)
 
@@ -323,8 +332,6 @@ class Extras:
                         allure.attach(websource, name="page source", attachment_type=allure.attachment_type.TEXT)
                 except Exception as err:
                     allure.attach(str(err), name="Error adding attachment", attachment_type=allure.attachment_type.TEXT)
-            elif comment is not None:
-                allure.attach('', name=comment, attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
