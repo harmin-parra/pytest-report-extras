@@ -125,8 +125,6 @@ class Attachment:
         Returns:
             An Attachment object representing the attachment.
         """
-        if body is None:
-            return None
         if body in (None, ''):
             return Attachment(body="Body or source is None or empty", mime=Mime.text_plain)
         if body is not None and isinstance(body, List):
