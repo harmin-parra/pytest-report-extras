@@ -6,6 +6,7 @@ import re
 import xml.dom.minidom as xdom
 import yaml
 from typing import List
+from typing import Optional
 # from typing import Self (python 3.11)
 from . import decorators
 from . import utils
@@ -82,10 +83,10 @@ class Attachment:
     """
     def __init__(
         self,
-        body: str | dict | list[str] | bytes = None,
-        source: str = None,
-        mime: str = None,
-        inner_html: str = None
+        body: Optional[str | dict | list[str] | bytes] = None,
+        source: Optional[str] = None,
+        mime: Optional[str] = None,
+        inner_html: Optional[str] = None
     ):
         """
         Args:
@@ -147,12 +148,18 @@ class Attachment:
             case _:
                 return _attachment_txt(body)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
+        if isinstance(self.body, bytes):
+            body_str = base64.b64encode(self.body).decode()
+        else:
+            body_str = self.body
+        body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
+        inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 50 else repr(self.inner_html)[:50] + "....'"
         return (
-            f"body: {self.body}\n"
-            f"source: {self.source}\n"
-            f"mime: {self.mime}\n"
-            f"inner_html: {self.inner_html}\n"
+            '{ ' + f"body: {body_str}, "
+            f"source: {repr(self.source)}, "
+            f"mime: {repr(self.mime)}, "
+            f"inner_html: {inner_str}" + ' }'
         )
 
 
