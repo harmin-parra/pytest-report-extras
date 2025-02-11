@@ -236,14 +236,14 @@ class Extras:
 
         if Mime.is_video(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_file_and_get_link(self._html, data_b64, None, "videos")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, None, "videos")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
 
         if mime == Mime.image_svg_xml:
             if self._fx_single_page is False:
-                link_multimedia = utils.save_file_and_get_link(self._html, data_str, "svg", "images")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_str, "svg", "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
