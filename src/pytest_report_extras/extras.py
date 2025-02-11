@@ -57,7 +57,15 @@ class Extras:
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        image, source = self._get_image_source(target, full_page, page_source)
+        try:
+            image, source = self._get_image_source(target, full_page, page_source)
+        except Exception as error:
+            self.comments.append(comment)
+            self.multimedia.append(utils.error_screenshot)
+            self.sources.append(None)
+            self.attachments.append(Attachment(None, None, "image/png", None))
+            utils.log_error(None, "Error taking screenshot", error)
+            return
         if target is None:  # A comment alone
             self.attach(comment, None, None, None, None, "", escape_html)
         else:
