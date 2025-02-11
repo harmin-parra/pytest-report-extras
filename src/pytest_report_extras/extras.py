@@ -46,9 +46,7 @@ class Extras:
         escape_html: bool = False
     ):
         """
-        Adds a step with a screenshot in the report.
-        The screenshot is saved in <report_html>/images folder.
-        The webpage source is saved in <report_html>/sources folder.
+        Adds a step with a screenshot to the report.
 
         Args:
             comment (str): The comment of the test step.
@@ -83,15 +81,11 @@ class Extras:
     ):
         """
         Adds a step with an attachment to the report.
-        Images are saved in <report_html>/images folder.
-        Webpage sources are saved in <report_html>/sources folder.
-        Videos are saved in <report_html>/videos folder.
-        Other types of files are saved in <report_html>/downloads folder.
         The 'body' and 'source' parameters are exclusive.
 
         Args:
             comment (str): The comment of the test step.
-            body (str | bytes | dict | list[str]): The content/body of the attachment.
+            body (str | bytes | dict | list[str]): The content/body of the attachment or the bytes of the screenshot.
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
@@ -121,10 +115,10 @@ class Extras:
         delimiter=',',
     ) -> Attachment:
         """
-        Creates an attachment from body or source.
+        Creates an attachment from its body or source.
 
         Args:
-            body (str | bytes | dict | list[str]): The content/body of the attachment.
+            body (str | bytes | dict | list[str]): The content/body of the attachment or the bytes of the screenshot.
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
@@ -256,13 +250,13 @@ class Extras:
 
         if Mime.is_image(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_file_and_get_link(self._html, data_b64, None, "images")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, None, "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
 
         if source is not None:
             if self._fx_single_page is False:
-                link_source = utils.save_file_and_get_link(self._html, source, None, "sources")
+                link_source = utils.save_data_and_get_link(self._html, source, None, "sources")
             else:
                 link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
 
@@ -272,7 +266,7 @@ class Extras:
         """
         Copies the image or video and returns the filepath relative to the <report_html> folder.
         The image is copied into <report_html>/images folder.
-        The video is copied in <report_html>/videos folder.
+        The video is copied into <report_html>/videos folder.
         When using the --self-contained-html option, returns the data URI schema of the image/video.
 
         Args:
@@ -314,7 +308,12 @@ class Extras:
         escape_html: bool
     ):
         """
-        Adds the comment, image, webpage source and attachment to the lists of the 'report' fixture.
+        Adds the comment, webpage source and attachment to the lists of the 'report' fixture.
+        Screenshots are stored in the attachment argument.
+        Images are saved in <report_html>/images folder.
+        Webpage sources are saved in <report_html>/sources folder.
+        Videos are saved in <report_html>/videos folder.
+        Other types of files are saved in <report_html>/downloads folder.
 
         Args:
             comment (str): The comment of the test step.
@@ -363,7 +362,8 @@ class Extras:
 
     def _add_to_downloads(self, target: str | bytes = None) -> str:
         """
-        When using pytest-html, copies a file into the report's download folder, making it available to download.
+        When using pytest-html, copies a file or saves data into the report's download folder,
+        making it available to download.
 
         Args:
             target (str | bytes): The file or the bytes content to add into the download folder.
@@ -372,7 +372,7 @@ class Extras:
             The uri of the downloadable file.
         """
         if isinstance(target, bytes):
-            return utils.save_file_and_get_link(self._html, target, None, "downloads")
+            return utils.save_data_and_get_link(self._html, target, None, "downloads")
         else:
             return utils.copy_file_and_get_link(self._html, target, None, "downloads")
 

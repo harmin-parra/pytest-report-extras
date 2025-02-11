@@ -15,7 +15,7 @@ def append_header(item, call, report, extras, pytest_html,
     Args:
         item (pytest.Item): The test item.
         call (pytest.CallInfo): Information of the test call.
-        report (pytest.TestReport): The test report returned by pytest.
+        report (pytest.TestReport): The pytest test report.
         extras (List[pytest_html.extras.extra]): The report extras.
         pytest_html (types.ModuleType): The pytest-html plugin.
         description_tag (str): The HTML tag to use.
@@ -134,6 +134,7 @@ def get_table_row(
 
 
 def decorate_description(description, description_tag):
+    """  Applies a CSS style to the test description. """
     if description is None:
         return ""
     description = escape_html(description).strip().replace('\n', "<br>")
@@ -142,9 +143,7 @@ def decorate_description(description, description_tag):
 
 
 def decorate_parameters(parameters):
-    """
-    Applies a CSS style to the test parameters
-    """
+    """ Applies a CSS style to the test parameters. """
     if parameters is None:
         return ""
     content = f'<span class="extras_params_title">Parameters</span><br>'

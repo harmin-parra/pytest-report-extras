@@ -208,7 +208,7 @@ def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
 
 def _attachment_txt(text: str) -> Attachment:
     """
-    Returns an attachment object with a plain/body string.
+    Returns an attachment object with a plain/text string.
     """
     if not isinstance(text, str):
         msg = f"Error parsing text body of type '{type(text)}'"
