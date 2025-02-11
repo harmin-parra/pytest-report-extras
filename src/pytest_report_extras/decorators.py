@@ -22,10 +22,12 @@ def append_header(item, call, report, extras, pytest_html,
     """
     # Append description
     description = item.function.__doc__ if hasattr(item, 'function') else None
-    extras.append(pytest_html.extras.html(decorate_description(description, description_tag)))
+    if description is not None:
+        extras.append(pytest_html.extras.html(decorate_description(description, description_tag)))
     # Append parameters
     parameters = item.callspec.params if hasattr(item, 'callspec') else None
-    extras.append(pytest_html.extras.html(decorate_parameters(parameters)))
+    if parameters is not None:
+        extras.append(pytest_html.extras.html(decorate_parameters(parameters)))
     # Append exception info
     clazz = "extras_exception"
     # Catch explicit pytest.fail and pytest.skip calls
