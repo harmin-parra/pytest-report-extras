@@ -199,7 +199,7 @@ Sample ``pytest.ini`` file
 Sample code
 -----------
 
-* Example using Selenium
+* Example adding Selenium screenshots
 
 .. code-block:: python
 
@@ -219,7 +219,7 @@ Sample code
       driver.quit()
 
 
-* Example using Playwright
+* Example adding Playwright screenshots
 
 .. code-block:: python
 
@@ -232,6 +232,19 @@ Sample code
       report.screenshot(comment="Get the webpage to test", target=page, full_page=False)
 
 
+* Example adding Playwright video
+
+.. code-block:: python
+
+  def test_with_playwright(browser: Browser, report):
+      context = browser.new_context(record_video_dir="path/to/videos/")
+      page = context.new_page()
+      # Your test goes
+      context.close()
+      page.close()
+      report.attach("Recorded video", source=page.video.path(), mime=report.Mime.video_webm)
+
+
 * Example adding attachments
 
 .. code-block:: python
@@ -241,14 +254,14 @@ Sample code
       This is a test adding XML & JSON attachments
       """
       report.attach(
-          comment="This is a XML document:",
+          "This is a XML document:",
           body="<root><child>text</child></root>",
           mime=report.Mime.application_xml
       )
 	  
       report.attach(
           comment="This is a JSON document:",
-          source="/path/to/file",
+          source="path/to/file",
           mime=report.Mime.application_json
       )
 
