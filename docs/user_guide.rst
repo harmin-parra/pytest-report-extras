@@ -158,19 +158,19 @@ If using pytest-html report:
 
 .. code-block:: bash
 
-  pytest --html=/path/to/report --css=/path/to/css
+  pytest --html=path/to/report --css=path/to/css
 
 If using Allure report:
 
 .. code-block:: bash
 
-  pytest --alluredir=/path/to/allure-results
+  pytest --alluredir=path/to/allure-results
 
 If using both reports:
 
 .. code-block:: bash
 
-  pytest --html=/path/to/report --css=/path/to/css --alluredir=/path/to/allure-results
+  pytest --html=path/to/report --css=path/to/css --alluredir=path/to/allure-results
 
 
 Sample ``pytest.ini`` file
@@ -265,7 +265,7 @@ Sample code
   @pytest.mark.link("https://example.com")
   @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
   def test_link_markers(report)
-      # test code
+      # Your test goes here
 
 
 Sample CSS file
