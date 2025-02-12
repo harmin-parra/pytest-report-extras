@@ -102,7 +102,6 @@ class Extras:
                 attachment = None
         else:
             attachment = self._get_attachment(body, source, mime, csv_delimiter)
-        mime = attachment.mime if attachment is not None else None
         self._add_extra(comment, None, attachment, escape_html)
 
     def _get_attachment(
