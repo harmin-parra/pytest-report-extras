@@ -123,16 +123,6 @@ To add a step with attachment:
   #    report.Mime.video_webm         or "video/webm"
 
 
-To add a link to the report:
-
-.. code-block:: python
-
-  link(
-      uri: str,              # The uri.
-      name: str = None       # The text of the anchor tag.
-  )
-
-
 To add links to the report:
 
 .. code-block:: python
@@ -239,7 +229,7 @@ Sample code
   def test_with_playwright(browser: Browser, report):
       context = browser.new_context(record_video_dir="path/to/videos/")
       page = context.new_page()
-      # Your test goes
+      # Your test goes here
       context.close()
       page.close()
       report.attach("Recorded video", source=page.video.path(), mime=report.Mime.video_webm)
