@@ -104,12 +104,15 @@ def get_table_row(
         comment = ""
     if multimedia is not None:
         comment = decorate_comment(comment, clazz)
-        if attachment.mime.startswith("image/svg"):
-            multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
-        elif attachment.mime.startswith("image/"):
+        if attachment is not None and attachment.mime is not None:
+            if attachment.mime.startswith("image/svg"):
+                multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
+            elif attachment.mime.startswith("video/"):
+                multimedia = decorate_video(multimedia, attachment.mime)
+            else:  # Assuming mime = "image/*
+                multimedia = decorate_image(multimedia, single_page)
+        else:  # Multimedia with attachment = None are considered as images
             multimedia = decorate_image(multimedia, single_page)
-        else:  # Mime.is_video(attachment.mime)
-            multimedia = decorate_video(multimedia, attachment.mime)
         if source is not None:
             source = decorate_page_source(source)
             return (

@@ -61,19 +61,18 @@ class Extras:
             self.comments.append(comment)
             self.multimedia.append(utils.error_screenshot)
             self.sources.append(None)
-            self.attachments.append(Attachment(None, None, "image/png", None))
+            self.attachments.append(None)
             utils.log_error(None, "Error taking screenshot", error)
             return
         if target is None:  # A comment alone
-            self.attach(comment, None, None, None, None, "", escape_html)
+            self._add_extra(comment, None, None, escape_html)
         else:
-            self.attach(comment, image, source, None, Mime.image_png, "", escape_html)
+            self._add_extra(comment, source, Attachment(image, None, "image/png", None), escape_html)
 
     def attach(
         self,
         comment: str,
         body: str | bytes | dict | list[str] = None,
-        websource: str = None,
         source: str = None,
         mime: str = None,
         csv_delimiter: str = ',',
@@ -89,7 +88,6 @@ class Extras:
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
-            websource (str): The filepath of the webpage source.
             source (str): The filepath of the source of the attachment.
             mime (str): The mime type of the attachment.
             csv_delimiter (str): The delimiter for CSV documents.
@@ -105,7 +103,7 @@ class Extras:
         else:
             attachment = self._get_attachment(body, source, mime, csv_delimiter)
         mime = attachment.mime if attachment is not None else None
-        self._add_extra(comment, websource, attachment, mime, escape_html)
+        self._add_extra(comment, None, attachment, escape_html)
 
     def _get_attachment(
         self,
@@ -304,7 +302,6 @@ class Extras:
         comment: str,
         websource: Optional[str],
         attachment: Optional[Attachment],
-        mime: Optional[str],
         escape_html: bool
     ):
         """
@@ -319,12 +316,12 @@ class Extras:
             comment (str): The comment of the test step.
             websource (str): The webpage source code.
             attachment (Attachment): The attachment.
-            mime (str): The mime type of the attachment.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         comment = utils.escape_html(comment) if escape_html else comment
         link_multimedia = None
         link_source = None
+        mime = attachment.mime if attachment is not None else None 
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -355,6 +352,11 @@ class Extras:
                     msg = "Error saving data" if link_multimedia is None else None
                 if msg is not None:
                     attachment = Attachment(body=msg, mime=Mime.text_plain)
+                else:  # Cleanup of useless attachment's info
+                    if Mime.is_video(attachment.mime):
+                        attachment.body = None
+                    if Mime.is_image_binary(attachment.mime):
+                        attachment = None
             self.comments.append(comment)
             self.multimedia.append(link_multimedia)
             self.sources.append(link_source)
