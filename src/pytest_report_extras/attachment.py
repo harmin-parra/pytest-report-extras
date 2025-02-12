@@ -6,6 +6,7 @@ import re
 import xml.dom.minidom as xdom
 import yaml
 from typing import List
+from typing import Optional
 # from typing import Self (python 3.11)
 from . import decorators
 from . import utils
@@ -52,6 +53,11 @@ class Mime:
         return mime is not None and mime.startswith("image/")
 
     @staticmethod
+    def is_image_binary(mime: str):
+        """ Whether the mime type represents an image in binary format: png, mpeg, gif, tiff """
+        return mime is not None and mime.startswith("image/") and not mime.startswith("image/svg")
+
+    @staticmethod
     def is_video(mime: str):
         return mime is not None and mime.startswith("video/")
 
@@ -82,10 +88,10 @@ class Attachment:
     """
     def __init__(
         self,
-        body: str | dict | list[str] | bytes = None,
-        source: str = None,
-        mime: str = None,
-        inner_html: str = None
+        body: Optional[str | dict | list[str] | bytes] = None,
+        source: Optional[str] = None,
+        mime: Optional[str] = None,
+        inner_html: Optional[str] = None
     ):
         """
         Args:
@@ -125,8 +131,8 @@ class Attachment:
         Returns:
             An Attachment object representing the attachment.
         """
-        if body is None:
-            return None
+        if body in (None, ''):
+            return Attachment(body="Body or source is None or empty", mime=Mime.text_plain)
         if body is not None and isinstance(body, List):
             mime = Mime.text_uri_list
         if Mime.is_image(mime):
@@ -147,12 +153,18 @@ class Attachment:
             case _:
                 return _attachment_txt(body)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
+        if isinstance(self.body, bytes):
+            body_str = base64.b64encode(self.body).decode()
+        else:
+            body_str = self.body
+        body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
+        inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 50 else repr(self.inner_html)[:50] + "....'"
         return (
-            f"body: {self.body}\n"
-            f"source: {self.source}\n"
-            f"mime: {self.mime}\n"
-            f"inner_html: {self.inner_html}\n"
+            '{ ' + f"body: {body_str}, "
+            f"source: {repr(self.source)}, "
+            f"mime: {repr(self.mime)}, "
+            f"inner_html: {inner_str}" + ' }'
         )
 
 
@@ -160,6 +172,10 @@ def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding a JSON document.
     """
+    if not isinstance(text, (str, dict)):
+        msg = f"Error parsing JSON body of type '{type(text)}'"
+        utils.log_error(None, msg)
+        return Attachment(body=msg, mime=Mime.text_plain)
     try:
         text = json.loads(text) if isinstance(text, str) else text
         return Attachment(body=json.dumps(text, indent=indent), mime=Mime.application_json)
@@ -172,6 +188,10 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding an XML document.
     """
+    if not isinstance(text, str):
+        msg = f"Error parsing XML body of type '{type(text)}'"
+        utils.log_error(None, msg)
+        return Attachment(body=msg, mime=Mime.text_plain)
     try:
         result = (xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', ''))
                   .toprettyxml(indent=" " * indent))
@@ -186,6 +206,10 @@ def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
     """
     Returns an attachment object with a string holding a YAML document.
     """
+    if not isinstance(text, str):
+        msg = f"Error parsing YAML body of type '{type(text)}'"
+        utils.log_error(None, msg)
+        return Attachment(body=msg, mime=Mime.text_plain)
     try:
         text = yaml.safe_load(text)
         return Attachment(body=yaml.dump(text, indent=indent), mime=Mime.application_yaml)
@@ -196,8 +220,12 @@ def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
 
 def _attachment_txt(text: str) -> Attachment:
     """
-    Returns an attachment object with a plain/body string.
+    Returns an attachment object with a plain/text string.
     """
+    if not isinstance(text, str):
+        msg = f"Error parsing text body of type '{type(text)}'"
+        utils.log_error(None, msg, None)
+        return Attachment(body=msg, mime=Mime.text_plain)
     return Attachment(body=text, mime=Mime.text_plain)
 
 
@@ -205,6 +233,10 @@ def _attachment_csv(text: str, delimiter=',') -> Attachment:
     """
     Returns an attachment object with a string holding a CVS document.
     """
+    if not isinstance(text, str):
+        msg = f"Error parsing csv body of type '{type(text)}'"
+        utils.log_error(None, msg)
+        return Attachment(body=msg, mime=Mime.text_plain)
     try:
         f = io.StringIO(text)
         csv_reader = csv.reader(f, delimiter=delimiter)
@@ -228,6 +260,10 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
     """
     Returns an attachment object with a uri list.
     """
+    if not isinstance(text, (str, list)):
+        msg = f"Error parsing uri-list body of type '{type(text)}'"
+        utils.log_error(None, msg)
+        return Attachment(body=msg, mime=Mime.text_plain)
     try:
         uri_list = None
         body = None
@@ -250,6 +286,10 @@ def _attachment_image(data: bytes | str, mime: str) -> Attachment:
     """
     Returns an attachment object with bytes representing an image.
     """
+    if not isinstance(data, (str, bytes)):
+        msg = f"Error parsing image body of type '{type(data)}'"
+        utils.log_error(None, msg)
+        return Attachment(body=msg, mime=Mime.text_plain)
     if isinstance(data, str):
         try:
             data = base64.b64decode(data)
@@ -263,6 +303,10 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
     """
     Returns an attachment object with bytes representing a video.
     """
+    if not isinstance(data, (str, bytes)):
+        msg = f"Error parsing video body of type '{type(data)}'"
+        utils.log_error(None, msg)
+        return Attachment(body=msg, mime=Mime.text_plain)
     if isinstance(data, str):
         try:
             data = base64.b64decode(data)

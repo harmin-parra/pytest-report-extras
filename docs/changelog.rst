@@ -10,6 +10,10 @@ Changelog
 
 * Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``
 
+**Improvement**
+
+* Error-handling improvements.
+
 **Changes**
 
 * Screenshot and webpage source files are named using a uuid generator.
@@ -49,7 +53,7 @@ Changelog
 
 * Support for attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
 
-**Bug fix**
+**Bug fixes**
 
 * The plugin was still making calls to deprecated code.
 * Better handling of attachments with other mime types (ex: ``application/pdf``).
@@ -58,15 +62,15 @@ Changelog
 1.2.0
 =====
 
-**Change**
-
-* Modification of the algorithm related to attachments. The ``report.step`` method is going to be deprecated.
-
 **Features**
 
 * Posibility to add links to the tests report.
 * New **INI** option to customize the indentation of XML, JSON and YAML attachments.
 * Support for attachments of mime type: ``text/csv``, ``text/html``  and ``text/uri-list``
+
+**Change**
+
+* Modification of the algorithm related to attachments. The ``report.step`` method is going to be deprecated.
 
 
 1.1.0

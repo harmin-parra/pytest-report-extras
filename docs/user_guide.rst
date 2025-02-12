@@ -36,7 +36,7 @@ Default value: ``False``
 
 The HTML tag for the test description (test docstring).
 
-Accepted values: ``h1``, ``h2``, ``h3``, ``p`` or ``pre``
+Accepted values: ``h1``, ``h2``, ``h3``, ``h4``, ``h5``, ``h6``, ``p`` or ``pre``
 
 Default value: ``pre``
 
@@ -104,6 +104,9 @@ To add a step with attachment:
   #    list[str]: for list-uri attachments
 
   # The supported mime types are:
+  #    report.Mime.application_json   or "application/json"
+  #    report.Mime.application_xml    or "application/xml"
+  #    report.Mime.application_yaml   or "application/yaml"
   #    report.Mime.image_bmp          or "image/png"
   #    report.Mime.image_gif          or "image/gif"
   #    report.Mime.image_jpeg         or "image/jpeg"
@@ -114,9 +117,10 @@ To add a step with attachment:
   #    report.Mime.text_html          or "text/html"
   #    report.Mime.text_plain         or "text/plain"
   #    report.Mime.text_uri_list      or "text/uri-list"
-  #    report.Mime.application_json   or "application/json"
-  #    report.Mime.application_xml    or "application/xml"
-  #    report.Mime.application_yaml   or "application/yaml"
+  #    report.Mime.video_mp4          or "video/mp4"
+  #    report.Mime.video_ogg          or "video/ogg"
+  #    report.Mime.video_ogv          or "video/ogv"
+  #    report.Mime.video_webm         or "video/webm"
 
 
 To add a link to the report:
@@ -338,6 +342,16 @@ Sample CSS file
   .extras_skip {
       font-family: monospace;
       color: orange;
+  }
+  
+  .extras_video {
+      width: 300px;
+      height: 170px;
+  }
+  
+  .extras_td svg {
+      width: 300px;
+      height: 170px;
   }
   
   .extras_image {

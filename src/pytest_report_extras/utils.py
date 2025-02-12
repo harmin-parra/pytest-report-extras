@@ -7,17 +7,19 @@ import pytest
 import shutil
 import subprocess
 import sys
-# import traceback
 import uuid
 from typing import Literal
 from typing import Optional
+
+
+error_screenshot = None
 
 
 #
 # Auxiliary functions
 #
 def check_options(htmlpath, allurepath):
-    """ Verifies if the --html or --alluredir option has been set by the user. """
+    """ Verifies if the --html or --alluredir option has been set. """
     if htmlpath is None and allurepath is None:
         message = ("It seems you are using pytest-report-extras plugin.\n"
                    "pytest-html or pytest-allure plugin is required.\n"
@@ -52,6 +54,7 @@ def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
 
 
 def create_assets(report_html, single_page):
+    global error_screenshot
     """ Recreate report sub-folders. """
     if report_html is None:
         return
@@ -62,8 +65,19 @@ def create_assets(report_html, single_page):
     # Create downloads folder
     shutil.rmtree(f"{folder}downloads", ignore_errors=True)
     pathlib.Path(f"{folder}downloads").mkdir(parents=True)
+    # Get error image file
+    resources_path = pathlib.Path(__file__).parent.joinpath("resources")
+    error_img = pathlib.Path(resources_path, "error.png")
     if single_page:
-        return
+        try:
+            f = open(error_img, 'rb')
+            data = f.read()
+            f.close()
+            error_screenshot = f"data:image/png;base64,{base64.b64encode(data).decode()}"
+        except:
+            pass
+        finally:
+            return
     # Create other folders
     shutil.rmtree(f"{folder}sources", ignore_errors=True)
     pathlib.Path(f"{folder}sources").mkdir(parents=True)
@@ -72,9 +86,8 @@ def create_assets(report_html, single_page):
     shutil.rmtree(f"{folder}images", ignore_errors=True)
     pathlib.Path(f"{folder}images").mkdir(parents=True)
     # Copy error.png to images folder
-    # resources_path = pathlib.Path(__file__).parent.joinpath("resources")
-    # error_img = pathlib.Path(resources_path, "error.png")
-    # shutil.copy(str(error_img), f"{folder}images")
+    shutil.copy(str(error_img), f"{folder}images")
+    error_screenshot = f"images{os.sep}error.png"
 
 
 def escape_html(text, quote=False) -> Optional[str]:
@@ -93,8 +106,8 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[
 
     Args:
         target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
-        full_page (bool): Whether to take a full-page screenshot if the target is a WebDriver or Page.
-        page_source (bool): Whether to gather webpage sources.
+        full_page (bool): Whether to take a full-page screenshot if the target is an instance of WebDriver or Page.
+        page_source (bool): Whether to gather the webpage source.
 
     Returns:
         The image as bytes and the webpage source if applicable.
@@ -108,7 +121,7 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[
             from selenium.webdriver.remote.webelement import WebElement
             if isinstance(target, WebElement) or isinstance(target, WebDriver):
                 image, source = _get_selenium_screenshot(target, full_page, page_source)
-
+    
         if importlib.util.find_spec('playwright') is not None:
             from playwright.sync_api import Page
             from playwright.sync_api import Locator
@@ -123,8 +136,8 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
 
     Args:
         target (WebDriver | WebElement): The target of the screenshot.
-        full_page (bool): Whether to take a full-page screenshot if the target is a WebDriver instance.
-        page_source (bool): Whether to gather webpage sources.
+        full_page (bool): Whether to take a full-page screenshot if the target is a WebDriver or WebElement instance.
+        page_source (bool): Whether to gather the webpage source.
 
     Returns:
         The image as bytes and the webpage source if applicable.
@@ -168,8 +181,8 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
 
     Args:
         target (Page | Locator): The target of the screenshot.
-        full_page (bool): Whether to take a full-page screenshot if the target is a Page instance.
-        page_source (bool): Whether to gather webpage sources.
+        full_page (bool): Whether to take a full-page screenshot if the target is a Page or Locator instance.
+        page_source (bool): Whether to gather the webpage source.
 
     Returns:
         The image as bytes and the webpage source if applicable.
@@ -217,40 +230,40 @@ def _get_full_page_screenshot_chromium(driver) -> bytes:
     return base64.urlsafe_b64decode(base_64_png['data'])
 
 
-def save_file_and_get_link(
+def save_data_and_get_link(
     report_html: str,
-    target: str | bytes,
+    data: str | bytes,
     extension: Optional[str],
     folder: Literal["downloads", "images", "sources", "videos"]
 ) -> Optional[str]:
     """
-    Saves a copy of a file or the bytes in the 'downloads' folder 
+    Saves data (as a string or bytes) in a file in the 'downloads' folder
     and returns its relative path to the HTML report folder.
 
     Args:
         report_html (str): The HTML report folder.
-        target (str | bytes): The content in string or bytes to save.
-        extension (str): The extension for the file to copy.
-        folder (str): The destination folder
+        data (str | bytes): The content in string or bytes to save.
+        extension (str): The extension for the destination file.
+        folder (str): The destination folder.
 
     Returns:
-        The relative path to the HTML report folder of the saved file.
+        The relative path to the HTML report folder of the created file.
     """
-    if target in (None, ''):
+    if data in (None, ''):
         return None
     extension = '' if extension is None else '.' + extension 
     filename = str(uuid.uuid4()) + extension
     try:
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
-        if isinstance(target, bytes):
+        if isinstance(data, bytes):
             f = open(destination, 'wb')
         else:
             f = open(destination, 'wt')
-        f.write(target)
+        f.write(data)
         f.close()
         return f"{folder}{os.sep}{filename}"
     except Exception as error:
-        log_error(None, f"Error copying file to '{folder}' folder:", error)
+        log_error(None, f"Error saving file to '{folder}' folder:", error)
         return None
 
 
@@ -261,14 +274,14 @@ def copy_file_and_get_link(
     folder: Literal["downloads", "videos", "images"]
 ) -> Optional[str]:
     """
-    Saves a copy of a file or the bytes in the 'downloads' folder 
+    Saves a copy of a file in a given folder
     and returns its relative path to the HTML report folder.
 
     Args:
         report_html (str): The HTML report folder.
         filepath (str): The name of the file to copy.
-        extension (str): The extension for the file to copy.
-        folder (str): The destination folder
+        extension (str): The extension for the destination file.
+        folder (str): The destination folder.
 
     Returns:
         The relative path to the HTML report folder of the saved file.
@@ -366,19 +379,19 @@ def add_marker_url(
 # Logger function
 #
 def log_error(
-    report: pytest.TestReport | None,
+    report: Optional[pytest.TestReport],
     message: str,
-    error: Exception | None = None
+    error: Optional[Exception] = None
 ):
     """
-    Appends error message in stderr section of a test report.
+    Appends an error message in the stderr section of a test report.
 
     Args:
-        report (pytest.TestReport): The test report returned by pytest (optional).
+        report (pytest.TestReport): The pytest test report (optional).
         message (str): The message to log.
         error (Exception): The exception to log (optional).
     """
-    message = f"{message}\n" if error is None else f"{message}\n{error}\n"
+    message = f"{message}\n" if error is None else f"{message}\n{repr(error)}\n"
     if report is None:
         print(message, file=sys.stderr)
     else:

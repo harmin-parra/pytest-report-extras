@@ -46,9 +46,7 @@ class Extras:
         escape_html: bool = False
     ):
         """
-        Adds a step with a screenshot in the report.
-        The screenshot is saved in <report_html>/images folder.
-        The webpage source is saved in <report_html>/sources folder.
+        Adds a step with a screenshot to the report.
 
         Args:
             comment (str): The comment of the test step.
@@ -57,14 +55,24 @@ class Extras:
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        image, source = self._get_image_source(target, full_page, page_source)
-        self.attach(comment, image, source, None, Mime.image_png, "", escape_html)
+        try:
+            image, source = self._get_image_source(target, full_page, page_source)
+        except Exception as error:
+            self.comments.append(comment)
+            self.multimedia.append(utils.error_screenshot)
+            self.sources.append(None)
+            self.attachments.append(None)
+            utils.log_error(None, "Error taking screenshot", error)
+            return
+        if target is None:  # A comment alone
+            self._add_extra(comment, None, None, escape_html)
+        else:
+            self._add_extra(comment, source, Attachment(image, None, "image/png", None), escape_html)
 
     def attach(
         self,
         comment: str,
         body: str | bytes | dict | list[str] = None,
-        websource: str = None,
         source: str = None,
         mime: str = None,
         csv_delimiter: str = ',',
@@ -72,19 +80,14 @@ class Extras:
     ):
         """
         Adds a step with an attachment to the report.
-        Images are saved in <report_html>/images folder.
-        Webpage sources are saved in <report_html>/sources folder.
-        Videos are saved in <report_html>/videos folder.
-        Other types of files are saved in <report_html>/downloads folder.
         The 'body' and 'source' parameters are exclusive.
 
         Args:
             comment (str): The comment of the test step.
-            body (str | bytes | dict | list[str]): The content/body of the attachment.
+            body (str | bytes | dict | list[str]): The content/body of the attachment or the bytes of the screenshot.
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
-            websource (str): The filepath of the webpage source.
             source (str): The filepath of the source of the attachment.
             mime (str): The mime type of the attachment.
             csv_delimiter (str): The delimiter for CSV documents.
@@ -92,9 +95,14 @@ class Extras:
         """
         if Mime.is_unsupported(mime):
             mime = None
-        attachment = self._get_attachment(body, source, mime, csv_delimiter)
-        mime = attachment.mime if attachment is not None else None
-        self._add_extra(comment, websource, attachment, mime, escape_html)
+        if body is None and source is None and mime is None:
+            if comment is not None:  # A comment alone
+                attachment = Attachment(body="", mime=Mime.text_plain)
+            else:
+                attachment = None
+        else:
+            attachment = self._get_attachment(body, source, mime, csv_delimiter)
+        self._add_extra(comment, None, attachment, escape_html)
 
     def _get_attachment(
         self,
@@ -104,10 +112,10 @@ class Extras:
         delimiter=',',
     ) -> Attachment:
         """
-        Creates an attachment from body or source.
+        Creates an attachment from its body or source.
 
         Args:
-            body (str | bytes | dict | list[str]): The content/body of the attachment.
+            body (str | bytes | dict | list[str]): The content/body of the attachment or the bytes of the screenshot.
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
@@ -124,7 +132,10 @@ class Extras:
                 if mime is None:
                     if self._html:
                         inner_html = decorators.decorate_uri(self._add_to_downloads(source))
-                    return Attachment(source=source, inner_html=inner_html)
+                    if inner_html == '':
+                        return Attachment(body="Error copying file", mime=Mime.text_plain)
+                    else:
+                        return Attachment(source=source, inner_html=inner_html)
                 if Mime.is_multimedia(mime) and mime != Mime.image_svg_xml:
                     return Attachment(source=source, mime=mime)
                 else:
@@ -222,27 +233,27 @@ class Extras:
 
         if Mime.is_video(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_file_and_get_link(self._html, data_b64, None, "videos")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, None, "videos")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
 
         if mime == Mime.image_svg_xml:
             if self._fx_single_page is False:
-                link_multimedia = utils.save_file_and_get_link(self._html, data_str, "svg", "images")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_str, "svg", "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
 
         if Mime.is_image(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_file_and_get_link(self._html, data_b64, None, "images")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, None, "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
 
         if source is not None:
             if self._fx_single_page is False:
-                link_source = utils.save_file_and_get_link(self._html, source, None, "sources")
+                link_source = utils.save_data_and_get_link(self._html, source, None, "sources")
             else:
                 link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
 
@@ -252,7 +263,7 @@ class Extras:
         """
         Copies the image or video and returns the filepath relative to the <report_html> folder.
         The image is copied into <report_html>/images folder.
-        The video is copied in <report_html>/videos folder.
+        The video is copied into <report_html>/videos folder.
         When using the --self-contained-html option, returns the data URI schema of the image/video.
 
         Args:
@@ -290,22 +301,26 @@ class Extras:
         comment: str,
         websource: Optional[str],
         attachment: Optional[Attachment],
-        mime: Optional[str],
         escape_html: bool
     ):
         """
-        Adds the comment, image, webpage source and attachment to the lists of the 'report' fixture.
+        Adds the comment, webpage source and attachment to the lists of the 'report' fixture.
+        Screenshots are stored in the attachment argument.
+        Images are saved in <report_html>/images folder.
+        Webpage sources are saved in <report_html>/sources folder.
+        Videos are saved in <report_html>/videos folder.
+        Other types of files are saved in <report_html>/downloads folder.
 
         Args:
             comment (str): The comment of the test step.
             websource (str): The webpage source code.
             attachment (Attachment): The attachment.
-            mime (str): The mime type of the attachment.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         comment = utils.escape_html(comment) if escape_html else comment
         link_multimedia = None
         link_source = None
+        mime = attachment.mime if attachment is not None else None 
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self._allure and importlib.util.find_spec('allure') is not None:
@@ -320,8 +335,6 @@ class Extras:
                         allure.attach(websource, name="page source", attachment_type=allure.attachment_type.TEXT)
                 except Exception as err:
                     allure.attach(str(err), name="Error adding attachment", attachment_type=allure.attachment_type.TEXT)
-            elif comment is not None:
-                allure.attach('', name=comment, attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
@@ -329,10 +342,20 @@ class Extras:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
             if attachment is not None and Mime.is_multimedia(attachment.mime):
+                msg = None
                 if attachment.source is not None:
                     link_multimedia, link_source = self._copy_image_video(attachment.source, mime), None
+                    msg = "Error copying file" if link_multimedia is None else None
                 else:
                     link_multimedia, link_source = self._save_image_video_source(attachment.body, websource, mime)
+                    msg = "Error saving data" if link_multimedia is None else None
+                if msg is not None:
+                    attachment = Attachment(body=msg, mime=Mime.text_plain)
+                else:  # Cleanup of useless attachment's info
+                    if Mime.is_video(attachment.mime):
+                        attachment.body = None
+                    if Mime.is_image_binary(attachment.mime):
+                        attachment = None
             self.comments.append(comment)
             self.multimedia.append(link_multimedia)
             self.sources.append(link_source)
@@ -340,7 +363,8 @@ class Extras:
 
     def _add_to_downloads(self, target: str | bytes = None) -> str:
         """
-        When using pytest-html, copies a file into the report's download folder, making it available to download.
+        When using pytest-html, copies a file or saves data into the report's download folder,
+        making it available to download.
 
         Args:
             target (str | bytes): The file or the bytes content to add into the download folder.
@@ -349,7 +373,7 @@ class Extras:
             The uri of the downloadable file.
         """
         if isinstance(target, bytes):
-            return utils.save_file_and_get_link(self._html, target, None, "downloads")
+            return utils.save_data_and_get_link(self._html, target, None, "downloads")
         else:
             return utils.copy_file_and_get_link(self._html, target, None, "downloads")
 

@@ -15,17 +15,19 @@ def append_header(item, call, report, extras, pytest_html,
     Args:
         item (pytest.Item): The test item.
         call (pytest.CallInfo): Information of the test call.
-        report (pytest.TestReport): The test report returned by pytest.
+        report (pytest.TestReport): The pytest test report.
         extras (List[pytest_html.extras.extra]): The report extras.
         pytest_html (types.ModuleType): The pytest-html plugin.
         description_tag (str): The HTML tag to use.
     """
     # Append description
     description = item.function.__doc__ if hasattr(item, 'function') else None
-    extras.append(pytest_html.extras.html(decorate_description(description, description_tag)))
+    if description is not None:
+        extras.append(pytest_html.extras.html(decorate_description(description, description_tag)))
     # Append parameters
     parameters = item.callspec.params if hasattr(item, 'callspec') else None
-    extras.append(pytest_html.extras.html(decorate_parameters(parameters)))
+    if parameters is not None:
+        extras.append(pytest_html.extras.html(decorate_parameters(parameters)))
     # Append exception info
     clazz = "extras_exception"
     # Catch explicit pytest.fail and pytest.skip calls
@@ -102,12 +104,15 @@ def get_table_row(
         comment = ""
     if multimedia is not None:
         comment = decorate_comment(comment, clazz)
-        if attachment.mime.startswith("image/svg"):
-            multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
-        elif attachment.mime.startswith("image/"):
+        if attachment is not None and attachment.mime is not None:
+            if attachment.mime.startswith("image/svg"):
+                multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
+            elif attachment.mime.startswith("video/"):
+                multimedia = decorate_video(multimedia, attachment.mime)
+            else:  # Assuming mime = "image/*
+                multimedia = decorate_image(multimedia, single_page)
+        else:  # Multimedia with attachment = None are considered as images
             multimedia = decorate_image(multimedia, single_page)
-        else:  # Mime.is_video(attachment.mime)
-            multimedia = decorate_video(multimedia, attachment.mime)
         if source is not None:
             source = decorate_page_source(source)
             return (
@@ -134,6 +139,7 @@ def get_table_row(
 
 
 def decorate_description(description, description_tag):
+    """  Applies a CSS style to the test description. """
     if description is None:
         return ""
     description = escape_html(description).strip().replace('\n', "<br>")
@@ -142,9 +148,7 @@ def decorate_description(description, description_tag):
 
 
 def decorate_parameters(parameters):
-    """
-    Applies a CSS style to the test parameters
-    """
+    """ Applies a CSS style to the test parameters. """
     if parameters is None:
         return ""
     content = f'<span class="extras_params_title">Parameters</span><br>'
