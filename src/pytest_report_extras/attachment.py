@@ -53,6 +53,11 @@ class Mime:
         return mime is not None and mime.startswith("image/")
 
     @staticmethod
+    def is_image_binary(mime: str):
+        """ Whether the mime type represents an image in binary format: png, mpeg, gif, tiff """
+        return mime is not None and mime.startswith("image/") and not mime.startswith("image/svg")
+
+    @staticmethod
     def is_video(mime: str):
         return mime is not None and mime.startswith("video/")
 
