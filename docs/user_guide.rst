@@ -123,16 +123,6 @@ To add a step with attachment:
   #    report.Mime.video_webm         or "video/webm"
 
 
-To add a link to the report:
-
-.. code-block:: python
-
-  link(
-      uri: str,              # The uri.
-      name: str = None       # The text of the anchor tag.
-  )
-
-
 To add links to the report:
 
 .. code-block:: python
@@ -168,19 +158,19 @@ If using pytest-html report:
 
 .. code-block:: bash
 
-  pytest --html=/path/to/report --css=/path/to/css
+  pytest --html=path/to/report --css=path/to/css
 
 If using Allure report:
 
 .. code-block:: bash
 
-  pytest --alluredir=/path/to/allure-results
+  pytest --alluredir=path/to/allure-results
 
 If using both reports:
 
 .. code-block:: bash
 
-  pytest --html=/path/to/report --css=/path/to/css --alluredir=/path/to/allure-results
+  pytest --html=path/to/report --css=path/to/css --alluredir=path/to/allure-results
 
 
 Sample ``pytest.ini`` file
@@ -199,7 +189,7 @@ Sample ``pytest.ini`` file
 Sample code
 -----------
 
-* Example using Selenium
+* Example adding Selenium screenshots
 
 .. code-block:: python
 
@@ -219,7 +209,7 @@ Sample code
       driver.quit()
 
 
-* Example using Playwright
+* Example adding Playwright screenshots
 
 .. code-block:: python
 
@@ -232,6 +222,19 @@ Sample code
       report.screenshot(comment="Get the webpage to test", target=page, full_page=False)
 
 
+* Example adding Playwright video
+
+.. code-block:: python
+
+  def test_with_playwright(browser: Browser, report):
+      context = browser.new_context(record_video_dir="path/to/videos/")
+      page = context.new_page()
+      # Your test goes here
+      context.close()
+      page.close()
+      report.attach("Recorded video", source=page.video.path(), mime=report.Mime.video_webm)
+
+
 * Example adding attachments
 
 .. code-block:: python
@@ -241,14 +244,14 @@ Sample code
       This is a test adding XML & JSON attachments
       """
       report.attach(
-          comment="This is a XML document:",
+          "This is a XML document:",
           body="<root><child>text</child></root>",
           mime=report.Mime.application_xml
       )
 	  
       report.attach(
           comment="This is a JSON document:",
-          source="/path/to/file",
+          source="path/to/file",
           mime=report.Mime.application_json
       )
 
@@ -262,7 +265,7 @@ Sample code
   @pytest.mark.link("https://example.com")
   @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
   def test_link_markers(report)
-      # test code
+      # Your test goes here
 
 
 Sample CSS file
