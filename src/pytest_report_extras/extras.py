@@ -335,6 +335,8 @@ class Extras:
                         allure.attach(websource, name="page source", attachment_type=allure.attachment_type.TEXT)
                 except Exception as err:
                     allure.attach(str(err), name="Error adding attachment", attachment_type=allure.attachment_type.TEXT)
+            else:  # Comment alone
+                allure.attach("", name=comment, attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
