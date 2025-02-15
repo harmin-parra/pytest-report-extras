@@ -19,7 +19,7 @@ class Mime:
     application_json = "application/json"
     application_xml = "application/xml"
     application_yaml = "application/yaml"
-    image_bmp = "image/png"
+    image_bmp = "image/bmp"
     image_gif = "image/gif"
     image_jpeg = "image/jpeg"
     image_png = "image/png"
