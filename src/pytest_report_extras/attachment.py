@@ -99,6 +99,8 @@ class Mime:
         if '/' in value:
             return value
         # value is an extension
+        if value == "text":
+            return "text/plain"
         if value == "svg":
             return "image/svg+xml"
         if value == "uri":
