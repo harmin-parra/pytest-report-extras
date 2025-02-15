@@ -9,6 +9,7 @@ Changelog
 **Feature**
 
 * Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``
+* Mime types of attachments can also be set with file extensions.
 
 **Improvement**
 
