@@ -93,6 +93,7 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
+        mime = Mime.get_mime(mime)
         if Mime.is_unsupported(mime):
             mime = None
         if body is None and source is None and mime is None:

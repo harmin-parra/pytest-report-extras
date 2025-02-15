@@ -81,6 +81,39 @@ class Mime:
     def is_not_multimedia(mime: str):
         return not Mime.is_multimedia(mime)
 
+    @staticmethod
+    def get_mime(value: str):
+        """
+        Returns the mime type.
+        
+        Args:
+            value (str): A mime-type or an extension.
+        
+        Returns:
+            The mime type string.
+        """
+        if value is None or not isinstance(value, str):
+            return None
+        if value == "text/xml":
+            return "application/xml"
+        if '/' in value:
+            return value
+        # value is an extension
+        if value == "svg":
+            return "image/svg+xml"
+        if value == "uri":
+            return "text/uri-list"
+        if value in ("json", "xml", "yaml"):
+            return "application/" + value
+        if value in ("bmp", "gif", "jpeg", "png", "tiff"):
+            return "image/" + value
+        if value in ("csv", "html", "plain"):
+            return "text/" + value
+        if value in ("mp4", "ogg", "ogv", "webm"):
+            return "video/" + value
+        # value is an unknown extension
+        return value
+
 
 class Attachment:
     """
