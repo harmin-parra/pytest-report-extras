@@ -104,23 +104,23 @@ To add a step with attachment:
   #    list[str]: for list-uri attachments
 
   # The supported mime types are:
-  #    report.Mime.application_json   or "application/json"   or "json"
-  #    report.Mime.application_xml    or "application/xml"    or "xml"
-  #    report.Mime.application_yaml   or "application/yaml"   or "yaml"
-  #    report.Mime.image_bmp          or "image/bmp"          or "bmp"
-  #    report.Mime.image_gif          or "image/gif"          or "gif"
-  #    report.Mime.image_jpeg         or "image/jpeg"         or "jpeg"
-  #    report.Mime.image_png          or "image/png"          or "png"
-  #    report.Mime.image_svg_xml      or "image/svg+xml"      or "svg"
-  #    report.Mime.image_tiff         or "image/tiff"         or "tiff"
-  #    report.Mime.text_csv           or "text/csv"           or "csv"
-  #    report.Mime.text_html          or "text/html"          or "html"
-  #    report.Mime.text_plain         or "text/plain"         or "text"
-  #    report.Mime.text_uri_list      or "text/uri-list"      or "uri"
-  #    report.Mime.video_mp4          or "video/mp4"          or "mp4"
-  #    report.Mime.video_ogg          or "video/ogg"          or "ogg"
-  #    report.Mime.video_ogv          or "video/ogv"          or "ogv"
-  #    report.Mime.video_webm         or "video/webm"         or "webm"
+  #    report.Mime.JSON   or "application/json"   or "json"
+  #    report.Mime.XML    or "application/xml"    or "xml"
+  #    report.Mime.YAML   or "application/yaml"   or "yaml"
+  #    report.Mime.BMP    or "image/bmp"          or "bmp"
+  #    report.Mime.GIF    or "image/gif"          or "gif"
+  #    report.Mime.JPEG   or "image/jpeg"         or "jpeg"
+  #    report.Mime.PNG    or "image/png"          or "png"
+  #    report.Mime.SVG    or "image/svg+xml"      or "svg"
+  #    report.Mime.TIFF   or "image/tiff"         or "tiff"
+  #    report.Mime.CSV    or "text/csv"           or "csv"
+  #    report.Mime.HTML   or "text/html"          or "html"
+  #    report.Mime.TEXT   or "text/plain"         or "text"
+  #    report.Mime.URI    or "text/uri-list"      or "uri"
+  #    report.Mime.MP4    or "video/mp4"          or "mp4"
+  #    report.Mime.OGG    or "video/ogg"          or "ogg"
+  #    report.Mime.OGV    or "video/ogv"          or "ogv"
+  #    report.Mime.WEBM   or "video/webm"         or "webm"
 
 
 To add links to the report:
@@ -246,7 +246,7 @@ Sample code
       report.attach(
           "This is a XML document:",
           body="<root><child>text</child></root>",
-          mime=report.Mime.application_xml
+          mime=report.Mime.XML
       )
 	  
       report.attach(

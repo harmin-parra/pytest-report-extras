@@ -10,6 +10,7 @@ Changelog
 
 * Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``
 * Mime types of attachments can also be set with file extensions.
+* Introduction of new ``Report.Mime`` shorter attributes for mime types. The long old ones will be deprecated in the next major release.
 
 **Improvement**
 
@@ -35,7 +36,7 @@ Changelog
 
 **Changes**
 
-* The ``report.link`` method is going to be deprecated.
+* The ``report.link`` method will be deprecated in the next major release.
 * The ``report.step`` deprecated method has been removed.
 
 

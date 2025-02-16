@@ -12,6 +12,7 @@ class Extras:
     """
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
+
     def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last"],
                  sources: bool, indent: int, report_allure: str):
         """
@@ -98,7 +99,7 @@ class Extras:
             mime = None
         if body is None and source is None and mime is None:
             if comment is not None:  # A comment alone
-                attachment = Attachment(body="", mime=Mime.text_plain)
+                attachment = Attachment(body="", mime=Mime.TEXT)
             else:
                 attachment = None
         else:
@@ -134,10 +135,10 @@ class Extras:
                     if self._html:
                         inner_html = decorators.decorate_uri(self._add_to_downloads(source))
                     if inner_html == '':
-                        return Attachment(body="Error copying file", mime=Mime.text_plain)
+                        return Attachment(body="Error copying file", mime=Mime.TEXT)
                     else:
                         return Attachment(source=source, inner_html=inner_html)
-                if Mime.is_multimedia(mime) and mime != Mime.image_svg_xml:
+                if Mime.is_multimedia(mime) and mime != Mime.SVG:
                     return Attachment(source=source, mime=mime)
                 else:
                     f = open(source, 'r')
@@ -146,7 +147,7 @@ class Extras:
             except Exception as error:
                 body = f"Error creating attachment from source {source}\n{error}"
                 utils.log_error(None, f"Error creating attachment from source {source}: ", error)
-                mime = Mime.text_plain
+                mime = Mime.TEXT
 
         # Continue processing attachments with body
         if Mime.is_not_multimedia(mime) and isinstance(body, bytes):  # Attachment of body with unknown mime
@@ -156,7 +157,7 @@ class Extras:
             # f = self._add_to_downloads(body)
             # body = [f]
             # mime = Mime.text_uri_list
-        if mime == Mime.text_html:
+        if mime == Mime.HTML:
             try:
                 encoded_bytes = base64.b64encode(body.encode('utf-8'))
                 encoded_str = encoded_bytes.decode('utf-8')
@@ -165,8 +166,8 @@ class Extras:
             except Exception as error:
                 body = f"Error encoding HTML body\n{error}"
                 utils.log_error(None, "Error encoding HTML body", error)
-                mime = Mime.text_plain
-        if mime == Mime.image_svg_xml:
+                mime = Mime.TEXT
+        if mime == Mime.SVG:
             return Attachment(body=body, source=source, mime=mime)
         return Attachment.parse_body(body, mime, self._indent, delimiter)
 
@@ -239,7 +240,7 @@ class Extras:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
 
-        if mime == Mime.image_svg_xml:
+        if mime == Mime.SVG:
             if self._fx_single_page is False:
                 link_multimedia = utils.save_data_and_get_link(self._html, data_str, "svg", "images")
             else:
@@ -294,7 +295,7 @@ class Extras:
             return utils.copy_file_and_get_link(self._html, filepath, None, "videos")
 
         if Mime.is_image(mime):
-            extension = "svg" if mime == Mime.image_svg_xml else None            
+            extension = "svg" if mime == Mime.SVG else None            
             return utils.copy_file_and_get_link(self._html, filepath, extension, "images")
 
     def _add_extra(
@@ -344,7 +345,7 @@ class Extras:
             if comment is None and attachment is None:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
-            if attachment is not None and Mime.is_multimedia(attachment.mime):
+            if attachment is not None and Mime.is_multimedia(mime):
                 msg = None
                 if attachment.source is not None:
                     link_multimedia, link_source = self._copy_image_video(attachment.source, mime), None
@@ -353,11 +354,11 @@ class Extras:
                     link_multimedia, link_source = self._save_image_video_source(attachment.body, websource, mime)
                     msg = "Error saving data" if link_multimedia is None else None
                 if msg is not None:
-                    attachment = Attachment(body=msg, mime=Mime.text_plain)
+                    attachment = Attachment(body=msg, mime=Mime.TEXT)
                 else:  # Cleanup of useless attachment's info
-                    if Mime.is_video(attachment.mime):
+                    if Mime.is_video(mime):
                         attachment.body = None
-                    if Mime.is_image_binary(attachment.mime):
+                    if Mime.is_image_binary(mime):
                         attachment = None
             self.comments.append(comment)
             self.multimedia.append(link_multimedia)
