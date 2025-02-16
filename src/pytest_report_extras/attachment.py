@@ -23,7 +23,6 @@ class Mime:
     image_jpeg = JPEG = "image/jpeg"
     image_png = PNG = "image/png"
     image_svg_xml = SVG = "image/svg+xml"
-    image_tiff = TIFF = "image/tiff"
     text_csv = CSV = "text/csv"
     text_html = HTML = "text/html"
     text_plain = TEXT = "text/plain"
@@ -37,7 +36,7 @@ class Mime:
     def is_supported(mime: str):
         return mime in (
             Mime.JSON, Mime.XML, Mime.YAML,
-            Mime.BMP, Mime.GIF, Mime.JPEG, Mime.PNG, Mime.SVG, Mime.TIFF,
+            Mime.BMP, Mime.GIF, Mime.JPEG, Mime.PNG, Mime.SVG,
             Mime.CSV, Mime.HTML, Mime.TEXT, Mime.URI,
             Mime.MP4, Mime.OGG, Mime.OGV, Mime.WEBM
         )
@@ -52,7 +51,7 @@ class Mime:
 
     @staticmethod
     def is_image_binary(mime: str):
-        """ Whether the mime type represents an image in binary format: png, mpeg, gif, tiff """
+        """ Whether the mime type represents an image in binary format: png, mpeg, gif """
         return mime is not None and mime.startswith("image/") and not mime.startswith("image/svg")
 
     @staticmethod
@@ -106,7 +105,7 @@ class Mime:
             return "text/uri-list"
         if value in ("json", "xml", "yaml"):
             return "application/" + value
-        if value in ("bmp", "gif", "jpeg", "png", "tiff"):
+        if value in ("bmp", "gif", "jpeg", "png"):
             return "image/" + value
         if value in ("csv", "html", "plain"):
             return "text/" + value

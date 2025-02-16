@@ -112,7 +112,6 @@ To add a step with attachment:
   #    report.Mime.JPEG   or "image/jpeg"         or "jpeg"
   #    report.Mime.PNG    or "image/png"          or "png"
   #    report.Mime.SVG    or "image/svg+xml"      or "svg"
-  #    report.Mime.TIFF   or "image/tiff"         or "tiff"
   #    report.Mime.CSV    or "text/csv"           or "csv"
   #    report.Mime.HTML   or "text/html"          or "html"
   #    report.Mime.TEXT   or "text/plain"         or "text"
