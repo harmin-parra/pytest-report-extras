@@ -85,7 +85,7 @@ Changelog
 **Improvements**
 
 * The **Allure** report can be generated if the **pytest-html** option is not used.
-* Removal of comments in XML documents added in comments.
+* Removal of comments in XML documents added as attachments.
 
 
 1.0.1
