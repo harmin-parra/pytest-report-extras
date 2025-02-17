@@ -215,7 +215,7 @@ class Extras:
         data_b64 = None
 
         if Mime.is_not_multimedia(mime):
-            utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")
+            utils.log_error(None, "Invalid mime type '{mime}' for multimedia content")
             return None, None
 
         if isinstance(data, str):
@@ -276,7 +276,7 @@ class Extras:
             The uris of the image/video and webpage source.
         """
         if Mime.is_not_multimedia(mime):
-            utils.log_error(None, f"invalid mime type '{mime}' for multimedia file '{filepath}")
+            utils.log_error(None, f"invalid mime type '{mime}' for multimedia file '{filepath}'")
             return None
 
         data_str = ""
@@ -343,7 +343,7 @@ class Extras:
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
             if comment is None and attachment is None:
-                utils.log_error(None, "Empty test step will be ignored.", None)
+                utils.log_error(None, "Empty test step will be ignored", None)
                 return
             if attachment is not None and Mime.is_multimedia(mime):
                 msg = None
