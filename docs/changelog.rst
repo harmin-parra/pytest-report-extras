@@ -6,15 +6,17 @@ Changelog
 1.3.1
 =====
 
-**Feature**
+**Features**
 
-* Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``
+* Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``.
+* Mime types of attachments can also be set with file extensions.
+* Introduction of new ``Report.Mime`` shorter attributes for mime types. The long old ones will be deprecated in the next major release.
 
 **Improvement**
 
 * Error-handling improvements.
 
-**Changes**
+**Change**
 
 * Screenshot and webpage source files are named using a uuid generator.
 
@@ -34,7 +36,7 @@ Changelog
 
 **Changes**
 
-* The ``report.link`` method is going to be deprecated.
+* The ``report.link`` method will be deprecated in the next major release.
 * The ``report.step`` deprecated method has been removed.
 
 
@@ -83,7 +85,7 @@ Changelog
 **Improvements**
 
 * The **Allure** report can be generated if the **pytest-html** option is not used.
-* Removal of comments in XML documents added in comments.
+* Removal of comments in XML documents added as attachments.
 
 
 1.0.1

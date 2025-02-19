@@ -104,23 +104,22 @@ To add a step with attachment:
   #    list[str]: for list-uri attachments
 
   # The supported mime types are:
-  #    report.Mime.application_json   or "application/json"
-  #    report.Mime.application_xml    or "application/xml"
-  #    report.Mime.application_yaml   or "application/yaml"
-  #    report.Mime.image_bmp          or "image/png"
-  #    report.Mime.image_gif          or "image/gif"
-  #    report.Mime.image_jpeg         or "image/jpeg"
-  #    report.Mime.image_png          or "image/png"
-  #    report.Mime.image_svg_xml      or "image/svg+xml"
-  #    report.Mime.image_tiff         or "image/tiff"
-  #    report.Mime.text_csv           or "text/csv"
-  #    report.Mime.text_html          or "text/html"
-  #    report.Mime.text_plain         or "text/plain"
-  #    report.Mime.text_uri_list      or "text/uri-list"
-  #    report.Mime.video_mp4          or "video/mp4"
-  #    report.Mime.video_ogg          or "video/ogg"
-  #    report.Mime.video_ogv          or "video/ogv"
-  #    report.Mime.video_webm         or "video/webm"
+  #    report.Mime.JSON   or "application/json"   or "json"
+  #    report.Mime.XML    or "application/xml"    or "xml"
+  #    report.Mime.YAML   or "application/yaml"   or "yaml"
+  #    report.Mime.BMP    or "image/bmp"          or "bmp"
+  #    report.Mime.GIF    or "image/gif"          or "gif"
+  #    report.Mime.JPEG   or "image/jpeg"         or "jpeg"
+  #    report.Mime.PNG    or "image/png"          or "png"
+  #    report.Mime.SVG    or "image/svg+xml"      or "svg"
+  #    report.Mime.CSV    or "text/csv"           or "csv"
+  #    report.Mime.HTML   or "text/html"          or "html"
+  #    report.Mime.TEXT   or "text/plain"         or "text"
+  #    report.Mime.URI    or "text/uri-list"      or "uri"
+  #    report.Mime.MP4    or "video/mp4"          or "mp4"
+  #    report.Mime.OGG    or "video/ogg"          or "ogg"
+  #    report.Mime.OGV    or "video/ogv"          or "ogv"
+  #    report.Mime.WEBM   or "video/webm"         or "webm"
 
 
 To add links to the report:
@@ -232,7 +231,7 @@ Sample code
       # Your test goes here
       context.close()
       page.close()
-      report.attach("Recorded video", source=page.video.path(), mime=report.Mime.video_webm)
+      report.attach("Recorded video", source=page.video.path(), mime="webm")
 
 
 * Example adding attachments
@@ -246,13 +245,24 @@ Sample code
       report.attach(
           "This is a XML document:",
           body="<root><child>text</child></root>",
-          mime=report.Mime.application_xml
+          mime=report.Mime.XML
+      )
+      from pytest_report_extras import Mime
+      report.attach(
+          "This is a XML document:",
+          body="<root><child>text</child></root>",
+          mime=Mime.XML
       )
 	  
       report.attach(
           comment="This is a JSON document:",
           source="path/to/file",
-          mime=report.Mime.application_json
+          mime="application/json"
+      )
+      report.attach(
+          comment="This is a JSON document:",
+          source="path/to/file",
+          mime="json"
       )
 
 
