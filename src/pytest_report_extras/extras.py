@@ -97,7 +97,7 @@ class Extras:
         mime = Mime.get_mime(mime)
         if Mime.is_unsupported(mime):
             mime = None
-        if body is None and source is None and mime is None:
+        if body is None and source is None:
             if comment is not None:  # A comment alone
                 attachment = Attachment(body="", mime=Mime.TEXT)
             else:
