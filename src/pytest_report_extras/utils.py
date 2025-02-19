@@ -5,7 +5,6 @@ import os
 import pathlib
 import pytest
 import shutil
-import subprocess
 import sys
 import uuid
 from typing import Literal
@@ -62,32 +61,37 @@ def create_assets(report_html, single_page):
     folder = ""
     if report_html is not None and report_html != '':
         folder = f"{report_html}{os.sep}"
-    # Create downloads folder
-    shutil.rmtree(f"{folder}downloads", ignore_errors=True)
-    pathlib.Path(f"{folder}downloads").mkdir(parents=True)
-    # Get error image file
-    resources_path = pathlib.Path(__file__).parent.joinpath("resources")
-    error_img = pathlib.Path(resources_path, "error.png")
-    if single_page:
-        try:
-            f = open(error_img, 'rb')
-            data = f.read()
-            f.close()
-            error_screenshot = f"data:image/png;base64,{base64.b64encode(data).decode()}"
-        except:
-            pass
-        finally:
-            return
-    # Create other folders
-    shutil.rmtree(f"{folder}sources", ignore_errors=True)
-    pathlib.Path(f"{folder}sources").mkdir(parents=True)
-    shutil.rmtree(f"{folder}videos", ignore_errors=True)
-    pathlib.Path(f"{folder}videos").mkdir(parents=True)
-    shutil.rmtree(f"{folder}images", ignore_errors=True)
-    pathlib.Path(f"{folder}images").mkdir(parents=True)
-    # Copy error.png to images folder
-    shutil.copy(str(error_img), f"{folder}images")
-    error_screenshot = f"images{os.sep}error.png"
+    try:
+        # Create downloads folder
+        shutil.rmtree(f"{folder}downloads", ignore_errors=True)
+        pathlib.Path(f"{folder}downloads").mkdir(parents=True)
+        # Get error image file
+        resources_path = pathlib.Path(__file__).parent.joinpath("resources")
+        error_img = pathlib.Path(resources_path, "error.png")
+        if single_page:
+            try:
+                f = open(error_img, 'rb')
+                data = f.read()
+                f.close()
+                error_screenshot = f"data:image/png;base64,{base64.b64encode(data).decode()}"
+            except:
+                pass
+            finally:
+                return
+        # Create other folders
+        shutil.rmtree(f"{folder}sources", ignore_errors=True)
+        pathlib.Path(f"{folder}sources").mkdir(parents=True)
+        shutil.rmtree(f"{folder}videos", ignore_errors=True)
+        pathlib.Path(f"{folder}videos").mkdir(parents=True)
+        shutil.rmtree(f"{folder}images", ignore_errors=True)
+        pathlib.Path(f"{folder}images").mkdir(parents=True)
+        # Copy error.png to images folder
+        shutil.copy(str(error_img), f"{folder}images")
+        error_screenshot = f"images{os.sep}error.png"
+    except:
+        message = ("Cannot create report sub-folders.\n"
+                   "pytest-report-extras won't work properly.")
+        print(message, file=sys.stderr)
 
 
 def escape_html(text, quote=False) -> Optional[str]:
@@ -292,7 +296,7 @@ def copy_file_and_get_link(
     filename = str(uuid.uuid4()) + extension
     try:
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
-        subprocess.run(["cp", filepath, destination]).check_returncode()
+        shutil.copyfile(filepath, destination)
         return f"{folder}{os.sep}{filename}"
     except Exception as error:
         log_error(None, f"Error copying file '{filepath}' into folder '{folder}':", error)
