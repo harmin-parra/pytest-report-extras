@@ -322,10 +322,10 @@ class Extras:
         comment = utils.escape_html(comment) if escape_html else comment
         link_multimedia = None
         link_source = None
-        mime = attachment.mime if attachment is not None else None 
+        mime = attachment.mime if attachment is not None else None
 
         # Add extras to Allure report if allure-pytest plugin is being used.
-        if self._allure and importlib.util.find_spec('allure') is not None:
+        if self._allure and importlib.util.find_spec("allure") is not None:
             import allure
             if attachment is not None:
                 try:
@@ -343,7 +343,7 @@ class Extras:
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self._html:
             if comment is None and attachment is None:
-                utils.log_error(None, "Empty test step will be ignored", None)
+                utils.log_error(None, "Empty test step will be ignored.", None)
                 return
             if attachment is not None and Mime.is_multimedia(mime):
                 msg = None

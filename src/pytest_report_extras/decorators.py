@@ -21,20 +21,20 @@ def append_header(item, call, report, extras, pytest_html,
         description_tag (str): The HTML tag to use.
     """
     # Append description
-    description = item.function.__doc__ if hasattr(item, 'function') else None
+    description = item.function.__doc__ if hasattr(item, "function") else None
     if description is not None:
         extras.append(pytest_html.extras.html(decorate_description(description, description_tag)))
     # Append parameters
-    parameters = item.callspec.params if hasattr(item, 'callspec') else None
+    parameters = item.callspec.params if hasattr(item, "callspec") else None
     if parameters is not None:
         extras.append(pytest_html.extras.html(decorate_parameters(parameters)))
     # Append exception info
     clazz = "extras_exception"
     # Catch explicit pytest.fail and pytest.skip calls
     if (
-        hasattr(call, 'excinfo') and
+        hasattr(call, "excinfo") and
         call.excinfo is not None and
-        call.excinfo.typename in ('Failed', 'Skipped') and
+        call.excinfo.typename in ("Failed", "Skipped") and
         hasattr(call.excinfo.value, "msg")
     ):
         extras.append(pytest_html.extras.html(
@@ -45,7 +45,7 @@ def append_header(item, call, report, extras, pytest_html,
             )
         )
     # Catch XFailed tests
-    if report.skipped and hasattr(report, 'wasxfail'):
+    if report.skipped and hasattr(report, "wasxfail"):
         extras.append(pytest_html.extras.html(
             "<pre>"
             f'<span class="{clazz}">XFailed</span><br>'
@@ -54,7 +54,7 @@ def append_header(item, call, report, extras, pytest_html,
             )
         )
     # Catch XPassed tests
-    if report.passed and hasattr(report, 'wasxfail'):
+    if report.passed and hasattr(report, "wasxfail"):
         extras.append(pytest_html.extras.html(
             "<pre>"
             f'<span class="{clazz}">XPassed</span><br>'
@@ -64,9 +64,9 @@ def append_header(item, call, report, extras, pytest_html,
         )
     # Catch explicit pytest.xfail calls and runtime exceptions in failed tests
     if (
-        hasattr(call, 'excinfo') and
+        hasattr(call, "excinfo") and
         call.excinfo is not None and
-        call.excinfo.typename not in ('Failed', 'Skipped')
+        call.excinfo.typename not in ("Failed", "Skipped")
     ):
         extras.append(pytest_html.extras.html(
             "<pre>"
@@ -138,7 +138,7 @@ def get_table_row(
         )
 
 
-def decorate_description(description, description_tag):
+def decorate_description(description, description_tag) -> str:
     """  Applies a CSS style to the test description. """
     if description is None:
         return ""
@@ -147,7 +147,7 @@ def decorate_description(description, description_tag):
     return f'<{description_tag} class="extras_description">{description}</{description_tag}>'
 
 
-def decorate_parameters(parameters):
+def decorate_parameters(parameters) -> str:
     """ Applies a CSS style to the test parameters. """
     if parameters is None:
         return ""
