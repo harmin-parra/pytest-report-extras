@@ -28,7 +28,6 @@ class Extras:
         self.multimedia = []
         self.sources = []
         self.attachments = []
-        self.links = []  # deprecated
         self.target = None
         self._fx_screenshots = screenshots
         self._fx_sources = sources

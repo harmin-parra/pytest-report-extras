@@ -1,4 +1,3 @@
-import importlib
 import pathlib
 import pytest
 from . import decorators
@@ -270,17 +269,6 @@ def pytest_runtest_makereport(item, call):
             if rows != "":
                 table = f'<table style="width: 100%;">{rows}</table>'
                 extras.append(pytest_html.extras.html(table))
-
-            # DEPRECATED CODE
-            # Add links to the report(s)
-            for link in fx_report.links:
-                link_name = link[1] if link[1] not in (None, "") else link[0]
-                if fx_html is not None and pytest_html is not None:
-                    extras.append(pytest_html.extras.url(link[0], name=f"&#127760; {link_name}"))
-                if fx_allure is not None and importlib.util.find_spec('allure') is not None:
-                    import allure
-                    from allure_commons.types import LinkType
-                    allure.dynamic.link(link[0], link_type=LinkType.LINK, name=link_name)
 
     report.extras = extras
 
