@@ -292,6 +292,8 @@ def copy_file_and_get_link(
     """
     if filepath in (None, ''):
         return None
+    if extension is None and filepath.rfind('.') != -1:
+        extension = filepath[filepath.rfind('.') + 1:]
     extension = '' if extension is None else '.' + extension 
     filename = str(uuid.uuid4()) + extension
     try:
