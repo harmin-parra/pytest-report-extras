@@ -5,7 +5,7 @@ from typing import Optional
 from . import decorators
 from . import utils
 from .attachment import Attachment
-from .attachment import Mime
+from .mime import Mime
 
 
 class Extras:
@@ -68,7 +68,7 @@ class Extras:
         if target is None:  # A comment alone
             self._add_extra(comment, None, None, escape_html)
         else:
-            self._add_extra(comment, source, Attachment(image, None, "image/png", None), escape_html)
+            self._add_extra(comment, source, Attachment(image, None, Mime.PNG, None), escape_html)
 
     def attach(
         self,
@@ -94,23 +94,24 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        mime = Mime.get_mime(mime)
-        if Mime.is_unsupported(mime):
-            mime = None
         if body is None and source is None:
             if comment is not None:  # A comment alone
                 attachment = Attachment(body="", mime=Mime.TEXT)
             else:
                 attachment = None
         else:
-            attachment = self._get_attachment(body, source, mime, csv_delimiter)
+            if body is not None and mime is None:
+                attachment = Attachment(body="Mime is required for attachments with body", mime=Mime.TEXT)
+            else:
+                mime = Mime.get_mime(mime)
+                attachment = self._get_attachment(body, source, mime, csv_delimiter)
         self._add_extra(comment, None, attachment, escape_html)
 
     def _get_attachment(
         self,
         body: str | dict | list[str] | bytes = None,
         source: str = None,
-        mime: str = None,
+        mime: Mime = None,
         delimiter=',',
     ) -> Attachment:
         """
@@ -122,7 +123,7 @@ class Extras:
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source of the attachment.
-            mime (str): The mime type of the attachment.
+            mime (Mime): The mime type of the attachment.
             delimiter (str): The delimiter for CSV documents.
 
         Returns:
@@ -131,32 +132,40 @@ class Extras:
         inner_html = None
         if source is not None:
             try:
-                if mime is None:
+                if Mime.is_unsupported(mime):
                     if self._html:
-                        inner_html = decorators.decorate_uri(self._add_to_downloads(source))
+                        inner_html = decorators.decorate_uri(
+                            utils.copy_file_and_get_link(self._html, source, Mime.get_extension(mime), "downloads")
+                        )
                     if inner_html == '':
                         return Attachment(body="Error copying file", mime=Mime.TEXT)
                     else:
+                        # mime = None to avoid displaying attachment in <pre> tag
                         return Attachment(source=source, inner_html=inner_html)
-                if Mime.is_multimedia(mime) and mime != Mime.SVG:
-                    return Attachment(source=source, mime=mime)
-                else:
-                    f = open(source, 'r')
-                    body = f.read()
-                    f.close()
+                if mime is not None:
+                    if Mime.is_multimedia(mime) and mime != Mime.SVG:
+                        return Attachment(source=source, mime=mime)
+                    else:
+                        f = open(source, 'r')
+                        body = f.read()
+                        f.close()
             except Exception as error:
                 body = f"Error creating attachment from source {source}\n{error}"
                 utils.log_error(None, f"Error creating attachment from source {source}: ", error)
                 mime = Mime.TEXT
 
-        # Continue processing attachments with body
-        if Mime.is_not_multimedia(mime) and isinstance(body, bytes):  # Attachment of body with unknown mime
-            if self._html:
-                inner_html = decorators.decorate_uri(self._add_to_downloads(body))
-            return Attachment(body=body, inner_html=inner_html)
-            # f = self._add_to_downloads(body)
-            # body = [f]
-            # mime = Mime.text_uri_list
+        else:
+            # Continue processing attachments with body
+            if Mime.is_unsupported(mime):  # Attachment of body with unknown mime
+                if self._html:
+                    inner_html = decorators.decorate_uri(
+                        utils.save_data_and_get_link(self._html, body, Mime.get_extension(mime), "downloads")
+                    )
+                # mime = None to avoid displaying attachment in <pre> tag
+                return Attachment(body=body, inner_html=inner_html)
+                # f = utils.save_data_and_get_link(self._html, body, Mime.get_extension(mime))
+                # body = [f]
+                # mime = Mime.URI
         if mime == Mime.HTML:
             try:
                 encoded_bytes = base64.b64encode(body.encode('utf-8'))
@@ -192,7 +201,7 @@ class Extras:
             return None, None
         return utils.get_screenshot(target, full_page, self._fx_sources or page_source)
 
-    def _save_image_video_source(self, data: Optional[bytes | str], source: Optional[str], mime: str):
+    def _save_image_video_source(self, data: Optional[bytes | str], source: Optional[str], mime: Optional[Mime]):
         """
         When not using the --self-contained-html option, saves the image or video and webpage source, if applicable,
            and returns the filepaths relative to the <report_html> folder.
@@ -204,7 +213,7 @@ class Extras:
         Args:
             data (bytes | str): The image/video as bytes or base64 string.
             source (str): The webpage source.
-            mime (str): The mime type of the image/video.
+            mime (Mime): The mime type of the image/video.
 
         Returns:
             The uris of the image/video and webpage source.
@@ -214,8 +223,8 @@ class Extras:
         data_str = None
         data_b64 = None
 
-        if Mime.is_not_multimedia(mime):
-            utils.log_error(None, "Invalid mime type '{mime}' for multimedia content")
+        if mime is None or Mime.is_not_multimedia(mime):
+            utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")
             return None, None
 
         if isinstance(data, str):
@@ -235,21 +244,14 @@ class Extras:
 
         if Mime.is_video(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, None, "videos")
-            else:
-                link_multimedia = f"data:{mime};base64,{data_str}"
-            return link_multimedia, None
-
-        if mime == Mime.SVG:
-            if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._html, data_str, "svg", "images")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, Mime.get_extension(mime), "videos")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
 
         if Mime.is_image(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, None, "images")
+                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, Mime.get_extension(mime), "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
 
@@ -261,7 +263,7 @@ class Extras:
 
         return link_multimedia, link_source
 
-    def _copy_image_video(self, filepath: str, mime: str) -> Optional[str]:
+    def _copy_image_video(self, filepath: str, mime: Optional[Mime]) -> Optional[str]:
         """
         Copies the image or video and returns the filepath relative to the <report_html> folder.
         The image is copied into <report_html>/images folder.
@@ -270,13 +272,13 @@ class Extras:
 
         Args:
             filepath (str): The filepath of the image/video to copy.
-            mime (str): The mime type of the image/video.
+            mime (Mime): The mime type of the image/video.
 
         Returns:
             The uris of the image/video and webpage source.
         """
-        if Mime.is_not_multimedia(mime):
-            utils.log_error(None, f"invalid mime type '{mime}' for multimedia file '{filepath}'")
+        if mime is None or Mime.is_not_multimedia(mime):
+            utils.log_error(None, f"invalid mime type '{mime}' for multimedia file '{filepath}")
             return None
 
         data_str = ""
@@ -292,11 +294,10 @@ class Extras:
             return f"data:{mime};base64,{data_str}"
 
         if Mime.is_video(mime):
-            return utils.copy_file_and_get_link(self._html, filepath, None, "videos")
+            return utils.copy_file_and_get_link(self._html, filepath, Mime.get_extension(mime), "videos")
 
         if Mime.is_image(mime):
-            extension = "svg" if mime == Mime.SVG else None            
-            return utils.copy_file_and_get_link(self._html, filepath, extension, "images")
+            return utils.copy_file_and_get_link(self._html, filepath, Mime.get_extension(mime), "images")
 
     def _add_extra(
         self,
@@ -364,44 +365,3 @@ class Extras:
             self.multimedia.append(link_multimedia)
             self.sources.append(link_source)
             self.attachments.append(attachment)
-
-    def _add_to_downloads(self, target: str | bytes = None) -> str:
-        """
-        When using pytest-html, copies a file or saves data into the report's download folder,
-        making it available to download.
-
-        Args:
-            target (str | bytes): The file or the bytes content to add into the download folder.
-
-        Returns:
-            The uri of the downloadable file.
-        """
-        if isinstance(target, bytes):
-            return utils.save_data_and_get_link(self._html, target, None, "downloads")
-        else:
-            return utils.copy_file_and_get_link(self._html, target, None, "downloads")
-
-    # DEPRECATED CODE
-    def link(self, uri: str, name: str = None):
-        """
-        Adds a link to the report.
-
-        Args:
-            uri (str): The link uri.
-            name (str): The link text.
-        """
-        # Deprecation warning
-        import warnings
-        warnings.warn(deprecation_msg, DeprecationWarning)
-        self.links.append((uri, name))
-
-
-deprecation_msg = """
-        
-report.link method is deprecated and will be removed in the next major version release
-        
-Please use pytest.mark.link decorator:
-    @pytest.mark.link("<url>")
-    @pytest.mark.link("<url>", "<name>")
-    @pytest.mark.link(url="<url>", name="<name>")
-"""
