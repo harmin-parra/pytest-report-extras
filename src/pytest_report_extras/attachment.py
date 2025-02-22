@@ -7,112 +7,10 @@ import xml.dom.minidom as xdom
 import yaml
 from typing import List
 from typing import Optional
+from typing import Self
 from . import decorators
 from . import utils
-
-
-class Mime:
-    """
-    Class to hold mime type values.
-    """
-    application_json = JSON = "application/json"
-    application_xml = XML= "application/xml"
-    application_yaml = YAML = "application/yaml"
-    image_bmp = BMP = "image/bmp"
-    image_gif = GIF = "image/gif"
-    image_jpeg = JPEG = "image/jpeg"
-    image_png = PNG = "image/png"
-    image_svg_xml = SVG = "image/svg+xml"
-    text_csv = CSV = "text/csv"
-    text_html = HTML = "text/html"
-    text_plain = TEXT = "text/plain"
-    text_uri_list = URI = "text/uri-list"
-    video_mp4 = MP4 = "video/mp4"
-    video_ogg = OGG = "video/ogg"
-    video_ogv = OGV = "video/ogv"
-    video_webm = WEBM = "video/webm"
-
-    @staticmethod
-    def is_supported(mime: str):
-        return mime in (
-            Mime.JSON, Mime.XML, Mime.YAML,
-            Mime.BMP, Mime.GIF, Mime.JPEG, Mime.PNG, Mime.SVG,
-            Mime.CSV, Mime.HTML, Mime.TEXT, Mime.URI,
-            Mime.MP4, Mime.OGG, Mime.OGV, Mime.WEBM
-        )
-
-    @staticmethod
-    def is_application(mime: str):
-        return mime is not None and mime.startswith("application/")
-
-    @staticmethod
-    def is_image(mime: str):
-        return mime is not None and mime.startswith("image/")
-
-    @staticmethod
-    def is_image_binary(mime: str):
-        """ Whether the mime type represents an image in binary format: png, mpeg, gif """
-        return mime is not None and mime.startswith("image/") and not mime.startswith("image/svg")
-
-    @staticmethod
-    def is_video(mime: str):
-        return mime is not None and mime.startswith("video/")
-
-    @staticmethod
-    def is_multimedia(mime: str):
-        return Mime.is_image(mime) or Mime.is_video(mime)
-
-    @staticmethod
-    def is_unsupported(mime: str):
-        return not Mime.is_supported(mime)
-
-    @staticmethod
-    def is_not_image(mime: str):
-        return not Mime.is_image(mime)
-
-    @staticmethod
-    def is_not_video(mime: str):
-        return not Mime.is_video(mime)
-
-    @staticmethod
-    def is_not_multimedia(mime: str):
-        return not Mime.is_multimedia(mime)
-
-    @staticmethod
-    def get_mime(value: str):
-        """
-        Returns the mime type.
-        
-        Args:
-            value (str): A mime-type or an extension.
-        
-        Returns:
-            The mime type string.
-        """
-        if value is None or not isinstance(value, str):
-            return None
-        value = value.lower()
-        if value == "text/xml":
-            return "application/xml"
-        if '/' in value:
-            return value
-        # value is an extension
-        if value == "text":
-            return "text/plain"
-        if value == "svg":
-            return "image/svg+xml"
-        if value == "uri":
-            return "text/uri-list"
-        if value in ("json", "xml", "yaml"):
-            return "application/" + value
-        if value in ("bmp", "gif", "jpeg", "png"):
-            return "image/" + value
-        if value in ("csv", "html", "plain"):
-            return "text/" + value
-        if value in ("mp4", "ogg", "ogv", "webm"):
-            return "video/" + value
-        # value is an unknown extension
-        return value
+from .mime import Mime
 
 
 class Attachment:
@@ -124,7 +22,7 @@ class Attachment:
         self,
         body: Optional[str | dict | list[str] | bytes] = None,
         source: Optional[str] = None,
-        mime: Optional[str] = None,
+        mime: Optional[Mime | str] = None,
         inner_html: Optional[str] = None
     ):
         """
@@ -143,13 +41,14 @@ class Attachment:
         self.mime = mime
         self.inner_html = inner_html
 
-    @staticmethod
+    @classmethod
     def parse_body(
+        cls,
         body: str | dict | list[str] | bytes,
-        mime: str = Mime.TEXT,
+        mime: Mime,
         indent: int = 4,
         delimiter=',',
-    ):
+    ) -> Self:
         """
         Creates an attachment from the content/body.
 
@@ -158,7 +57,7 @@ class Attachment:
                 Can be of type 'dict' for JSON mime type.
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
-            mime (str): The mime type (optional).
+            mime (Mime): The mime type (optional).
             indent: The indent for XML, JSON and YAML attachments.
             delimiter (str): The delimiter for CSV documents.
 
@@ -166,8 +65,8 @@ class Attachment:
             An Attachment object representing the attachment.
         """
         if body in (None, ''):
-            return Attachment(body="Body or source is None or empty", mime=Mime.TEXT)
-        if body is not None and isinstance(body, List):
+            return cls(body="Body or source is None or empty", mime=Mime.TEXT)
+        if isinstance(body, List):
             mime = Mime.URI
         if Mime.is_image(mime):
             return _attachment_image(body, mime)
@@ -193,12 +92,10 @@ class Attachment:
         else:
             body_str = self.body
         body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
-        inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 50 else repr(self.inner_html)[:50] + "....'"
+        inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 65 else repr(self.inner_html)[:65] + "....'"
         return (
-            '{ ' + f"body: {body_str}, "
-            f"source: {repr(self.source)}, "
-            f"mime: {repr(self.mime)}, "
-            f"inner_html: {inner_str}" + ' }'
+            "{ " + f"body: {body_str}, source: {repr(self.source)}, "
+                   f"mime: {repr(self.mime)}, inner_html: {inner_str}" + "}"
         )
 
 

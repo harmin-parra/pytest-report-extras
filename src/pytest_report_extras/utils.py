@@ -53,8 +53,8 @@ def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
 
 
 def create_assets(report_html, single_page):
-    global error_screenshot
     """ Recreate report sub-folders. """
+    global error_screenshot
     if report_html is None:
         return
     # Recreate report_folder
@@ -120,13 +120,13 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[
     source = None
 
     if target is not None:
-        if importlib.util.find_spec('selenium') is not None:
+        if importlib.util.find_spec("selenium") is not None:
             from selenium.webdriver.remote.webdriver import WebDriver
             from selenium.webdriver.remote.webelement import WebElement
             if isinstance(target, WebElement) or isinstance(target, WebDriver):
                 image, source = _get_selenium_screenshot(target, full_page, page_source)
     
-        if importlib.util.find_spec('playwright') is not None:
+        if importlib.util.find_spec("playwright") is not None:
             from playwright.sync_api import Page
             from playwright.sync_api import Locator
             if isinstance(target, Page) or isinstance(target, Locator):
@@ -149,7 +149,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
     image = None
     source = None
 
-    if importlib.util.find_spec('selenium') is not None:
+    if importlib.util.find_spec("selenium") is not None:
         from selenium.webdriver.chrome.webdriver import WebDriver as WebDriver_Chrome
         from selenium.webdriver.chromium.webdriver import ChromiumDriver as WebDriver_Chromium
         from selenium.webdriver.edge.webdriver import WebDriver as WebDriver_Edge
@@ -194,7 +194,7 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
     image = None
     source = None
 
-    if importlib.util.find_spec('playwright') is not None:
+    if importlib.util.find_spec("playwright") is not None:
         from playwright.sync_api import Page
         from playwright.sync_api import Locator
         assert isinstance(target, Page) or isinstance(target, Locator)
@@ -218,20 +218,20 @@ def _get_full_page_screenshot_chromium(driver) -> bytes:
     # parameters needed for full page screenshot
     # note we are setting the width and height of the viewport to screenshot, same as the site's content size
     screenshot_config = {
-        'captureBeyondViewport': True,
-        'fromSurface': True,
-        'format': "png",
-        'clip': {
-            'x': 0,
-            'y': 0,
-            'width': page_rect['contentSize']['width'],
-            'height': page_rect['contentSize']['height'],
-            'scale': 1,
+        "captureBeyondViewport": True,
+        "fromSurface": True,
+        "format": "png",
+        "clip": {
+            "x": 0,
+            "y": 0,
+            "width": page_rect["contentSize"]["width"],
+            "height": page_rect["contentSize"]["height"],
+            "scale": 1,
         },
     }
     # Dictionary with 1 key: data
     base_64_png = driver.execute_cdp_cmd("Page.captureScreenshot", screenshot_config)
-    return base64.urlsafe_b64decode(base_64_png['data'])
+    return base64.urlsafe_b64decode(base_64_png["data"])
 
 
 def save_data_and_get_link(
@@ -292,6 +292,8 @@ def copy_file_and_get_link(
     """
     if filepath in (None, ''):
         return None
+    if extension is None and filepath.rfind('.') != -1:
+        extension = filepath[filepath.rfind('.') + 1:]
     extension = '' if extension is None else '.' + extension 
     filename = str(uuid.uuid4()) + extension
     try:
@@ -329,7 +331,7 @@ def add_marker_link(
         "tms": "&#128203;",
     }
     icon = icons[link_type]
-    pytest_html = item.config.pluginmanager.getplugin('html')
+    pytest_html = item.config.pluginmanager.getplugin("html")
     marker = item.iter_markers(name=link_type)
     marker = next(marker, None)
     if marker is not None and len(marker.args) > 0:
@@ -339,7 +341,7 @@ def add_marker_link(
                 continue            
             if fx_html is not None and pytest_html is not None:
                 extras.append(pytest_html.extras.url(fx_link.replace("{}", key), name=f"{icon} {key}"))
-            if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+            if fx_allure is not None and importlib.util.find_spec("allure") is not None:
                 import allure
                 from allure_commons.types import LinkType
                 allure_link_type = LinkType.ISSUE if link_type == "issues" else LinkType.TEST_CASE
@@ -362,7 +364,7 @@ def add_marker_url(
         fx_allure (str): The report_allure fixture.
     """
     icon = "&#127760;"
-    pytest_html = item.config.pluginmanager.getplugin('html')
+    pytest_html = item.config.pluginmanager.getplugin("html")
     for marker in item.iter_markers(name="link"):
         url = marker.args[0] if len(marker.args) > 0 else None
         name = marker.args[1] if len(marker.args) > 1 else None
@@ -373,7 +375,7 @@ def add_marker_url(
         name = url if name is None else name
         if fx_html is not None and pytest_html is not None:
             extras.append(pytest_html.extras.url(url, name=f"{icon} {name}"))
-        if fx_allure is not None and importlib.util.find_spec('allure') is not None:
+        if fx_allure is not None and importlib.util.find_spec("allure") is not None:
             import allure
             from allure_commons.types import LinkType
             allure.dynamic.link(url, link_type=LinkType.LINK, name=name)
@@ -409,4 +411,4 @@ def log_error(
                 found = True
                 break
         if not found:
-            report.sections.append(('Captured stderr call', message))
+            report.sections.append(("Captured stderr call", message))

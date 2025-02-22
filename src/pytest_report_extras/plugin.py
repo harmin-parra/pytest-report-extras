@@ -1,4 +1,3 @@
-import importlib
 import pathlib
 import pytest
 from . import decorators
@@ -51,7 +50,7 @@ def pytest_addoption(parser):
 #
 # Read test parameters
 #
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def screenshots(request):
     value = request.config.getini("extras_screenshots")
     if value in ("all", "last"):
@@ -60,38 +59,38 @@ def screenshots(request):
         return "all"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def report_html(request):
     """ The folder storing the pytest-html report """
     return utils.get_folder(request.config.getoption("--html", default=None))
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def single_page(request):
     """ Whether to generate a single HTML page for pytest-html report """
     return request.config.getoption("--self-contained-html", default=False)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def report_allure(request):
     """ Whether the allure-pytest plugin is being used """
     return request.config.getoption("--alluredir", default=None)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def report_css(request):
     """ The filepath of the CSS to include in the report. """
     return request.config.getoption("--css")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def description_tag(request):
     """ The HTML tag for the description of each test. """
     tag = request.config.getini("extras_description_tag")
     return tag if tag in ("h1", "h2", "h3", "h4", "h5", "h6", "p", "pre") else "pre"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def indent(request):
     """ The indent to use for attachments. """
     # Workaround for https://github.com/pytest-dev/pytest/issues/11381
@@ -102,25 +101,25 @@ def indent(request):
         return 4
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def sources(request):
     """ Whether to include webpage sources in the report. """
     return request.config.getini("extras_sources")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def issue_link_pattern(request):
     """ The issue link pattern. """
     return request.config.getini("extras_issue_link_pattern")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def tms_link_pattern(request):
     """ The test case link pattern. """
     return request.config.getini("extras_tms_link_pattern")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def check_options(report_html, report_allure, single_page):
     """ Verifies preconditions and create assets before using this plugin. """
     utils.check_options(report_html, report_allure)
@@ -131,7 +130,7 @@ def check_options(report_html, report_allure, single_page):
 #
 # Test fixture
 #
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def report(report_html, single_page, screenshots, sources, indent, report_allure, check_options):
     return Extras(report_html, single_page, screenshots, sources, indent, report_allure)
 
@@ -160,9 +159,9 @@ def pytest_runtest_makereport(item, call):
     wasskipped = False
 
     outcome = yield
-    pytest_html = item.config.pluginmanager.getplugin('html')
+    pytest_html = item.config.pluginmanager.getplugin("html")
     report = outcome.get_result()
-    extras = getattr(report, 'extras', [])
+    extras = getattr(report, "extras", [])
 
     # Add links in decorators
     utils.add_marker_link(item, extras, "issues", fx_issue_link, fx_html, fx_allure)
@@ -174,7 +173,7 @@ def pytest_runtest_makereport(item, call):
         report.extras = extras  # add links to the report before exiting
         return
 
-    if report.when == 'call':
+    if report.when == "call":
         xfail = hasattr(report, "wasxfail")
         # Update status variables
         if report.failed:
@@ -193,7 +192,7 @@ def pytest_runtest_makereport(item, call):
 
             # Get test fixture values
             try:
-                feature_request = item.funcargs['request']
+                feature_request = item.funcargs["request"]
                 fx_report = feature_request.getfixturevalue("report")
                 fx_single_page = feature_request.getfixturevalue("single_page")
                 fx_description_tag = feature_request.getfixturevalue("description_tag")
@@ -271,17 +270,6 @@ def pytest_runtest_makereport(item, call):
                 table = f'<table style="width: 100%;">{rows}</table>'
                 extras.append(pytest_html.extras.html(table))
 
-            # DEPRECATED CODE
-            # Add links to the report(s)
-            for link in fx_report.links:
-                link_name = link[1] if link[1] not in (None, "") else link[0]
-                if fx_html is not None and pytest_html is not None:
-                    extras.append(pytest_html.extras.url(link[0], name=f"&#127760; {link_name}"))
-                if fx_allure is not None and importlib.util.find_spec('allure') is not None:
-                    import allure
-                    from allure_commons.types import LinkType
-                    allure.dynamic.link(link[0], link_type=LinkType.LINK, name=link_name)
-
     report.extras = extras
 
 
@@ -302,9 +290,9 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "link(url=<url>, name=<name>): The url to add as link")
 
     try:
-        report_css = config.getoption("--css", default=[])
+        config_css = config.getoption("--css", default=[])
         resources_path = pathlib.Path(__file__).parent.joinpath("resources")
         style_css = pathlib.Path(resources_path, "style.css")
-        report_css.insert(0, style_css)
+        config_css.insert(0, style_css)
     except:
         pass

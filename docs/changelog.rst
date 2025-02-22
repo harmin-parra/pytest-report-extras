@@ -3,6 +3,15 @@ Changelog
 =========
 
 
+1.3.2
+=====
+
+**Changes**
+
+* Deprecated code has been removed.
+* The plugin requires python version 3.11 or later.
+
+
 1.3.1
 =====
 

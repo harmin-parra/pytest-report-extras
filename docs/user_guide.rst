@@ -253,7 +253,6 @@ Sample code
           body="<root><child>text</child></root>",
           mime=Mime.XML
       )
-	  
       report.attach(
           comment="This is a JSON document:",
           source="path/to/file",
