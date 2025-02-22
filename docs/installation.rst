@@ -15,9 +15,9 @@ Optional modules
 ----------------
 
 * ``pytest-html >= 4.0.0``
-* ``selenium >= 4.11.0`` if using **Selenium**.
-* ``pytest-playwright >= 0.4.3`` if using **Playwright**.
-* ``allure-pytest >= 2.13.2`` if using **Allure**.
+* ``selenium >= 4.11.0``          if using **Selenium**.
+* ``pytest-playwright >= 0.4.3``  if using **Playwright**.
+* ``allure-pytest >= 2.13.2``     if using **Allure**.
 
 
 Installing pytest-report-extras
