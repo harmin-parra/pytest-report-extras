@@ -5,7 +5,7 @@ Installation
 Requirements
 ------------
 
-The plugin requires Python version 3.10 or higher.
+The plugin requires Python version 3.11 or higher.
 
 * ``pytest >= 8.0.0``
 * ``pyyaml >= 6.0.2``
