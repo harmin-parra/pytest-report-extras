@@ -57,12 +57,11 @@ class Extras:
         """
         try:
             image, source = self._get_image_source(target, full_page, page_source)
-        except Exception as error:
+        except:
             self.comments.append(comment)
             self.multimedia.append(utils.error_screenshot)
             self.sources.append(None)
             self.attachments.append(None)
-            utils.log_error(None, "Error taking screenshot", error)
             return
         if target is None:  # A comment alone
             self._add_extra(comment, None, None, escape_html)
@@ -221,6 +220,9 @@ class Extras:
         link_source = None
         data_str = None
         data_b64 = None
+
+        if data is None:
+            return None, None
 
         if mime is None or Mime.is_not_multimedia(mime):
             utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")

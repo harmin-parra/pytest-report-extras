@@ -146,17 +146,13 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
     Returns:
         The image as bytes and the webpage source if applicable.
     """
+    from selenium.webdriver.chrome.webdriver import WebDriver as WebDriver_Chrome
+    from selenium.webdriver.chromium.webdriver import ChromiumDriver as WebDriver_Chromium
+    from selenium.webdriver.edge.webdriver import WebDriver as WebDriver_Edge
+    from selenium.webdriver.remote.webelement import WebElement
+
     image = None
     source = None
-
-    if importlib.util.find_spec("selenium") is not None:
-        from selenium.webdriver.chrome.webdriver import WebDriver as WebDriver_Chrome
-        from selenium.webdriver.chromium.webdriver import ChromiumDriver as WebDriver_Chromium
-        from selenium.webdriver.edge.webdriver import WebDriver as WebDriver_Edge
-        from selenium.webdriver.remote.webelement import WebElement
-    else:
-        log_error(None, "Selenium module is not installed.")
-        return None, None
 
     if isinstance(target, WebElement):
         image = target.screenshot_as_png
@@ -191,18 +187,14 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
     Returns:
         The image as bytes and the webpage source if applicable.
     """
+    from playwright.sync_api import Page
+
     image = None
     source = None
 
-    if importlib.util.find_spec("playwright") is not None:
-        from playwright.sync_api import Page
-        from playwright.sync_api import Locator
-        assert isinstance(target, Page) or isinstance(target, Locator)
-    else:
-        log_error(None, "Playwright module is not installed.")
-        return None, None
-
     if isinstance(target, Page):
+        if target.is_closed():
+            raise Exception("Page instance is closed")
         image = target.screenshot(full_page=full_page)
         if page_source:
             source = target.content()
