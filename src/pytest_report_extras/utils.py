@@ -284,6 +284,9 @@ def copy_file_and_get_link(
     """
     if filepath in (None, ''):
         return None
+    # Skip copy if file already present in destination folder
+    if pathlib.Path(filepath).parent == pathlib.Path(pathlib.Path.cwd(), report_html, folder):
+        return f"{folder}{os.sep}{pathlib.Path(filepath).name}"
     if extension is None and filepath.rfind('.') != -1:
         extension = filepath[filepath.rfind('.') + 1:]
     extension = '' if extension is None else '.' + extension 
