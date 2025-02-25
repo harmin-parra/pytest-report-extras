@@ -101,6 +101,23 @@ def escape_html(text, quote=False) -> Optional[str]:
     return html.escape(str(text), quote)
 
 
+def check_screenshot_target_type(target):
+    """ Checks whether an object is an instance of WebDriver, WebElement, Page or Locator. """
+    if target is not None:
+        if importlib.util.find_spec("selenium") is not None:
+            from selenium.webdriver.remote.webdriver import WebDriver
+            from selenium.webdriver.remote.webelement import WebElement
+            if isinstance(target, WebDriver) or isinstance(target, WebElement):
+                return True
+
+        if importlib.util.find_spec("playwright") is not None:
+            from playwright.sync_api import Page
+            from playwright.sync_api import Locator
+            if isinstance(target, Page) or isinstance(target, Locator):
+                return True
+    return False
+
+
 #
 # Persistence functions
 #
