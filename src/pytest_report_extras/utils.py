@@ -88,7 +88,7 @@ def create_assets(report_html, single_page):
         # Copy error.png to images folder
         shutil.copy(str(error_img), f"{folder}images")
         error_screenshot = f"images{os.sep}error.png"
-    except:
+    except OSError:
         message = ("Cannot create report sub-folders.\n"
                    "pytest-report-extras won't work properly.")
         print(message, file=sys.stderr)
@@ -258,7 +258,7 @@ def save_data_and_get_link(
         f.write(data)
         f.close()
         return f"{folder}{os.sep}{filename}"
-    except Exception as error:
+    except OSError as error:
         log_error(None, f"Error saving file to '{folder}' folder:", error)
         return None
 
@@ -292,7 +292,7 @@ def copy_file_and_get_link(
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
         shutil.copyfile(filepath, destination)
         return f"{folder}{os.sep}{filename}"
-    except Exception as error:
+    except OSError as error:
         log_error(None, f"Error copying file '{filepath}' into folder '{folder}':", error)
         return None
 

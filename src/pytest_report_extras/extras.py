@@ -289,7 +289,7 @@ class Extras:
                 data_b64 = f.read()
                 f.close()
                 data_str = base64.b64encode(data_b64).decode()
-            except Exception as error:
+            except (OSError, TypeError) as error:
                 utils.log_error(None, f"Error reading image/video file '{filepath}'", error)
                 return None
             return f"data:{mime};base64,{data_str}"
