@@ -55,7 +55,7 @@ class Extras:
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        if not utils.check_screenshot_target_type(target):
+        if target is not None and not utils.check_screenshot_target_type(target):
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
             return
         try:
