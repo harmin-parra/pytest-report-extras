@@ -225,7 +225,7 @@ class Extras:
         data_b64 = None
 
         if data is None:
-            return None, None
+            return link_multimedia, link_source
 
         if mime is None or Mime.is_not_multimedia(mime):
             utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")
