@@ -60,7 +60,7 @@ class Extras:
             return
         try:
             image, source = self._get_image_source(target, full_page, page_source)
-        except:
+        except Exception:
             self.comments.append(comment)
             self.multimedia.append(utils.error_screenshot)
             self.sources.append(None)
@@ -292,7 +292,7 @@ class Extras:
                 data_b64 = f.read()
                 f.close()
                 data_str = base64.b64encode(data_b64).decode()
-            except (OSError, TypeError) as error:
+            except Exception as error:
                 utils.log_error(None, f"Error reading image/video file '{filepath}'", error)
                 return None
             return f"data:{mime};base64,{data_str}"

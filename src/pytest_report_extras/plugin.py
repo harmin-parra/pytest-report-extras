@@ -202,7 +202,7 @@ def pytest_runtest_makereport(item, call):
                 # fx_tms_link = feature_request.getfixturevalue("tms_link_pattern")
                 # fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
                 target = fx_report.target
-            except pytest.FixtureLookupError as error:
+            except Exception as error:
                 utils.log_error(report, "Could not retrieve test fixtures", error)
                 return
 

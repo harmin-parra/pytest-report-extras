@@ -3,7 +3,6 @@ import csv
 import io
 import json
 import re
-import xml
 import xml.dom.minidom as xdom
 import yaml
 from typing import List
@@ -111,7 +110,7 @@ def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
     try:
         text = json.loads(text) if isinstance(text, str) else text
         return Attachment(body=json.dumps(text, indent=indent), mime=Mime.JSON)
-    except (json.decoder.JSONDecodeError, TypeError) as error:
+    except Exception as error:
         utils.log_error(None, "Error formatting JSON:", error)
         return Attachment(body="Error formatting JSON:\n" + str(text), mime=Mime.TEXT)
 
@@ -129,7 +128,7 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
                   .toprettyxml(indent=" " * indent))
         result = '\n'.join(line for line in result.splitlines() if not re.match(r"^\s*<!--.*?-->\s*\n*$", line))
         return Attachment(body=result, mime=Mime.XML)
-    except xml.parsers.expat.ExpatError as error:
+    except Exception as error:
         utils.log_error(None, "Error formatting XML:", error)
         return Attachment(body="Error formatting XML:\n" + str(text), mime=Mime.TEXT)
 
@@ -227,7 +226,7 @@ def _attachment_image(data: bytes | str, mime: str) -> Attachment:
     if isinstance(data, str):
         try:
             data = base64.b64decode(data)
-        except TypeError as error:
+        except Exception as error:
             utils.log_error(None, "Error parsing image bytes:", error)
             return Attachment(body="Error parsing image bytes.", mime=Mime.TEXT)
     return Attachment(body=data, mime=mime)

@@ -74,7 +74,7 @@ def create_assets(report_html, single_page):
                 data = f.read()
                 f.close()
                 error_screenshot = f"data:image/png;base64,{base64.b64encode(data).decode()}"
-            except (OSError, TypeError):
+            except Exception:
                 pass
             finally:
                 return
@@ -88,10 +88,10 @@ def create_assets(report_html, single_page):
         # Copy error.png to images folder
         shutil.copy(str(error_img), f"{folder}images")
         error_screenshot = f"images{os.sep}error.png"
-    except OSError:
+    except OSError as error:
         message = ("Cannot create report sub-folders.\n"
-                   "pytest-report-extras won't work properly.")
-        print(message, file=sys.stderr)
+                   "pytest-report-extras won't work properly.\n")
+        print(message, repr(error), file=sys.stderr)
 
 
 def escape_html(text, quote=False) -> Optional[str]:
@@ -181,7 +181,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
                 if type(target) in (WebDriver_Chrome, WebDriver_Chromium, WebDriver_Edge):
                     try:
                         image = _get_full_page_screenshot_chromium(target)
-                    except:
+                    except Exception:
                         image = target.get_screenshot_as_png()
                 else:
                     image = target.get_screenshot_as_png()
