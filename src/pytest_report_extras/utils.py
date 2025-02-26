@@ -74,7 +74,7 @@ def create_assets(report_html, single_page):
                 data = f.read()
                 f.close()
                 error_screenshot = f"data:image/png;base64,{base64.b64encode(data).decode()}"
-            except:
+            except (OSError, TypeError):
                 pass
             finally:
                 return
