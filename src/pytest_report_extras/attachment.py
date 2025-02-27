@@ -210,7 +210,7 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
             raise TypeError()
         inner_html = decorators.decorate_uri_list(uri_list)
         return Attachment(body=body, mime=Mime.URI, inner_html=inner_html)
-    except TypeError as error:
+    except Exception as error:
         utils.log_error(None, "Error parsing uri list:", error)
         return Attachment(body="Error parsing uri list.", mime=Mime.TEXT)
 
