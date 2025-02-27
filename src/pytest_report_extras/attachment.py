@@ -206,6 +206,8 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
         elif isinstance(text, List):
             body = '\n'.join(text)
             uri_list = text
+        else:
+            raise TypeError()
         inner_html = decorators.decorate_uri_list(uri_list)
         return Attachment(body=body, mime=Mime.URI, inner_html=inner_html)
     except Exception as error:

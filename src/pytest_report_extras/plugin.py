@@ -289,10 +289,8 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "tms(keys): The list of test case keys to add as links")
     config.addinivalue_line("markers", "link(url=<url>, name=<name>): The url to add as link")
 
-    try:
-        config_css = config.getoption("--css", default=[])
-        resources_path = pathlib.Path(__file__).parent.joinpath("resources")
-        style_css = pathlib.Path(resources_path, "style.css")
+    config_css = config.getoption("--css", default=[])
+    resources_path = pathlib.Path(__file__).parent.joinpath("resources")
+    style_css = pathlib.Path(resources_path, "style.css")
+    if style_css.is_file():
         config_css.insert(0, style_css)
-    except:
-        pass

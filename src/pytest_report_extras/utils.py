@@ -74,7 +74,7 @@ def create_assets(report_html, single_page):
                 data = f.read()
                 f.close()
                 error_screenshot = f"data:image/png;base64,{base64.b64encode(data).decode()}"
-            except:
+            except Exception:
                 pass
             finally:
                 return
@@ -88,10 +88,10 @@ def create_assets(report_html, single_page):
         # Copy error.png to images folder
         shutil.copy(str(error_img), f"{folder}images")
         error_screenshot = f"images{os.sep}error.png"
-    except:
+    except OSError as error:
         message = ("Cannot create report sub-folders.\n"
-                   "pytest-report-extras won't work properly.")
-        print(message, file=sys.stderr)
+                   "pytest-report-extras won't work properly.\n")
+        print(message, repr(error), file=sys.stderr)
 
 
 def escape_html(text, quote=False) -> Optional[str]:
@@ -99,6 +99,23 @@ def escape_html(text, quote=False) -> Optional[str]:
     if text is None:
         return None
     return html.escape(str(text), quote)
+
+
+def check_screenshot_target_type(target):
+    """ Checks whether an object is an instance of WebDriver, WebElement, Page or Locator. """
+    if target is not None:
+        if importlib.util.find_spec("selenium") is not None:
+            from selenium.webdriver.remote.webdriver import WebDriver
+            from selenium.webdriver.remote.webelement import WebElement
+            if isinstance(target, WebDriver) or isinstance(target, WebElement):
+                return True
+
+        if importlib.util.find_spec("playwright") is not None:
+            from playwright.sync_api import Page
+            from playwright.sync_api import Locator
+            if isinstance(target, Page) or isinstance(target, Locator):
+                return True
+    return False
 
 
 #
@@ -146,17 +163,13 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
     Returns:
         The image as bytes and the webpage source if applicable.
     """
+    from selenium.webdriver.chrome.webdriver import WebDriver as WebDriver_Chrome
+    from selenium.webdriver.chromium.webdriver import ChromiumDriver as WebDriver_Chromium
+    from selenium.webdriver.edge.webdriver import WebDriver as WebDriver_Edge
+    from selenium.webdriver.remote.webelement import WebElement
+
     image = None
     source = None
-
-    if importlib.util.find_spec("selenium") is not None:
-        from selenium.webdriver.chrome.webdriver import WebDriver as WebDriver_Chrome
-        from selenium.webdriver.chromium.webdriver import ChromiumDriver as WebDriver_Chromium
-        from selenium.webdriver.edge.webdriver import WebDriver as WebDriver_Edge
-        from selenium.webdriver.remote.webelement import WebElement
-    else:
-        log_error(None, "Selenium module is not installed.")
-        return None, None
 
     if isinstance(target, WebElement):
         image = target.screenshot_as_png
@@ -168,7 +181,7 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
                 if type(target) in (WebDriver_Chrome, WebDriver_Chromium, WebDriver_Edge):
                     try:
                         image = _get_full_page_screenshot_chromium(target)
-                    except:
+                    except Exception:
                         image = target.get_screenshot_as_png()
                 else:
                     image = target.get_screenshot_as_png()
@@ -191,18 +204,14 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
     Returns:
         The image as bytes and the webpage source if applicable.
     """
+    from playwright.sync_api import Page
+
     image = None
     source = None
 
-    if importlib.util.find_spec("playwright") is not None:
-        from playwright.sync_api import Page
-        from playwright.sync_api import Locator
-        assert isinstance(target, Page) or isinstance(target, Locator)
-    else:
-        log_error(None, "Playwright module is not installed.")
-        return None, None
-
     if isinstance(target, Page):
+        if target.is_closed():
+            raise Exception("Page instance is closed")
         image = target.screenshot(full_page=full_page)
         if page_source:
             source = target.content()
@@ -266,7 +275,7 @@ def save_data_and_get_link(
         f.write(data)
         f.close()
         return f"{folder}{os.sep}{filename}"
-    except Exception as error:
+    except OSError as error:
         log_error(None, f"Error saving file to '{folder}' folder:", error)
         return None
 
@@ -292,6 +301,9 @@ def copy_file_and_get_link(
     """
     if filepath in (None, ''):
         return None
+    # Skip copy if file already present in destination folder
+    if pathlib.Path(filepath).parent == pathlib.Path(pathlib.Path.cwd(), report_html, folder):
+        return f"{folder}{os.sep}{pathlib.Path(filepath).name}"
     if extension is None and filepath.rfind('.') != -1:
         extension = filepath[filepath.rfind('.') + 1:]
     extension = '' if extension is None else '.' + extension 
@@ -300,7 +312,7 @@ def copy_file_and_get_link(
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
         shutil.copyfile(filepath, destination)
         return f"{folder}{os.sep}{filename}"
-    except Exception as error:
+    except OSError as error:
         log_error(None, f"Error copying file '{filepath}' into folder '{folder}':", error)
         return None
 

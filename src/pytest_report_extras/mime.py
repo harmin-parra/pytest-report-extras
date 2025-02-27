@@ -123,7 +123,7 @@ class Mime(StrEnum):
         if '/' in value:
             try:
                 return cls(value)
-            except:
+            except ValueError:
                 pass
         # value is an unknown myme-type/extension
         # Find the last occurrence of '.' or '/'
