@@ -139,7 +139,7 @@ def report(report_html, single_page, screenshots, sources, indent, report_allure
 # Hookers
 #
 
-# Global variables to store key fixtures to handle tms and issue links
+# Global variables to store required fixtures to handle tms and issue markers
 # Workaround for https://github.com/pytest-dev/pytest/issues/13101
 fx_html = None
 fx_allure = None
