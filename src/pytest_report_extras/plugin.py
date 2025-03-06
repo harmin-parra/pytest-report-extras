@@ -51,7 +51,7 @@ def pytest_addoption(parser):
 # Read test parameters
 #
 @pytest.fixture(scope="session")
-def screenshots(request):
+def _fx_screenshots(request):
     value = request.config.getini("extras_screenshots")
     if value in ("all", "last"):
         return value
@@ -60,38 +60,38 @@ def screenshots(request):
 
 
 @pytest.fixture(scope="session")
-def report_html(request):
+def _fx_report_html(request):
     """ The folder storing the pytest-html report """
     return utils.get_folder(request.config.getoption("--html", default=None))
 
 
 @pytest.fixture(scope="session")
-def single_page(request):
+def _fx_single_page(request):
     """ Whether to generate a single HTML page for pytest-html report """
     return request.config.getoption("--self-contained-html", default=False)
 
 
 @pytest.fixture(scope="session")
-def report_allure(request):
+def _fx_report_allure(request):
     """ Whether the allure-pytest plugin is being used """
     return request.config.getoption("--alluredir", default=None)
 
 
 @pytest.fixture(scope="session")
-def report_css(request):
+def _fx_report_css(request):
     """ The filepath of the CSS to include in the report. """
     return request.config.getoption("--css")
 
 
 @pytest.fixture(scope="session")
-def description_tag(request):
+def _fx_description_tag(request):
     """ The HTML tag for the description of each test. """
     tag = request.config.getini("extras_description_tag")
     return tag if tag in ("h1", "h2", "h3", "h4", "h5", "h6", "p", "pre") else "pre"
 
 
 @pytest.fixture(scope="session")
-def indent(request):
+def _fx_indent(request):
     """ The indent to use for attachments. """
     # Workaround for https://github.com/pytest-dev/pytest/issues/11381
     indent = request.config.getini("extras_attachment_indent")
@@ -102,37 +102,37 @@ def indent(request):
 
 
 @pytest.fixture(scope="session")
-def sources(request):
+def _fx_sources(request):
     """ Whether to include webpage sources in the report. """
     return request.config.getini("extras_sources")
 
 
 @pytest.fixture(scope="session")
-def issue_link_pattern(request):
+def _fx_issue_link_pattern(request):
     """ The issue link pattern. """
     return request.config.getini("extras_issue_link_pattern")
 
 
 @pytest.fixture(scope="session")
-def tms_link_pattern(request):
+def _fx_tms_link_pattern(request):
     """ The test case link pattern. """
     return request.config.getini("extras_tms_link_pattern")
 
 
 @pytest.fixture(scope="session")
-def setup(report_html, report_allure, single_page):
+def _fx_setup(_fx_report_html, _fx_report_allure, _fx_single_page):
     """ Verifies preconditions and create assets before using this plugin. """
-    utils.check_options(report_html, report_allure)
-    if report_html is not None:
-        utils.create_assets(report_html, single_page)
+    utils.check_options(_fx_report_html, _fx_report_allure)
+    if _fx_report_html is not None:
+        utils.create_assets(_fx_report_html, _fx_single_page)
 
 
 #
 # Test fixture
 #
 @pytest.fixture(scope="function")
-def report(report_html, single_page, screenshots, sources, indent, report_allure, setup):
-    return Extras(report_html, single_page, screenshots, sources, indent, report_allure)
+def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure, _fx_setup):
+    return Extras(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure)
 
 
 #
@@ -202,7 +202,7 @@ def pytest_runtest_makereport(item, call):
                 # fx_tms_link = feature_request.getfixturevalue("tms_link_pattern")
                 # fx_issue_link = feature_request.getfixturevalue("issue_link_pattern")
                 target = fx_report.target
-            except Exception as error:
+            except pytest.FixtureLookupError as error:
                 utils.log_error(report, "Could not retrieve test fixtures", error)
                 return
 
