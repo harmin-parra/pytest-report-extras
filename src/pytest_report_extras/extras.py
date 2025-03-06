@@ -32,9 +32,9 @@ class Extras:
         self._fx_screenshots = screenshots
         self._fx_sources = sources
         self._fx_single_page = single_page
-        self._html = report_html
-        self._allure = report_allure
-        self._indent = indent
+        self._fx_html = report_html
+        self._fx_allure = report_allure
+        self._fx_indent = indent
         self.Mime = Mime
 
     def screenshot(
@@ -134,9 +134,9 @@ class Extras:
         if source is not None:
             try:
                 if Mime.is_unsupported(mime):
-                    if self._html:
+                    if self._fx_html:
                         inner_html = decorators.decorate_uri(
-                            utils.copy_file_and_get_link(self._html, source, Mime.get_extension(mime), "downloads")
+                            utils.copy_file_and_get_link(self._fx_html, source, Mime.get_extension(mime), "downloads")
                         )
                     if inner_html == '':
                         return Attachment(body="Error copying file", mime=Mime.TEXT)
@@ -158,13 +158,13 @@ class Extras:
         else:
             # Continue processing attachments with body
             if Mime.is_unsupported(mime):  # Attachment of body with unknown mime
-                if self._html:
+                if self._fx_html:
                     inner_html = decorators.decorate_uri(
-                        utils.save_data_and_get_link(self._html, body, Mime.get_extension(mime), "downloads")
+                        utils.save_data_and_get_link(self._fx_html, body, Mime.get_extension(mime), "downloads")
                     )
                 # mime = None to avoid displaying attachment in <pre> tag
                 return Attachment(body=body, inner_html=inner_html)
-                # f = utils.save_data_and_get_link(self._html, body, Mime.get_extension(mime))
+                # f = utils.save_data_and_get_link(self._fx_html, body, Mime.get_extension(mime))
                 # body = [f]
                 # mime = Mime.URI
         if mime == Mime.HTML:
@@ -179,7 +179,7 @@ class Extras:
                 mime = Mime.TEXT
         if mime == Mime.SVG:
             return Attachment(body=body, source=source, mime=mime)
-        return Attachment.parse_body(body, mime, self._indent, delimiter)
+        return Attachment.parse_body(body, mime, self._fx_indent, delimiter)
 
     def _get_image_source(
         self,
@@ -248,20 +248,20 @@ class Extras:
 
         if Mime.is_video(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, Mime.get_extension(mime), "videos")
+                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, Mime.get_extension(mime), "videos")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
 
         if Mime.is_image(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._html, data_b64, Mime.get_extension(mime), "images")
+                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, Mime.get_extension(mime), "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
 
         if source is not None:
             if self._fx_single_page is False:
-                link_source = utils.save_data_and_get_link(self._html, source, None, "sources")
+                link_source = utils.save_data_and_get_link(self._fx_html, source, None, "sources")
             else:
                 link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
 
@@ -298,10 +298,10 @@ class Extras:
             return f"data:{mime};base64,{data_str}"
 
         if Mime.is_video(mime):
-            return utils.copy_file_and_get_link(self._html, filepath, Mime.get_extension(mime), "videos")
+            return utils.copy_file_and_get_link(self._fx_html, filepath, Mime.get_extension(mime), "videos")
 
         if Mime.is_image(mime):
-            return utils.copy_file_and_get_link(self._html, filepath, Mime.get_extension(mime), "images")
+            return utils.copy_file_and_get_link(self._fx_html, filepath, Mime.get_extension(mime), "images")
 
     def _add_extra(
         self,
@@ -330,7 +330,7 @@ class Extras:
         mime = attachment.mime if attachment is not None else None
 
         # Add extras to Allure report if allure-pytest plugin is being used.
-        if self._allure and importlib.util.find_spec("allure") is not None:
+        if self._fx_allure and importlib.util.find_spec("allure") is not None:
             import allure
             if attachment is not None:
                 try:
@@ -346,7 +346,7 @@ class Extras:
                 allure.attach("", name=comment, attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
-        if self._html:
+        if self._fx_html:
             if comment is None and attachment is None:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
