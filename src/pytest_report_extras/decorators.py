@@ -216,7 +216,7 @@ def decorate_image_svg(uri: Optional[str], inner_html: Optional[str], single_pag
     if single_page:
         return inner_html
     else:
-        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{inner_html}></a>'
+        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{inner_html}</a>'
 
 
 def decorate_page_source(filename: Optional[str]) -> str:

@@ -120,7 +120,7 @@ def tms_link_pattern(request):
 
 
 @pytest.fixture(scope="session")
-def check_options(report_html, report_allure, single_page):
+def setup(report_html, report_allure, single_page):
     """ Verifies preconditions and create assets before using this plugin. """
     utils.check_options(report_html, report_allure)
     if report_html is not None:
@@ -131,7 +131,7 @@ def check_options(report_html, report_allure, single_page):
 # Test fixture
 #
 @pytest.fixture(scope="function")
-def report(report_html, single_page, screenshots, sources, indent, report_allure, check_options):
+def report(report_html, single_page, screenshots, sources, indent, report_allure, setup):
     return Extras(report_html, single_page, screenshots, sources, indent, report_allure)
 
 
@@ -139,7 +139,7 @@ def report(report_html, single_page, screenshots, sources, indent, report_allure
 # Hookers
 #
 
-# Global variables to store key fixtures to handle tms and issue links
+# Global variables to store required fixtures to handle tms and issue markers
 # Workaround for https://github.com/pytest-dev/pytest/issues/13101
 fx_html = None
 fx_allure = None

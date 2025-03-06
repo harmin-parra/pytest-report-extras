@@ -27,19 +27,6 @@ def check_options(htmlpath, allurepath):
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
-def get_folder(filepath) -> Optional[str]:
-    """
-    Returns the folder of a filepath.
-
-    Args:
-        filepath (str): The filepath.
-    """
-    folder = None
-    if filepath is not None:
-        folder = os.path.dirname(filepath)
-    return folder
-
-
 def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
     """ Verifies if the comment, multimedia, page source and attachment lists have the same length """
     message = ('"multimedia", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
@@ -94,6 +81,19 @@ def create_assets(report_html, single_page):
         print(message, repr(error), file=sys.stderr)
 
 
+def get_folder(filepath) -> Optional[str]:
+    """
+    Returns the folder of a filepath.
+
+    Args:
+        filepath (str): The filepath.
+    """
+    folder = None
+    if filepath is not None:
+        folder = os.path.dirname(filepath)
+    return folder
+
+
 def escape_html(text, quote=False) -> Optional[str]:
     """ Escapes HTML characters in a text. """
     if text is None:
@@ -101,26 +101,25 @@ def escape_html(text, quote=False) -> Optional[str]:
     return html.escape(str(text), quote)
 
 
+#
+# Screenshot related functions
+#
 def check_screenshot_target_type(target):
     """ Checks whether an object is an instance of WebDriver, WebElement, Page or Locator. """
-    if target is not None:
-        if importlib.util.find_spec("selenium") is not None:
-            from selenium.webdriver.remote.webdriver import WebDriver
-            from selenium.webdriver.remote.webelement import WebElement
-            if isinstance(target, WebDriver) or isinstance(target, WebElement):
-                return True
+    if importlib.util.find_spec("selenium") is not None:
+        from selenium.webdriver.remote.webdriver import WebDriver
+        from selenium.webdriver.remote.webelement import WebElement
+        if isinstance(target, WebDriver) or isinstance(target, WebElement):
+            return True
 
-        if importlib.util.find_spec("playwright") is not None:
-            from playwright.sync_api import Page
-            from playwright.sync_api import Locator
-            if isinstance(target, Page) or isinstance(target, Locator):
-                return True
+    if importlib.util.find_spec("playwright") is not None:
+        from playwright.sync_api import Page
+        from playwright.sync_api import Locator
+        if isinstance(target, Page) or isinstance(target, Locator):
+            return True
     return False
 
 
-#
-# Persistence functions
-#
 def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
     """
     Returns the screenshot in PNG format as bytes and the webpage source.
@@ -243,6 +242,9 @@ def _get_full_page_screenshot_chromium(driver) -> bytes:
     return base64.urlsafe_b64decode(base_64_png["data"])
 
 
+#
+# Persistence functions
+#
 def save_data_and_get_link(
     report_html: str,
     data: str | bytes,
@@ -317,6 +319,9 @@ def copy_file_and_get_link(
         return None
 
 
+#
+# Marker functions
+#
 def add_marker_link(
     item: pytest.Item,
     extras,
