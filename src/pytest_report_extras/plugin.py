@@ -123,7 +123,7 @@ def _fx_tms_link_pattern(request):
 # Test fixture
 #
 @pytest.fixture(scope="function")
-def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure, _fx_setup):
+def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure):
     return Extras(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure)
 
 
