@@ -270,12 +270,13 @@ def pytest_configure(config):
     """
     Performs setup actions and sets global variables.
     """
+    global fx_html, fx_allure, fx_issue_link, fx_tms_link
     # Retrieve some options
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
+    fx_single_page = config.getoption("--self-contained-html", default=False)
     fx_tms_link = config.getini("extras_tms_link_pattern")
     fx_issue_link = config.getini("extras_issue_link_pattern")
-    fx_single_page = config.getoption("--self-contained-html", default=False)
     utils.check_options(fx_html, fx_allure)
     # Add markers
     config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
