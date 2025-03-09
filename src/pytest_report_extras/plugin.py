@@ -119,14 +119,6 @@ def _fx_tms_link_pattern(request):
     return request.config.getini("extras_tms_link_pattern")
 
 
-@pytest.fixture(scope="session")
-def _fx_setup(_fx_report_html, _fx_report_allure, _fx_single_page):
-    """ Verifies preconditions and create assets before using this plugin. """
-    utils.check_options(_fx_report_html, _fx_report_allure)
-    if _fx_report_html is not None:
-        utils.create_assets(_fx_report_html, _fx_single_page)
-
-
 #
 # Test fixture
 #
@@ -276,19 +268,23 @@ def pytest_runtest_makereport(item, call):
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config):
     """
-    Set global variables.
-    Add markers.
-    Add default CSS file to --css option for pytest-html
+    Performs setup actions and sets global variables.
     """
-    global fx_html, fx_allure, fx_issue_link, fx_tms_link
+    # Retrieve some options
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
     fx_tms_link = config.getini("extras_tms_link_pattern")
     fx_issue_link = config.getini("extras_issue_link_pattern")
+    fx_single_page = config.getoption("--self-contained-html", default=False)
+    utils.check_options(fx_html, fx_allure)
+    # Add markers
     config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
     config.addinivalue_line("markers", "tms(keys): The list of test case keys to add as links")
     config.addinivalue_line("markers", "link(url=<url>, name=<name>): The url to add as link")
-
+    # Create assets
+    if fx_html is not None:
+        utils.create_assets(fx_html, fx_single_page)
+    # Add default CSS file
     config_css = config.getoption("--css", default=[])
     resources_path = pathlib.Path(__file__).parent.joinpath("resources")
     style_css = pathlib.Path(resources_path, "style.css")
