@@ -219,17 +219,17 @@ class Extras:
         Returns:
             The uris of the image/video and webpage source.
         """
+        if data is None:
+            return None, None
+        if mime is None or Mime.is_not_multimedia(mime):
+            utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")
+            return None, None
+
         link_multimedia = None
         link_source = None
         data_str = None
         data_b64 = None
-
-        if data is None:
-            return link_multimedia, link_source
-
-        if mime is None or Mime.is_not_multimedia(mime):
-            utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")
-            return None, None
+        extension = Mime.get_extension(mime)
 
         if isinstance(data, str):
             try:
@@ -248,14 +248,14 @@ class Extras:
 
         if Mime.is_video(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, Mime.get_extension(mime), "videos")
+                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, extension, "videos")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
 
         if Mime.is_image(mime):
             if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, Mime.get_extension(mime), "images")
+                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, extension, "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
 
@@ -286,6 +286,7 @@ class Extras:
             return None
 
         data_str = ""
+        extension = Mime.get_extension(mime)
         if self._fx_single_page:
             try:
                 f = open(filepath, "rb")
@@ -298,10 +299,10 @@ class Extras:
             return f"data:{mime};base64,{data_str}"
 
         if Mime.is_video(mime):
-            return utils.copy_file_and_get_link(self._fx_html, filepath, Mime.get_extension(mime), "videos")
+            return utils.copy_file_and_get_link(self._fx_html, filepath, extension, "videos")
 
         if Mime.is_image(mime):
-            return utils.copy_file_and_get_link(self._fx_html, filepath, Mime.get_extension(mime), "images")
+            return utils.copy_file_and_get_link(self._fx_html, filepath, extension, "images")
 
     def _add_extra(
         self,
