@@ -205,7 +205,7 @@ def pytest_runtest_makereport(item, call):
                 return
 
             # Generate HTML code for the extras to be added in the report
-            rows = ""   # The HTML table rows of the test report
+            rows = ""  # The HTML table rows of the test report
 
             # To check test failure/skip
             failure = wasfailed or wasxfailed or wasxpassed or wasskipped
