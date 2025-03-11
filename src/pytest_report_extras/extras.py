@@ -232,12 +232,16 @@ class Extras:
         extension = Mime.get_extension(mime)
 
         if isinstance(data, str):
-            try:
+            if mime == Mime.SVG:
                 data_str = data
-                data_b64 = base64.b64decode(data.encode())
-            except Exception as error:
-                utils.log_error(None, "Error decoding image/video base64 string:", error)
-                return None, None
+                data_b64 = data
+            else:
+                try:
+                    data_str = data
+                    data_b64 = base64.b64decode(data.encode())
+                except Exception as error:
+                    utils.log_error(None, "Error decoding image/video base64 string:", error)
+                    return None, None
         else:
             try:
                 data_b64 = data
