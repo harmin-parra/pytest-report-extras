@@ -16,9 +16,13 @@ The screenshots to add in the report.
 
 Accepted values:
 
-* ``all``:    Include all gathered screenshots in the report.
+* ``all``: Include all gathered screenshots in the report.
 
-* ``last``:   Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution in order to store the reference of the WebDriver (**selenium**) or Page (**playwright**) object.
+* ``last``: Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution.
+
+* ``fail``: Include only the last screenshot of each failed and skipped test in the report. Works only if the API has been previously called during the test execution.
+
+* ``none``: Exclude all screenshots in the report.
 
 Default value: ``all``
 
