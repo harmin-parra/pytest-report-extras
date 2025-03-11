@@ -6,6 +6,10 @@ Changelog
 1.3.2
 =====
 
+**Feature**
+
+* The ``extras_screenshots`` INI option can also accept ``fail`` and ``none`` values.
+
 **Changes**
 
 * Deprecated code has been removed.
@@ -20,7 +24,6 @@ Changelog
 * Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``.
 * Mime types of attachments can also be set with file extensions.
 * Introduction of new ``Report.Mime`` shorter attributes for mime types. The long old ones will be deprecated in the next major release.
-* The ``screenshots`` INI option can also accept ``fail`` and ``none`` values.
 
 **Improvement**
 
