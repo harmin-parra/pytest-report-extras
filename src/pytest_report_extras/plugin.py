@@ -13,7 +13,7 @@ def pytest_addoption(parser):
         "extras_screenshots",
         type="string",
         default="all",
-        help="The screenshots to include in the report. Accepted values: all, last."
+        help="The screenshots to include in the report. Accepted values: all, last, fail, none"
     )
     parser.addini(
         "extras_sources",
@@ -53,7 +53,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def _fx_screenshots(request):
     value = request.config.getini("extras_screenshots")
-    if value in ("all", "last"):
+    if value in ("all", "last", "fail", "none"):
         return value
     else:
         return "all"
@@ -233,7 +233,7 @@ def pytest_runtest_makereport(item, call):
                 )
 
             # Add screenshot for test failure/skip
-            if failure and target is not None:
+            if fx_screenshots != "none" and failure and target is not None:
                 if wasfailed or wasxpassed:
                     event_class = "failure"
                 else:
@@ -274,9 +274,9 @@ def pytest_configure(config):
     # Retrieve some options
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
+    fx_single_page = config.getoption("--self-contained-html", default=False)
     fx_tms_link = config.getini("extras_tms_link_pattern")
     fx_issue_link = config.getini("extras_issue_link_pattern")
-    fx_single_page = config.getoption("--self-contained-html", default=False)
     utils.check_options(fx_html, fx_allure)
     # Add markers
     config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")

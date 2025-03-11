@@ -13,7 +13,7 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last"],
+    def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last", "fail", "none"],
                  sources: bool, indent: int, report_allure: str):
         """
         Args:
@@ -55,7 +55,11 @@ class Extras:
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        if target is not None and not utils.check_screenshot_target_type(target):
+        target_valid, target_obj = utils.check_screenshot_target_type(target)
+        self.target = target_obj if self.target is None else self.target
+        if self._fx_screenshots != "all":
+            return
+        if target is not None and not target_valid:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
             return
         try:

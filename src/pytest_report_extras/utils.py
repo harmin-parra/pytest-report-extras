@@ -109,15 +109,19 @@ def check_screenshot_target_type(target):
     if importlib.util.find_spec("selenium") is not None:
         from selenium.webdriver.remote.webdriver import WebDriver
         from selenium.webdriver.remote.webelement import WebElement
-        if isinstance(target, WebDriver) or isinstance(target, WebElement):
-            return True
+        if isinstance(target, WebDriver):
+            return True, target
+        if isinstance(target, WebElement):
+            return True, None
 
     if importlib.util.find_spec("playwright") is not None:
         from playwright.sync_api import Page
         from playwright.sync_api import Locator
-        if isinstance(target, Page) or isinstance(target, Locator):
-            return True
-    return False
+        if isinstance(target, Page):
+            return True, target
+        if isinstance(target, Locator):
+            return True, None
+    return False, None
 
 
 def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
