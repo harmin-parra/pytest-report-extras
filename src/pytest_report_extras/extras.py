@@ -57,11 +57,11 @@ class Extras:
         """
         target_valid, target_obj = utils.check_screenshot_target_type(target)
         self.target = target_obj if self.target is None else self.target
-        if self._fx_screenshots != "all":
-            return
         if target is not None and not target_valid:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
             return
+        if self._fx_screenshots != "all":
+            target = None
         try:
             image, source = self._get_image_source(target, full_page, page_source)
         except Exception:
@@ -201,7 +201,6 @@ class Extras:
 
         Returns: The screenshot as bytes and the webpage source if applicable.
         """
-        self.target = target
         if target is None or self._fx_screenshots == "last":
             return None, None
         return utils.get_screenshot(target, full_page, self._fx_sources or page_source)
