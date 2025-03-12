@@ -8,7 +8,7 @@ Changelog
 
 **Feature**
 
-* The ``extras_screenshots`` INI option can also accept ``fail`` and ``none`` values.
+* The ``extras_screenshots`` INI option can also accept ``fail`` or ``none`` value.
 
 **Changes**
 
@@ -39,7 +39,7 @@ Changelog
 
 **Feature**
 
-* New **INI** options to define link patterns for issues and test-cases and new decorators to add links to the report.
+* New INI options to define link patterns for issues and test-cases and new decorators to add links to the report.
 
 **Improvements**
 
@@ -80,7 +80,7 @@ Changelog
 **Features**
 
 * Posibility to add links to the tests report.
-* New **INI** option to customize the indentation of XML, JSON and YAML attachments.
+* New INI option to customize the indentation of XML, JSON and YAML attachments.
 * Support for attachments of mime type: ``text/csv``, ``text/html``  and ``text/uri-list``
 
 **Change**
