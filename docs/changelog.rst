@@ -8,7 +8,7 @@ Changelog
 
 **Feature**
 
-* The ``extras_screenshots`` INI option can also accept ``fail`` and ``none`` values.
+* The ``extras_screenshots`` INI option can also accept ``fail`` or ``none`` value.
 
 **Changes**
 
