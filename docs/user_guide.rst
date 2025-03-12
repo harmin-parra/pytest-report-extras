@@ -18,9 +18,9 @@ Accepted values:
 
 * ``all``: Include all gathered screenshots in the report.
 
-* ``last``: Include only the last screenshot of each test in the report. Works only if the API has been previously called during the test execution.
+* ``last``: Include only the last screenshot of each test in the report. Works only when using **pytest-html** plugin and if the API has been previously called during the test execution.
 
-* ``fail``: Include only the last screenshot of each failed and skipped test in the report. Works only if the API has been previously called during the test execution.
+* ``fail``: Include only the last screenshot of each failed and skipped test in the report. Works only when using **pytest-html** plugin and if the API has been previously called during the test execution.
 
 * ``none``: Exclude all screenshots in the report.
 
