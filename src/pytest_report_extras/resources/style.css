@@ -100,9 +100,11 @@
 }
 
 .extras_iframe {
+    margin-top: 15px;
     margin-left: 30px;
     margin-right: 30px;
-    margin-top: 15px;
+    resize: both;
+    overflow: auto;
     background-color: #faf0e6;
     inline-size: -webkit-fill-available;
 }
