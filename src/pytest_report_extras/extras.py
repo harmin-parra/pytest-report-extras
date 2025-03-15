@@ -180,16 +180,17 @@ class Extras:
            and returns the filepaths relative to the <report_html> folder.
         The image is saved in <report_html>/images folder.
         The video is saved in <report_html>/videos folder.
+        The audio is saved in <report_html>/audio folder.
         The webpage source is saved in <report_html>/sources folder.
         When using the --self-contained-html option, returns the data URI schema of the image and the source.
 
         Args:
-            data (bytes | str): The image/video as bytes or base64 string.
+            data (bytes | str): The image/video/audio as bytes or base64 string.
             source (str): The webpage source.
-            mime (Mime): The mime type of the image/video.
+            mime (Mime): The mime type of the image/video/audio.
 
         Returns:
-            The uris of the image/video and webpage source.
+            The uris of the image/video/audio and webpage source.
         """
         if data is None:
             return None, None
@@ -212,19 +213,22 @@ class Extras:
                     data_str = data
                     data_b64 = base64.b64decode(data.encode())
                 except Exception as error:
-                    utils.log_error(None, "Error decoding image/video base64 string:", error)
+                    utils.log_error(None, "Error decoding image/video/audio base64 string:", error)
                     return None, None
         else:
             try:
                 data_b64 = data
                 data_str = base64.b64encode(data).decode()
             except Exception as error:
-                utils.log_error(None, "Error encoding image/video bytes:", error)
+                utils.log_error(None, "Error encoding image/video/audio bytes:", error)
                 return None, None
 
-        if Mime.is_video(mime):
+        if Mime.is_video(mime) or Mime.is_audio(mime):
             if self.fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "videos")
+                if Mime.is_video(mime):
+                    link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "videos")
+                if Mime.is_audio(mime):
+                    link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "audio")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
             return link_multimedia, None
@@ -248,11 +252,12 @@ class Extras:
         Copies the image or video and returns the filepath relative to the <report_html> folder.
         The image is copied into <report_html>/images folder.
         The video is copied into <report_html>/videos folder.
+        The audio is copied into <report_html>/audio folder.
         When using the --self-contained-html option, returns the data URI schema of the image/video.
 
         Args:
-            filepath (str): The filepath of the image/video to copy.
-            mime (Mime): The mime type of the image/video.
+            filepath (str): The filepath of the image/video/audio to copy.
+            mime (Mime): The mime type of the image/video/audio.
 
         Returns:
             The uris of the image/video and webpage source.
@@ -270,12 +275,15 @@ class Extras:
                 f.close()
                 data_str = base64.b64encode(data_b64).decode()
             except Exception as error:
-                utils.log_error(None, f"Error reading image/video file '{filepath}'", error)
+                utils.log_error(None, f"Error reading image/video/audio file '{filepath}'", error)
                 return None
             return f"data:{mime};base64,{data_str}"
 
         if Mime.is_video(mime):
             return utils.copy_file_and_get_link(self.fx_html, filepath, extension, "videos")
+
+        if Mime.is_audio(mime):
+            return utils.copy_file_and_get_link(self.fx_html, filepath, extension, "audio")
 
         if Mime.is_image(mime):
             return utils.copy_file_and_get_link(self.fx_html, filepath, extension, "images")
@@ -293,6 +301,7 @@ class Extras:
         Images are saved in <report_html>/images folder.
         Webpage sources are saved in <report_html>/sources folder.
         Videos are saved in <report_html>/videos folder.
+        Audios are saved in <report_html>/audio folder.
         Other types of files are saved in <report_html>/downloads folder.
 
         Args:

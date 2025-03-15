@@ -70,6 +70,8 @@ def create_assets(report_html, single_page):
         pathlib.Path(f"{folder}sources").mkdir(parents=True)
         shutil.rmtree(f"{folder}videos", ignore_errors=True)
         pathlib.Path(f"{folder}videos").mkdir(parents=True)
+        shutil.rmtree(f"{folder}audio", ignore_errors=True)
+        pathlib.Path(f"{folder}audio").mkdir(parents=True)
         shutil.rmtree(f"{folder}images", ignore_errors=True)
         pathlib.Path(f"{folder}images").mkdir(parents=True)
         # Copy error.png to images folder
@@ -253,7 +255,7 @@ def save_data_and_get_link(
     report_html: str,
     data: str | bytes,
     extension: Optional[str],
-    folder: Literal["downloads", "images", "sources", "videos"]
+    folder: Literal["downloads", "images", "sources", "videos", "audio"]
 ) -> Optional[str]:
     """
     Saves data (as a string or bytes) in a file in the 'downloads' folder
@@ -290,7 +292,7 @@ def copy_file_and_get_link(
     report_html: str,
     filepath: str,
     extension: Optional[str],
-    folder: Literal["downloads", "images", "sources", "videos"]
+    folder: Literal["downloads", "images", "sources", "videos", "audio"]
 ) -> Optional[str]:
     """
     Saves a copy of a file in a given folder

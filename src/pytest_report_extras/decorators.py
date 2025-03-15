@@ -91,7 +91,7 @@ def get_table_row(
 
     Args:
         comment (str): The comment of the test step.
-        multimedia (str): The image or video anchor element.
+        multimedia (str): The image, video or audio anchor element.
         source (str): The page source anchor element.
         attachment (Attachment): The attachment.
         single_page (bool): Whether to generate the HTML report in a single page.
@@ -109,6 +109,8 @@ def get_table_row(
                 multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
             elif attachment.mime.startswith("video/"):
                 multimedia = decorate_video(multimedia, attachment.mime)
+            elif attachment.mime.startswith("audio/"):
+                multimedia = decorate_audio(multimedia, attachment.mime)
             else:  # Assuming mime = "image/*
                 multimedia = decorate_image(multimedia, single_page)
         else:  # Multimedia with attachment = None are considered as images
@@ -256,6 +258,19 @@ def decorate_video(uri: Optional[str], mime: str) -> str:
         f'<source src="{uri}" type="{mime}">'
         "Your browser does not support the video tag."
         "</video>"
+    )
+
+
+def decorate_audio(uri: Optional[str], mime: str) -> str:
+    """ Applies CSS class to aa audio anchor element. """
+    clazz = "extras_audio"
+    if uri in (None, ''):
+        return ""
+    return (
+        f'<audio controls class="{clazz}">'
+        f'<source src="{uri}" type="{mime}">'
+        "Your browser does not support the audio tag."
+        "</audio>"
     )
 
 
