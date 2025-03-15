@@ -189,10 +189,6 @@ def pytest_runtest_makereport(item, call):
                 fx_single_page = feature_request.getfixturevalue("_fx_single_page")
                 fx_description_tag = feature_request.getfixturevalue("_fx_description_tag")
                 fx_screenshots = feature_request.getfixturevalue("_fx_screenshots")
-                # fx_html = feature_request.getfixturevalue("_fx_report_html")
-                # fx_allure = feature_request.getfixturevalue("_fx_report_allure")
-                # fx_tms_link = feature_request.getfixturevalue("_fx_tms_link_pattern")
-                # fx_issue_link = feature_request.getfixturevalue("_fx_issue_link_pattern")
                 target = fx_report.target
             except pytest.FixtureLookupError as error:
                 utils.log_error(report, "Could not retrieve test fixtures", error)

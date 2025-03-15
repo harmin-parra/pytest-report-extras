@@ -263,7 +263,6 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_pre"
     clazz_frm = "extras_iframe"
-    # clazz_svg = "extras_image_svg"
     if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '')):
         return ""
 
@@ -271,10 +270,8 @@ def decorate_attachment(attachment) -> str:
         if attachment.mime is None:  # downloadable file with unknown mime type
             return ' ' + attachment.inner_html
         if attachment.mime == "text/html":
-            return f'<iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
+            return f'<br><iframe class="{clazz_frm}" src="{attachment.inner_html}"></iframe>'
         else:  # text/csv, text/uri-list
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
-    # if attachment.mime.startswith("image/svg"):
-    #     return f'<br><div class="{clazz_svg}">{attachment.body}</div>'
     else:  # application/*, text/plain
         return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
