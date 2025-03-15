@@ -238,7 +238,7 @@ def pytest_runtest_makereport(item, call):
                     event_label = "failure"
                 else:
                     event_label = "skip"
-                fx_report._fx_screenshots = "all"  # To force screenshot gathering
+                fx_report.fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot before {event_label}", target)
                 rows += decorators.get_table_row(
                     fx_report.comments[-1],
