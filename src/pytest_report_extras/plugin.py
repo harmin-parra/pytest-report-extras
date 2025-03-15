@@ -218,7 +218,7 @@ def pytest_runtest_makereport(item, call):
 
             # Add screenshot for last step
             if fx_screenshots == "last" and failure is False and target is not None:
-                fx_report._fx_screenshots = "all"  # To force screenshot gathering
+                fx_report.fx_screenshots = "all"  # To force screenshot gathering
                 fx_report.screenshot(f"Last screenshot", target)
                 rows += decorators.get_table_row(
                     fx_report.comments[-1],
