@@ -290,7 +290,7 @@ def copy_file_and_get_link(
     report_html: str,
     filepath: str,
     extension: Optional[str],
-    folder: Literal["downloads", "videos", "images"]
+    folder: Literal["downloads", "images", "sources", "videos"]
 ) -> Optional[str]:
     """
     Saves a copy of a file in a given folder

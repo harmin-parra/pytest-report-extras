@@ -48,6 +48,7 @@ class Attachment:
         mime: Mime,
         indent: int = 4,
         delimiter=',',
+        report=None
     ) -> Self:
         """
         Creates an attachment from the content/body.
@@ -60,18 +61,21 @@ class Attachment:
             mime (Mime): The mime type (optional).
             indent: The indent for XML, JSON and YAML attachments.
             delimiter (str): The delimiter for CSV documents.
+            report (extras.Extras): The Extras report instance.
 
         Returns:
             An Attachment object representing the attachment.
         """
         if body in (None, ''):
-            return cls(body="Body or source is None or empty", mime=Mime.TEXT)
+            return cls(body="Attachment body is None or empty", mime=Mime.TEXT)
         if isinstance(body, List):
             mime = Mime.URI
         if Mime.is_image(mime):
             return _attachment_image(body, mime)
         if Mime.is_video(mime):
             return _attachment_video(body, mime)
+        if Mime.is_unsupported(mime):
+            return _attachment_unsupported(body, mime, report)
         match mime:
             case Mime.JSON:
                 return _attachment_json(body, indent)
@@ -83,8 +87,58 @@ class Attachment:
                 return _attachment_csv(body, delimiter=delimiter)
             case Mime.URI:
                 return _attachment_uri_list(body)
-            case _:
+            case Mime.HTML:
+                return _attachment_html(body, report)
+            case Mime.TEXT:
                 return _attachment_txt(body)
+            case _:
+                return None
+
+    @classmethod
+    def parse_source(
+        cls,
+        source: str,
+        mime: Mime,
+        report
+    ) -> Self:
+        """
+        Creates an attachment from a source file when mime is of type HTML or unsupported.
+
+        Args:
+            source (str): The filepath of the source.
+            mime (Mime): The mime type (optional).
+            report (extras.Extras): The Extras report instance.
+
+        Returns:
+            An Attachment object representing the attachment.
+        """
+        if source in (None, ''):
+            return cls(body="Attachment source is None or empty", mime=Mime.TEXT)
+        error_msg = f"Error creating attachment from source {source}"
+        if Mime.is_unsupported(mime):
+            inner_html = decorators.decorate_uri(
+                utils.copy_file_and_get_link(report.fx_html, source, Mime.get_extension(mime), "downloads")
+            )
+            if inner_html == '':
+                return Attachment(body=error_msg, mime=Mime.TEXT)
+            else:
+                return Attachment(source=source, inner_html=inner_html)
+        elif mime == Mime.HTML:
+            if report.fx_single_page:
+                try:
+                    f = open(source, 'r')
+                    body = f.read()
+                    f.close()
+                    return _attachment_html(body, report)
+                except Exception as error:
+                    utils.log_error(None, f"{error_msg}: ", error)
+                    return Attachment(body=f"{error_msg}\n{error}", mime=Mime.TEXT)
+            else:
+                inner_html = utils.copy_file_and_get_link(report.fx_html, source, "html", "sources")
+                if inner_html != '':
+                    return Attachment(source=source, mime=Mime.HTML, inner_html=inner_html)
+                else:
+                    return Attachment(body=error_msg, mime=Mime.TEXT)
 
     def __repr__(self) -> str:
         if isinstance(self.body, bytes):
@@ -247,3 +301,36 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
             utils.log_error(None, "Error parsing video bytes:", error)
             return Attachment(body="Error parsing video bytes.", mime=Mime.TEXT)
     return Attachment(body=data, mime=mime)
+
+
+def _attachment_html(text: str, report):
+    inner_html = None
+    mime = Mime.HTML
+    error_msg = "Error creating HTML attachment from body"
+    if report.fx_html:
+        if report.fx_single_page:
+            try:
+                encoded_bytes = base64.b64encode(text.encode("utf-8"))
+                encoded_str = encoded_bytes.decode("utf-8")
+                inner_html = f"data:text/html;base64,{encoded_str}"
+            except Exception as error:
+                text = f"{error_msg}\n{error}"
+                mime = Mime.TEXT
+                utils.log_error(None, error_msg, error)
+        else:
+            inner_html = utils.save_data_and_get_link(report.fx_html, text, "html", "sources")
+            if inner_html == '':
+                text = error_msg
+                mime = Mime.TEXT
+    return Attachment(body=text, mime=mime, inner_html=inner_html)
+
+
+def _attachment_unsupported(text: str, mime, report):
+    inner_html = None
+    if report.fx_html:
+        inner_html = decorators.decorate_uri(
+            utils.save_data_and_get_link(report.fx_html, text, Mime.get_extension(mime), "downloads")
+        )
+        if inner_html == '':
+            return Attachment(body="Error creating attachment from body", mime=Mime.TEXT)
+    return Attachment(body=text, inner_html=inner_html)

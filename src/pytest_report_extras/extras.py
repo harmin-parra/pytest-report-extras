@@ -2,7 +2,6 @@ import base64
 import importlib
 from typing import Literal
 from typing import Optional
-from . import decorators
 from . import utils
 from .attachment import Attachment
 from .mime import Mime
@@ -134,53 +133,23 @@ class Extras:
         Returns:
             An attachment instance.
         """
-        inner_html = None
         if source is not None:
-            try:
-                if Mime.is_unsupported(mime):
-                    if self._fx_html:
-                        inner_html = decorators.decorate_uri(
-                            utils.copy_file_and_get_link(self._fx_html, source, Mime.get_extension(mime), "downloads")
-                        )
-                    if inner_html == '':
-                        return Attachment(body="Error copying file", mime=Mime.TEXT)
-                    else:
-                        # mime = None to avoid displaying attachment in <pre> tag
-                        return Attachment(source=source, inner_html=inner_html)
-                if mime is not None:
-                    if Mime.is_multimedia(mime) and mime != Mime.SVG:
-                        return Attachment(source=source, mime=mime)
-                    else:
-                        f = open(source, 'r')
-                        body = f.read()
-                        f.close()
-            except Exception as error:
-                body = f"Error creating attachment from source {source}\n{error}"
-                utils.log_error(None, f"Error creating attachment from source {source}: ", error)
-                mime = Mime.TEXT
-
+            if mime == Mime.HTML or Mime.is_unsupported(mime):
+                return Attachment.parse_source(source, mime, self)
+            elif Mime.is_multimedia(mime) and mime != Mime.SVG:
+                return Attachment(source=source, mime=mime)
+            else:
+                try:
+                    f = open(source, 'r')
+                    body = f.read()
+                    f.close()
+                except Exception as error:
+                    body = f"Error creating attachment from source {source}\n{error}"
+                    utils.log_error(None, f"Error creating attachment from source {source}: ", error)
+                    mime = Mime.TEXT
         else:
-            # Continue processing attachments with body
-            if Mime.is_unsupported(mime):  # Attachment of body with unknown mime
-                if self._fx_html:
-                    inner_html = decorators.decorate_uri(
-                        utils.save_data_and_get_link(self._fx_html, body, Mime.get_extension(mime), "downloads")
-                    )
-                # mime = None to avoid displaying attachment in <pre> tag
-                return Attachment(body=body, inner_html=inner_html)
-                # f = utils.save_data_and_get_link(self._fx_html, body, Mime.get_extension(mime))
-                # body = [f]
-                # mime = Mime.URI
-        if mime == Mime.HTML:
-            try:
-                encoded_bytes = base64.b64encode(body.encode("utf-8"))
-                encoded_str = encoded_bytes.decode("utf-8")
-                inner_html = f"data:text/html;base64,{encoded_str}"
-                return Attachment(body=body, mime=mime, inner_html=inner_html)
-            except Exception as error:
-                body = f"Error encoding HTML body\n{error}"
-                utils.log_error(None, "Error encoding HTML body", error)
-                mime = Mime.TEXT
+            if mime == Mime.HTML or Mime.is_unsupported(mime):
+                return Attachment.parse_body(body=body, mime=mime, report=self)
         if mime == Mime.SVG:
             return Attachment(body=body, source=source, mime=mime)
         return Attachment.parse_body(body, mime, self.fx_indent, delimiter, self)
