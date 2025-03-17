@@ -53,6 +53,8 @@ class Mime(StrEnum):
                 return "oga"
             case Mime.OGV:
                 return "ogv"
+            case Mime.MP3:
+                return "mp3"
             case Mime.SVG:
                 return "svg"
         if Mime.is_supported(mime):
@@ -70,7 +72,7 @@ class Mime(StrEnum):
 
     @staticmethod
     def is_image_binary(mime: Optional[str]) -> bool:
-        """ Whether the mime type represents an image in binary format: png, mpeg, gif, tiff """
+        """ Whether the mime type represents an image in binary format: png, mpeg, gif """
         return mime is not None and mime.startswith("image/") and not mime.startswith("image/svg")
 
     @staticmethod
@@ -137,6 +139,8 @@ class Mime(StrEnum):
             return cls("video/" + value)
         if value in ("mpeg", "oga"):
             return cls("audio/" + value)
+        if value == "mp3":
+            return cls("audio/mpeg")
         if '/' in value:
             try:
                 return cls(value)

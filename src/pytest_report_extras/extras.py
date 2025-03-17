@@ -107,7 +107,7 @@ class Extras:
             if body is not None and mime is None:
                 attachment = Attachment(body="Mime is required for attachments with body", mime=Mime.TEXT)
             else:
-                mime = Mime.get_mime(mime)
+                mime = Mime.get_mime(Mime.get_extension(source)) if mime is None else Mime.get_mime(mime)
                 attachment = self._get_attachment(body, source, mime, csv_delimiter)
         self._add_extra(comment, None, attachment, escape_html)
 
