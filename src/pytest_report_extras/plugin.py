@@ -137,6 +137,7 @@ fx_html = None
 fx_allure = None
 fx_tms_link = None
 fx_issue_link = None
+fx_single_page = False
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -144,7 +145,7 @@ def pytest_runtest_makereport(item, call):
     """
     Complete pytest-html report with extras and Allure report with attachments.
     """
-    global fx_html, fx_allure, fx_issue_link, fx_tms_link
+    global fx_html, fx_allure, fx_single_page, fx_issue_link, fx_tms_link
     wasfailed = False
     wasxpassed = False
     wasxfailed = False
@@ -186,7 +187,6 @@ def pytest_runtest_makereport(item, call):
             try:
                 feature_request = item.funcargs["request"]
                 fx_report = feature_request.getfixturevalue("report")
-                fx_single_page = feature_request.getfixturevalue("_fx_single_page")
                 fx_description_tag = feature_request.getfixturevalue("_fx_description_tag")
                 fx_screenshots = feature_request.getfixturevalue("_fx_screenshots")
                 target = fx_report.target
@@ -266,24 +266,38 @@ def pytest_configure(config):
     """
     Performs setup actions and sets global variables.
     """
-    global fx_html, fx_allure, fx_issue_link, fx_tms_link
+    global fx_html, fx_allure, fx_issue_link, fx_tms_link, fx_single_page
     # Retrieve some options
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
     fx_single_page = config.getoption("--self-contained-html", default=False)
     fx_tms_link = config.getini("extras_tms_link_pattern")
     fx_issue_link = config.getini("extras_issue_link_pattern")
-    utils.check_options(fx_html, fx_allure)
     # Add markers
     config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
     config.addinivalue_line("markers", "tms(keys): The list of test case keys to add as links")
     config.addinivalue_line("markers", "link(url=<url>, name=<name>): The url to add as link")
-    # Create assets
-    if fx_html is not None:
-        utils.create_assets(fx_html, fx_single_page)
     # Add default CSS file
     config_css = config.getoption("--css", default=[])
     resources_path = pathlib.Path(__file__).parent.joinpath("resources")
     style_css = pathlib.Path(resources_path, "style.css")
     if style_css.is_file():
         config_css.insert(0, style_css)
+
+
+@pytest.hookimpl()
+def pytest_sessionstart(session):
+    """
+    Check options and create report folders.
+    """
+    global fx_html, fx_allure, fx_single_page
+    utils.check_options(fx_html, fx_allure)
+    # Create assets
+    if fx_html is not None:
+        utils.create_assets(fx_html, fx_single_page)
+
+
+@pytest.hookimpl()
+def pytest_sessionfinish(session, exitstatus):
+    global fx_html
+    utils.delete_empty_subfolders(fx_html)
