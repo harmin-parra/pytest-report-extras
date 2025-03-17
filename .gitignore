@@ -1,8 +1,7 @@
 .idea
-.venv
-.settings
 .project
 .pydevproject
+.settings
 .venv
 .vscode
 
