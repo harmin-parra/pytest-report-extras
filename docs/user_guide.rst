@@ -370,11 +370,6 @@ Sample CSS file
       color: orange;
   }
   
-  .extras_audio {
-      border: 1px solid #e6e6e6;
-      width: 300px;
-  }
-
   .extras_video {
       width: 300px;
       height: 170px;
