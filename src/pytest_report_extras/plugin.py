@@ -107,18 +107,6 @@ def _fx_sources(request):
     return request.config.getini("extras_sources")
 
 
-@pytest.fixture(scope="session")
-def _fx_issue_link_pattern(request):
-    """ The issue link pattern. """
-    return request.config.getini("extras_issue_link_pattern")
-
-
-@pytest.fixture(scope="session")
-def _fx_tms_link_pattern(request):
-    """ The test case link pattern. """
-    return request.config.getini("extras_tms_link_pattern")
-
-
 #
 # Test fixture
 #
