@@ -78,12 +78,6 @@ def _fx_report_allure(request):
 
 
 @pytest.fixture(scope="session")
-def _fx_report_css(request):
-    """ The filepath of the CSS to include in the report. """
-    return request.config.getoption("--css")
-
-
-@pytest.fixture(scope="session")
 def _fx_description_tag(request):
     """ The HTML tag for the description of each test. """
     tag = request.config.getini("extras_description_tag")
