@@ -69,10 +69,11 @@
     font-family: monospace;
 }
 
+/*
 .extras_audio {
-    border: 1px solid #e6e6e6;
     width: 300px;
 }
+*/
 
 .extras_video {
     border: 1px solid #e6e6e6;
