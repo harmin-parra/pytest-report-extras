@@ -10,6 +10,7 @@ Changelog
 
 * The ``extras_screenshots`` INI option can also accept ``fail`` or ``none`` value.
 * Support for attachments of mime type: ``audio/mpeg`` and ``audio/ogg``.
+* New ``extras_title`` INI option to customize the test report title.
 
 **Changes**
 
