@@ -45,6 +45,12 @@ def pytest_addoption(parser):
         default=None,
         help="The test case link pattern. Example: https://tms.com/tests/{}",
     )
+    parser.addini(
+        "extras_title",
+        type="string",
+        default="Report",
+        help="The test report title",
+    )
 
 
 #
@@ -120,6 +126,7 @@ fx_allure = None
 fx_tms_link = None
 fx_issue_link = None
 fx_single_page = False
+fx_title = ""
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -244,13 +251,14 @@ def pytest_configure(config):
     """
     Performs setup actions and sets global variables.
     """
-    global fx_html, fx_allure, fx_issue_link, fx_tms_link, fx_single_page
+    global fx_html, fx_allure, fx_issue_link, fx_tms_link, fx_single_page, fx_title
     # Retrieve some options
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
     fx_single_page = config.getoption("--self-contained-html", default=False)
     fx_tms_link = config.getini("extras_tms_link_pattern")
     fx_issue_link = config.getini("extras_issue_link_pattern")
+    fx_title = config.getini("extras_title")
     # Add markers
     config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
     config.addinivalue_line("markers", "tms(keys): The list of test case keys to add as links")
@@ -279,3 +287,8 @@ def pytest_sessionstart(session):
 def pytest_sessionfinish(session, exitstatus):
     global fx_html
     utils.delete_empty_subfolders(fx_html)
+
+
+def pytest_html_report_title(report):
+    global fx_title
+    report.title = fx_title
