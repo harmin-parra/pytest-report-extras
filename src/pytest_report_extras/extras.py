@@ -174,32 +174,30 @@ class Extras:
             return None, None
         return utils.get_screenshot(target, full_page, self.fx_sources or page_source)
 
-    def _save_image_video_source(self, data: Optional[bytes | str], source: Optional[str], mime: Optional[Mime]):
+    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]):
         """
-        When not using the --self-contained-html option, saves the image or video and webpage source, if applicable,
+        Saves multimedia data.
+        When not using the --self-contained-html option, saves the data,
            and returns the filepaths relative to the <report_html> folder.
         The image is saved in <report_html>/images folder.
         The video is saved in <report_html>/videos folder.
         The audio is saved in <report_html>/audio folder.
-        The webpage source is saved in <report_html>/sources folder.
-        When using the --self-contained-html option, returns the data URI schema of the image and the source.
+        When using the --self-contained-html option, returns the data URI schema of the data.
 
         Args:
-            data (bytes | str): The image/video/audio as bytes or base64 string.
-            source (str): The webpage source.
-            mime (Mime): The mime type of the image/video/audio.
+            data (bytes | str): The data as bytes or base64 string.
+            mime (Mime): The mime type of the data.
 
         Returns:
-            The uris of the image/video/audio and webpage source.
+            The uri of the data.
         """
         if data is None:
-            return None, None
+            return None
         if mime is None or Mime.is_not_multimedia(mime):
             utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")
-            return None, None
+            return None
 
         link_multimedia = None
-        link_source = None
         data_str = None
         data_b64 = None
         extension = Mime.get_extension(mime)
@@ -214,14 +212,14 @@ class Extras:
                     data_b64 = base64.b64decode(data.encode())
                 except Exception as error:
                     utils.log_error(None, "Error decoding image/video/audio base64 string:", error)
-                    return None, None
+                    return None
         else:
             try:
                 data_b64 = data
                 data_str = base64.b64encode(data).decode()
             except Exception as error:
                 utils.log_error(None, "Error encoding image/video/audio bytes:", error)
-                return None, None
+                return None
 
         if Mime.is_video(mime) or Mime.is_audio(mime):
             if self.fx_single_page is False:
@@ -231,7 +229,7 @@ class Extras:
                     link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "audio")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
-            return link_multimedia, None
+            return link_multimedia
 
         if Mime.is_image(mime):
             if self.fx_single_page is False:
@@ -239,28 +237,48 @@ class Extras:
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
 
-        if source is not None:
-            if self.fx_single_page is False:
-                link_source = utils.save_data_and_get_link(self.fx_html, source, None, "sources")
-            else:
-                link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
+        return link_multimedia
 
-        return link_multimedia, link_source
-
-    def _copy_image_video(self, filepath: str, mime: Optional[Mime]) -> Optional[str]:
+    def _save_webpage_source(self, source: Optional[str]):
         """
-        Copies the image or video and returns the filepath relative to the <report_html> folder.
+        Saves a webpage source.
+        When not using the --self-contained-html option, saves the webpage in <report_html>/sources folder
+           and returns the filepaths relative to the <report_html> folder.
+        When using the --self-contained-html option, returns the data URI schema of the webpage source.
+
+        Args:
+            source (str): The webpage source.
+
+        Returns:
+            The uri of the webpage source.
+        """
+        if source is None:
+            return None
+
+        link_source = None
+        if self.fx_single_page is False:
+            link_source = utils.save_data_and_get_link(self.fx_html, source, None, "sources")
+        else:
+            link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
+
+        return link_source
+
+    def _copy_file(self, filepath: str, mime: Optional[Mime]) -> Optional[str]:
+        """
+        Copies a multimedia file.
+        When not using the --self-contained-html option, copies the file,
+           and returns the filepaths relative to the <report_html> folder.
         The image is copied into <report_html>/images folder.
         The video is copied into <report_html>/videos folder.
         The audio is copied into <report_html>/audio folder.
-        When using the --self-contained-html option, returns the data URI schema of the image/video.
+        When using the --self-contained-html option, returns the data URI schema of the file data.
 
         Args:
-            filepath (str): The filepath of the image/video/audio to copy.
-            mime (Mime): The mime type of the image/video/audio.
+            filepath (str): The filepath of the file to copy.
+            mime (Mime): The mime type of the file
 
         Returns:
-            The uris of the image/video and webpage source.
+            The uri of the file copy.
         """
         if mime is None or Mime.is_not_multimedia(mime):
             utils.log_error(None, f"invalid mime type '{mime}' for multimedia file '{filepath}")
@@ -339,10 +357,11 @@ class Extras:
             if attachment is not None and Mime.is_multimedia(mime):
                 msg = None
                 if attachment.source is not None:
-                    link_multimedia, link_source = self._copy_image_video(attachment.source, mime), None
+                    link_multimedia = self._copy_file(attachment.source, mime)
                     msg = "Error copying file" if link_multimedia is None else None
                 else:
-                    link_multimedia, link_source = self._save_image_video_source(attachment.body, websource, mime)
+                    link_multimedia = self._save_data(attachment.body, mime)
+                    link_source = self._save_webpage_source(websource)
                     msg = "Error saving data" if link_multimedia is None else None
                 if msg is not None:
                     attachment = Attachment(body=msg, mime=Mime.TEXT)
