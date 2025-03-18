@@ -48,7 +48,7 @@ def pytest_addoption(parser):
     parser.addini(
         "extras_title",
         type="string",
-        default="Report",
+        default="Test Report",
         help="The test report title",
     )
 
