@@ -12,6 +12,8 @@ class Mime(StrEnum):
     JSON = "application/json"
     XML = "application/xml"
     YAML = "application/yaml"
+    MP3 = "audio/mpeg"
+    OGA = "audio/ogg"
     BMP = "image/bmp"
     GIF = "image/gif"
     JPEG = "image/jpeg"
@@ -22,19 +24,18 @@ class Mime(StrEnum):
     HTML = "text/html"
     TEXT = "text/plain"
     URI = "text/uri-list"
-    VIDEO = "video/*"
     MP4 = "video/mp4"
-    OGG = "video/ogg"
-    OGV = "video/ogv"
+    OGV = "video/ogg"
     WEBM = "video/webm"
 
     @staticmethod
     def is_supported(mime: Optional[str]) -> bool:
         return mime in (
             Mime.JSON, Mime.XML, Mime.YAML,
+            Mime.MP3, Mime.OGA,
             Mime.BMP, Mime.GIF, Mime.JPEG, Mime.PNG, Mime.SVG,
             Mime.CSV, Mime.HTML, Mime.TEXT, Mime.URI,
-            Mime.MP4, Mime.OGG, Mime.OGV, Mime.WEBM
+            Mime.MP4, Mime.OGV, Mime.WEBM
         )
 
     @staticmethod
@@ -43,11 +44,17 @@ class Mime(StrEnum):
 
     @staticmethod
     def get_extension(mime: Optional[str]) -> Optional[str]:
-        if mime in (None, Mime.URI, Mime.IMAGE, Mime.VIDEO):
+        if mime in (None, Mime.URI):
             return None
         match mime:
             case Mime.TEXT:
                 return "txt"
+            case Mime.OGA:
+                return "oga"
+            case Mime.OGV:
+                return "ogv"
+            case Mime.MP3:
+                return "mp3"
             case Mime.SVG:
                 return "svg"
         if Mime.is_supported(mime):
@@ -65,7 +72,7 @@ class Mime(StrEnum):
 
     @staticmethod
     def is_image_binary(mime: Optional[str]) -> bool:
-        """ Whether the mime type represents an image in binary format: png, mpeg, gif, tiff """
+        """ Whether the mime type represents an image in binary format: png, mpeg, gif """
         return mime is not None and mime.startswith("image/") and not mime.startswith("image/svg")
 
     @staticmethod
@@ -73,8 +80,12 @@ class Mime(StrEnum):
         return mime is not None and mime.startswith("video/")
 
     @staticmethod
+    def is_audio(mime: Optional[str]) -> bool:
+        return mime is not None and mime.startswith("audio/")
+
+    @staticmethod
     def is_multimedia(mime: Optional[str]) -> bool:
-        return Mime.is_image(mime) or Mime.is_video(mime)
+        return Mime.is_image(mime) or Mime.is_video(mime) or Mime.is_audio(mime)
 
     @staticmethod
     def is_not_image(mime: Optional[str]) -> bool:
@@ -85,19 +96,23 @@ class Mime(StrEnum):
         return not Mime.is_video(mime)
 
     @staticmethod
+    def is_not_audio(mime: Optional[str]) -> bool:
+        return not Mime.is_audio(mime)
+
+    @staticmethod
     def is_not_multimedia(mime: Optional[str]) -> bool:
         return not Mime.is_multimedia(mime)
 
     @classmethod
     def get_mime(cls, value: Optional[str]) -> Optional[Self | str]:
         """
-        Returns a mime type enum.
+        Returns a mime type enum or extension.
         
         Args:
             value (str): A mime-type or an extension.
         
         Returns:
-            The mime type enum or None if the mime-type or extension is unsupported/unknown.
+            The mime type enum if the mime type is supported, otherwise returns the extension.
         """
         if value is None or not isinstance(value, str):
             return None
@@ -114,21 +129,21 @@ class Mime(StrEnum):
             return cls("text/uri-list")
         if value in ("json", "xml", "yaml"):
             return cls("application/" + value)
+        if value == "yml":
+            return cls("application/yaml")
         if value in ("bmp", "gif", "jpeg", "png"):
             return cls("image/" + value)
         if value in ("csv", "html", "plain"):
             return cls("text/" + value)
-        if value in ("mp4", "ogg", "ogv", "webm"):
+        if value in ("mp4", "ogv", "webm"):
             return cls("video/" + value)
+        if value in ("mpeg", "oga"):
+            return cls("audio/" + value)
+        if value == "mp3":
+            return cls("audio/mpeg")
         if '/' in value:
             try:
                 return cls(value)
             except ValueError:
                 pass
-        # value is an unknown myme-type/extension
-        # Find the last occurrence of '.' or '/'
-        matcher = re.search(r"[./](?!.*[./])", value)
-        if matcher:
-            return value[matcher.start() + 1:]
-        else:
-            return value
+        return Mime.get_extension(value)

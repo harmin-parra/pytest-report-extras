@@ -70,6 +70,14 @@ The pattern for the test-case links (example: https://tms.com/tests/{})
 
 Default value: ``None``
 
+----
+
+* ``extras_title``
+
+The test report title
+
+Default value: ``Test Report``
+
 
 API
 ===
@@ -111,6 +119,8 @@ To add a step with attachment:
   #    report.Mime.JSON   or "application/json"   or "json"
   #    report.Mime.XML    or "application/xml"    or "xml"
   #    report.Mime.YAML   or "application/yaml"   or "yaml"
+  #    report.Mime.MP3    or "audio/mpeg"         or "mp3"
+  #    report.Mime.OGA    or "audio/ogg"          or "oga"
   #    report.Mime.BMP    or "image/bmp"          or "bmp"
   #    report.Mime.GIF    or "image/gif"          or "gif"
   #    report.Mime.JPEG   or "image/jpeg"         or "jpeg"
@@ -121,8 +131,7 @@ To add a step with attachment:
   #    report.Mime.TEXT   or "text/plain"         or "text"
   #    report.Mime.URI    or "text/uri-list"      or "uri"
   #    report.Mime.MP4    or "video/mp4"          or "mp4"
-  #    report.Mime.OGG    or "video/ogg"          or "ogg"
-  #    report.Mime.OGV    or "video/ogv"          or "ogv"
+  #    report.Mime.OGV    or "video/ogg"          or "ogv"
   #    report.Mime.WEBM   or "video/webm"         or "webm"
 
 
@@ -187,6 +196,7 @@ Sample ``pytest.ini`` file
   extras_sources = False
   extras_issue_link_pattern = http://bugtracker.com/{}
   extras_tms_link_pattern = http://tms.com/tests/{}
+  extras_title = My awesome test report
 
 
 Sample code
@@ -380,7 +390,7 @@ Sample CSS file
   
   .extras_page_src {
       font-size: 12px;
-      color: #999;
+      color: #00b5ff;
   }
   
   .extras_iframe {

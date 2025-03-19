@@ -66,12 +66,9 @@ def create_assets(report_html, single_page):
             finally:
                 return
         # Create other folders
-        shutil.rmtree(f"{folder}sources", ignore_errors=True)
-        pathlib.Path(f"{folder}sources").mkdir(parents=True)
-        shutil.rmtree(f"{folder}videos", ignore_errors=True)
-        pathlib.Path(f"{folder}videos").mkdir(parents=True)
-        shutil.rmtree(f"{folder}images", ignore_errors=True)
-        pathlib.Path(f"{folder}images").mkdir(parents=True)
+        for subfolder in ("images", "sources", "videos", "audio"):
+            shutil.rmtree(f"{folder}{subfolder}", ignore_errors=True)
+            pathlib.Path(f"{folder}{subfolder}").mkdir(parents=True)
         # Copy error.png to images folder
         shutil.copy(str(error_img), f"{folder}images")
         error_screenshot = f"images{os.sep}error.png"
@@ -79,6 +76,22 @@ def create_assets(report_html, single_page):
         message = ("Cannot create report sub-folders.\n"
                    "pytest-report-extras won't work properly.\n")
         print(message, repr(error), file=sys.stderr)
+
+
+def delete_empty_subfolders(report_html):
+    folder = ""
+    if report_html is not None and report_html != '':
+        folder = f"{report_html}{os.sep}"
+    try:
+        for subfolder in ("images", "sources", "videos", "audio", "downloads"):
+            if (
+                os.path.exists(f"{folder}{subfolder}") and
+                not os.path.isfile(f"{folder}{subfolder}") and
+                not os.listdir(f"{folder}{subfolder}")
+            ):
+                pathlib.Path(f"{folder}{subfolder}").rmdir()
+    except OSError:
+        pass
 
 
 def get_folder(filepath) -> Optional[str]:
@@ -253,7 +266,7 @@ def save_data_and_get_link(
     report_html: str,
     data: str | bytes,
     extension: Optional[str],
-    folder: Literal["downloads", "images", "sources", "videos"]
+    folder: Literal["downloads", "images", "sources", "videos", "audio"]
 ) -> Optional[str]:
     """
     Saves data (as a string or bytes) in a file in the 'downloads' folder
@@ -290,7 +303,7 @@ def copy_file_and_get_link(
     report_html: str,
     filepath: str,
     extension: Optional[str],
-    folder: Literal["downloads", "videos", "images"]
+    folder: Literal["downloads", "images", "sources", "videos", "audio"]
 ) -> Optional[str]:
     """
     Saves a copy of a file in a given folder

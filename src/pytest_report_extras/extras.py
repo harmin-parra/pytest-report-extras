@@ -2,7 +2,6 @@ import base64
 import importlib
 from typing import Literal
 from typing import Optional
-from . import decorators
 from . import utils
 from .attachment import Attachment
 from .mime import Mime
@@ -29,12 +28,12 @@ class Extras:
         self.sources = []
         self.attachments = []
         self.target = None
-        self._fx_screenshots = screenshots
-        self._fx_sources = sources
-        self._fx_single_page = single_page
-        self._fx_html = report_html
-        self._fx_allure = report_allure
-        self._fx_indent = indent
+        self.fx_screenshots = screenshots
+        self.fx_sources = sources
+        self.fx_single_page = single_page
+        self.fx_html = report_html
+        self.fx_allure = report_allure
+        self.fx_indent = indent
         self.Mime = Mime
 
     def screenshot(
@@ -57,11 +56,11 @@ class Extras:
         """
         target_valid, target_obj = utils.check_screenshot_target_type(target)
         self.target = target_obj if self.target is None else self.target
-        if self._fx_screenshots != "all":
-            return
         if target is not None and not target_valid:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
             return
+        if self.fx_screenshots != "all":
+            target = None
         try:
             image, source = self._get_image_source(target, full_page, page_source)
         except Exception:
@@ -108,7 +107,7 @@ class Extras:
             if body is not None and mime is None:
                 attachment = Attachment(body="Mime is required for attachments with body", mime=Mime.TEXT)
             else:
-                mime = Mime.get_mime(mime)
+                mime = Mime.get_mime(Mime.get_extension(source)) if mime is None else Mime.get_mime(mime)
                 attachment = self._get_attachment(body, source, mime, csv_delimiter)
         self._add_extra(comment, None, attachment, escape_html)
 
@@ -134,56 +133,26 @@ class Extras:
         Returns:
             An attachment instance.
         """
-        inner_html = None
         if source is not None:
-            try:
-                if Mime.is_unsupported(mime):
-                    if self._fx_html:
-                        inner_html = decorators.decorate_uri(
-                            utils.copy_file_and_get_link(self._fx_html, source, Mime.get_extension(mime), "downloads")
-                        )
-                    if inner_html == '':
-                        return Attachment(body="Error copying file", mime=Mime.TEXT)
-                    else:
-                        # mime = None to avoid displaying attachment in <pre> tag
-                        return Attachment(source=source, inner_html=inner_html)
-                if mime is not None:
-                    if Mime.is_multimedia(mime) and mime != Mime.SVG:
-                        return Attachment(source=source, mime=mime)
-                    else:
-                        f = open(source, 'r')
-                        body = f.read()
-                        f.close()
-            except Exception as error:
-                body = f"Error creating attachment from source {source}\n{error}"
-                utils.log_error(None, f"Error creating attachment from source {source}: ", error)
-                mime = Mime.TEXT
-
+            if mime == Mime.HTML or Mime.is_unsupported(mime):
+                return Attachment.parse_source(source, mime, self)
+            elif Mime.is_multimedia(mime) and mime != Mime.SVG:
+                return Attachment(source=source, mime=mime)
+            else:
+                try:
+                    f = open(source, 'r')
+                    body = f.read()
+                    f.close()
+                except Exception as error:
+                    body = f"Error creating attachment from source {source}\n{error}"
+                    utils.log_error(None, f"Error creating attachment from source {source}: ", error)
+                    mime = Mime.TEXT
         else:
-            # Continue processing attachments with body
-            if Mime.is_unsupported(mime):  # Attachment of body with unknown mime
-                if self._fx_html:
-                    inner_html = decorators.decorate_uri(
-                        utils.save_data_and_get_link(self._fx_html, body, Mime.get_extension(mime), "downloads")
-                    )
-                # mime = None to avoid displaying attachment in <pre> tag
-                return Attachment(body=body, inner_html=inner_html)
-                # f = utils.save_data_and_get_link(self._fx_html, body, Mime.get_extension(mime))
-                # body = [f]
-                # mime = Mime.URI
-        if mime == Mime.HTML:
-            try:
-                encoded_bytes = base64.b64encode(body.encode("utf-8"))
-                encoded_str = encoded_bytes.decode("utf-8")
-                inner_html = f"data:text/html;base64,{encoded_str}"
-                return Attachment(body=body, mime=mime, inner_html=inner_html)
-            except Exception as error:
-                body = f"Error encoding HTML body\n{error}"
-                utils.log_error(None, "Error encoding HTML body", error)
-                mime = Mime.TEXT
+            if mime == Mime.HTML or Mime.is_unsupported(mime):
+                return Attachment.parse_body(body=body, mime=mime, report=self)
         if mime == Mime.SVG:
             return Attachment(body=body, source=source, mime=mime)
-        return Attachment.parse_body(body, mime, self._fx_indent, delimiter)
+        return Attachment.parse_body(body, mime, self.fx_indent, delimiter, self)
 
     def _get_image_source(
         self,
@@ -201,36 +170,34 @@ class Extras:
 
         Returns: The screenshot as bytes and the webpage source if applicable.
         """
-        self.target = target
-        if target is None or self._fx_screenshots == "last":
+        if target is None or self.fx_screenshots == "last":
             return None, None
-        return utils.get_screenshot(target, full_page, self._fx_sources or page_source)
+        return utils.get_screenshot(target, full_page, self.fx_sources or page_source)
 
-    def _save_image_video_source(self, data: Optional[bytes | str], source: Optional[str], mime: Optional[Mime]):
+    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]):
         """
-        When not using the --self-contained-html option, saves the image or video and webpage source, if applicable,
+        Saves multimedia data.
+        When not using the --self-contained-html option, saves the data,
            and returns the filepaths relative to the <report_html> folder.
         The image is saved in <report_html>/images folder.
         The video is saved in <report_html>/videos folder.
-        The webpage source is saved in <report_html>/sources folder.
-        When using the --self-contained-html option, returns the data URI schema of the image and the source.
+        The audio is saved in <report_html>/audio folder.
+        When using the --self-contained-html option, returns the data URI schema of the data.
 
         Args:
-            data (bytes | str): The image/video as bytes or base64 string.
-            source (str): The webpage source.
-            mime (Mime): The mime type of the image/video.
+            data (bytes | str): The data as bytes or base64 string.
+            mime (Mime): The mime type of the data.
 
         Returns:
-            The uris of the image/video and webpage source.
+            The uri of the data.
         """
         if data is None:
-            return None, None
+            return None
         if mime is None or Mime.is_not_multimedia(mime):
             utils.log_error(None, "Invalid mime type '{mime}' for multimedia content:")
-            return None, None
+            return None
 
         link_multimedia = None
-        link_source = None
         data_str = None
         data_b64 = None
         extension = Mime.get_extension(mime)
@@ -244,50 +211,74 @@ class Extras:
                     data_str = data
                     data_b64 = base64.b64decode(data.encode())
                 except Exception as error:
-                    utils.log_error(None, "Error decoding image/video base64 string:", error)
-                    return None, None
+                    utils.log_error(None, "Error decoding image/video/audio base64 string:", error)
+                    return None
         else:
             try:
                 data_b64 = data
                 data_str = base64.b64encode(data).decode()
             except Exception as error:
-                utils.log_error(None, "Error encoding image/video bytes:", error)
-                return None, None
+                utils.log_error(None, "Error encoding image/video/audio bytes:", error)
+                return None
 
-        if Mime.is_video(mime):
-            if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, extension, "videos")
+        if Mime.is_video(mime) or Mime.is_audio(mime):
+            if self.fx_single_page is False:
+                if Mime.is_video(mime):
+                    link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "videos")
+                if Mime.is_audio(mime):
+                    link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "audio")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
-            return link_multimedia, None
+            return link_multimedia
 
         if Mime.is_image(mime):
-            if self._fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self._fx_html, data_b64, extension, "images")
+            if self.fx_single_page is False:
+                link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "images")
             else:
                 link_multimedia = f"data:{mime};base64,{data_str}"
 
-        if source is not None:
-            if self._fx_single_page is False:
-                link_source = utils.save_data_and_get_link(self._fx_html, source, None, "sources")
-            else:
-                link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
+        return link_multimedia
 
-        return link_multimedia, link_source
-
-    def _copy_image_video(self, filepath: str, mime: Optional[Mime]) -> Optional[str]:
+    def _save_webpage_source(self, source: Optional[str]):
         """
-        Copies the image or video and returns the filepath relative to the <report_html> folder.
-        The image is copied into <report_html>/images folder.
-        The video is copied into <report_html>/videos folder.
-        When using the --self-contained-html option, returns the data URI schema of the image/video.
+        Saves a webpage source.
+        When not using the --self-contained-html option, saves the webpage in <report_html>/sources folder
+           and returns the filepaths relative to the <report_html> folder.
+        When using the --self-contained-html option, returns the data URI schema of the webpage source.
 
         Args:
-            filepath (str): The filepath of the image/video to copy.
-            mime (Mime): The mime type of the image/video.
+            source (str): The webpage source.
 
         Returns:
-            The uris of the image/video and webpage source.
+            The uri of the webpage source.
+        """
+        if source is None:
+            return None
+
+        link_source = None
+        if self.fx_single_page is False:
+            link_source = utils.save_data_and_get_link(self.fx_html, source, None, "sources")
+        else:
+            link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
+
+        return link_source
+
+    def _copy_file(self, filepath: str, mime: Optional[Mime]) -> Optional[str]:
+        """
+        Copies a multimedia file.
+        When not using the --self-contained-html option, copies the file,
+           and returns the filepaths relative to the <report_html> folder.
+        The image is copied into <report_html>/images folder.
+        The video is copied into <report_html>/videos folder.
+        The audio is copied into <report_html>/audio folder.
+        When using the --self-contained-html option, returns the data URI schema of the file data.
+
+        Args:
+            filepath (str): The filepath of the file to copy.
+            mime (Mime): The mime type of the file
+
+        Returns:
+            The uri of the file copy.
         """
         if mime is None or Mime.is_not_multimedia(mime):
             utils.log_error(None, f"invalid mime type '{mime}' for multimedia file '{filepath}")
@@ -295,22 +286,25 @@ class Extras:
 
         data_str = ""
         extension = Mime.get_extension(mime)
-        if self._fx_single_page:
+        if self.fx_single_page:
             try:
                 f = open(filepath, "rb")
                 data_b64 = f.read()
                 f.close()
                 data_str = base64.b64encode(data_b64).decode()
             except Exception as error:
-                utils.log_error(None, f"Error reading image/video file '{filepath}'", error)
+                utils.log_error(None, f"Error reading image/video/audio file '{filepath}'", error)
                 return None
             return f"data:{mime};base64,{data_str}"
 
         if Mime.is_video(mime):
-            return utils.copy_file_and_get_link(self._fx_html, filepath, extension, "videos")
+            return utils.copy_file_and_get_link(self.fx_html, filepath, extension, "videos")
+
+        if Mime.is_audio(mime):
+            return utils.copy_file_and_get_link(self.fx_html, filepath, extension, "audio")
 
         if Mime.is_image(mime):
-            return utils.copy_file_and_get_link(self._fx_html, filepath, extension, "images")
+            return utils.copy_file_and_get_link(self.fx_html, filepath, extension, "images")
 
     def _add_extra(
         self,
@@ -325,6 +319,7 @@ class Extras:
         Images are saved in <report_html>/images folder.
         Webpage sources are saved in <report_html>/sources folder.
         Videos are saved in <report_html>/videos folder.
+        Audios are saved in <report_html>/audio folder.
         Other types of files are saved in <report_html>/downloads folder.
 
         Args:
@@ -339,7 +334,7 @@ class Extras:
         mime = attachment.mime if attachment is not None else None
 
         # Add extras to Allure report if allure-pytest plugin is being used.
-        if self._fx_allure and importlib.util.find_spec("allure") is not None:
+        if self.fx_allure and importlib.util.find_spec("allure") is not None:
             import allure
             if attachment is not None:
                 try:
@@ -355,17 +350,18 @@ class Extras:
                 allure.attach("", name=comment, attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
-        if self._fx_html:
+        if self.fx_html:
             if comment is None and attachment is None:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
             if attachment is not None and Mime.is_multimedia(mime):
                 msg = None
                 if attachment.source is not None:
-                    link_multimedia, link_source = self._copy_image_video(attachment.source, mime), None
+                    link_multimedia = self._copy_file(attachment.source, mime)
                     msg = "Error copying file" if link_multimedia is None else None
                 else:
-                    link_multimedia, link_source = self._save_image_video_source(attachment.body, websource, mime)
+                    link_multimedia = self._save_data(attachment.body, mime)
+                    link_source = self._save_webpage_source(websource)
                     msg = "Error saving data" if link_multimedia is None else None
                 if msg is not None:
                     attachment = Attachment(body=msg, mime=Mime.TEXT)

@@ -1,3 +1,3 @@
-from .attachment import Mime
+from .mime import Mime
 
 __all__ = ['Mime']

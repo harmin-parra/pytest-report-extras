@@ -6,9 +6,11 @@ Changelog
 1.3.2
 =====
 
-**Feature**
+**Features**
 
 * The ``extras_screenshots`` INI option can also accept ``fail`` or ``none`` value.
+* Support for attachments of mime type: ``audio/mpeg`` and ``audio/ogg``.
+* New ``extras_title`` INI option to customize the test report title.
 
 **Changes**
 
@@ -21,7 +23,7 @@ Changelog
 
 **Features**
 
-* Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg``, ``video/ogv`` and ``video/webm``.
+* Support for attachments of mime type: ``image/svg+xml``, ``video/mp4``, ``video/ogg`` and ``video/webm``.
 * Mime types of attachments can also be set with file extensions.
 * Introduction of new ``Report.Mime`` shorter attributes for mime types. The long old ones will be deprecated in the next major release.
 
@@ -66,7 +68,7 @@ Changelog
 
 **Feature**
 
-* Support for attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png``, ``image/svg+xml`` and ``image/tiff``
+* Support for attachments of mime type: ``image/bmp``, ``image/gif``, ``image/jpeg``, ``image/png`` and ``image/svg+xml``
 
 **Bug fixes**
 
