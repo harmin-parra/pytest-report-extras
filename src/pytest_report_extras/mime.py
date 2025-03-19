@@ -106,13 +106,13 @@ class Mime(StrEnum):
     @classmethod
     def get_mime(cls, value: Optional[str]) -> Optional[Self | str]:
         """
-        Returns a mime type enum.
+        Returns a mime type enum or extension.
         
         Args:
             value (str): A mime-type or an extension.
         
         Returns:
-            The mime type enum or None if the mime-type or extension is unsupported/unknown.
+            The mime type enum if the mime type is supported, otherwise returns the extension.
         """
         if value is None or not isinstance(value, str):
             return None
@@ -146,10 +146,4 @@ class Mime(StrEnum):
                 return cls(value)
             except ValueError:
                 pass
-        # value is an unknown myme-type/extension
-        # Find the last occurrence of '.' or '/'
-        matcher = re.search(r"[./](?!.*[./])", value)
-        if matcher:
-            return value[matcher.start() + 1:]
-        else:
-            return value
+        return Mime.get_extension(value)
