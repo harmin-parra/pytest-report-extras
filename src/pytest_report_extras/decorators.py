@@ -1,14 +1,16 @@
 import pathlib
-from typing import Literal
 from typing import Optional
 from .utils import escape_html
+from .status import Status
+from _pytest.outcomes import Failed
+from _pytest.outcomes import Skipped
+from _pytest.outcomes import XFailed
 
 
 #
 # Auxiliary functions for the report generation
 #
-def append_header(item, call, report, extras, pytest_html,
-                  description_tag: Literal["h1", "h2", "h3", "h4", "h5", "h6", "p", "pre"]):
+def append_header(item, call, report, extras, pytest_html, status: Status):
     """
     Decorates and appends the test description and execution exception trace, if any, to the report extras.
 
@@ -18,73 +20,84 @@ def append_header(item, call, report, extras, pytest_html,
         report (pytest.TestReport): The pytest test report.
         extras (List[pytest_html.extras.extra]): The report extras.
         pytest_html (types.ModuleType): The pytest-html plugin.
-        description_tag (str): The HTML tag to use.
+        status (Status): The test execution status.
     """
-    # Append description
+    rows = (
+        get_status_row(call, report, status) +
+        get_description_row(item) +
+        get_parameters_row(item) +
+        get_exception_row(call)
+    )
+
+    if rows != "":
+        table = f'<table id="test-header">{rows}</table>'
+        extras.append(pytest_html.extras.html(table))
+
+
+def get_status_row(call, report, status):
+    """ HTML table row for the test execution status and reason (if applicable). """
+    reason = decorate_reason(call, report, status)
+    return (
+        "<tr>"
+        f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
+        '<td id="test-header-td" style="border: 0px"></td>'
+        f'<td style="border: 0px" class="extras_status_reason">{reason}</td>'
+        "</tr>"
+    )
+
+
+def get_description_row(item):
+    """ HTML table row for the test description. """
+    row = ""
     description = item.function.__doc__ if hasattr(item, "function") else None
     if description is not None:
-        extras.append(pytest_html.extras.html(decorate_description(description, description_tag)))
-    # Append parameters
+        row = (
+            "<tr>"
+            f'<td style="border: 0px"><span class="extras_title">Description</span></td>'
+            '<td id="test-header-td" style="border: 0px"></td>'
+            f'<td style="border: 0px">{decorate_description(description)}</td>'
+            "</tr>"
+        )
+    return row
+
+
+def get_parameters_row(item):
+    """ HTML table row for the test parameters. """
+    row = ""
     parameters = item.callspec.params if hasattr(item, "callspec") else None
     if parameters is not None:
-        extras.append(pytest_html.extras.html(decorate_parameters(parameters)))
-    # Append exception info
-    clazz = "extras_exception"
-    # Catch explicit pytest.fail and pytest.skip calls
-    if (
-        hasattr(call, "excinfo") and
-        call.excinfo is not None and
-        call.excinfo.typename in ("Failed", "Skipped") and
-        hasattr(call.excinfo.value, "msg")
-    ):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">{escape_html(call.excinfo.typename)}</span><br>'
-            f"reason = {escape_html(call.excinfo.value.msg)}"
-            "</pre>"
-            )
+        row = (
+            "<tr>"
+            f'<td style="border: 0px"><span class="extras_title">Parameters</span></td>'
+            '<td id="test-header-td" style="border: 0px"></td>'
+            f'<td style="border: 0px">{decorate_parameters(parameters)}</td>'
+            "</tr>"
         )
-    # Catch XFailed tests
-    if report.skipped and hasattr(report, "wasxfail"):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">XFailed</span><br>'
-            f"reason = {escape_html(report.wasxfail)}"
-            "</pre>"
-            )
-        )
-    # Catch XPassed tests
-    if report.passed and hasattr(report, "wasxfail"):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">XPassed</span><br>'
-            f"reason = {escape_html(report.wasxfail)}"
-            "</pre>"
-            )
-        )
-    # Catch explicit pytest.xfail calls and runtime exceptions in failed tests
-    if (
-        hasattr(call, "excinfo") and
-        call.excinfo is not None and
-        call.excinfo.typename not in ("Failed", "Skipped")
-    ):
-        extras.append(pytest_html.extras.html(
-            "<pre>"
-            f'<span class="{clazz}">Exception:</span><br>'
-            f"{escape_html(call.excinfo.typename)}<br>"
-            f"{escape_html(call.excinfo.value)}"
-            "</pre>"
-            )
-        )
+    return row
 
 
-def get_table_row(
+def get_exception_row(call):
+    """ HTML table row for the test execution exception. """
+    row = ""
+    exception = decorate_exception(call)
+    if exception != "":
+        row = (
+            "<tr>"
+            f'<td style="border: 0px"><span class="extras_title">Exception</span></td>'
+            '<td id="test-header-td" style="border: 0px"></td>'
+            f'<td style="border: 0px">{exception}</td>'
+            "</tr>"
+        )
+    return row
+
+
+def get_step_row(
     comment: str,
     multimedia: str,
     source: str,
     attachment,
     single_page: bool,
-    clazz="extras_comment"
+    clazz="extras_font extras_color_comment"
 ) -> str:
     """
     Returns the HTML table row of a test step.
@@ -140,23 +153,62 @@ def get_table_row(
         )
 
 
-def decorate_description(description, description_tag) -> str:
+def decorate_description(description) -> str:
     """  Applies a CSS style to the test description. """
     if description is None:
         return ""
     description = escape_html(description).strip().replace('\n', "<br>")
     description = description.strip().replace('\n', "<br>")
-    return f'<{description_tag} class="extras_description">{description}</{description_tag}>'
+    return f'<pre class="extras_description extras_code">{description}</pre>'
 
 
 def decorate_parameters(parameters) -> str:
     """ Applies a CSS style to the test parameters. """
     if parameters is None:
         return ""
-    content = f'<span class="extras_params_title">Parameters</span><br>'
+    content = ""
     for key, value in parameters.items():
         content += f'<span class="extras_params_key">{key}</span><span class="extras_params_value">: {value}</span><br>'
     return content
+
+
+def decorate_exception(call) -> str:
+    """  Applies a CSS style to the test execution exception. """
+    content = ""
+    # Get runtime exceptions in failed tests
+    if (
+        hasattr(call, "excinfo") and
+        call.excinfo is not None and
+        not isinstance(call.excinfo.value, (Failed, XFailed, Skipped))
+    ):
+        content = content + (
+            f'<pre class="extras_code">{escape_html(call.excinfo.typename)}</pre><br>'
+            f'<pre class="extras_code">{escape_html(call.excinfo.value)}</pre>'
+        )
+    return content
+
+
+def decorate_reason(call, report, status: Status) -> str:
+    reason = ""
+    # Get Xfailed tests
+    if status == Status.XFAILED:
+        reason = escape_html(report.wasxfail)
+        if reason.startswith("reason: "):
+            reason = reason[8:]
+    # Get Xpassed tests
+    if status == Status.XPASSED and call.excinfo is not None and hasattr(call.excinfo.value, "msg"):
+        reason = escape_html(report.wasxfail)
+    # Get explicit pytest.fail and pytest.skip calls
+    if (
+        hasattr(call, "excinfo") and
+        call.excinfo is not None and
+        isinstance(call.excinfo.value, (Failed, Skipped)) and
+        hasattr(call.excinfo.value, "msg")
+    ):
+        reason = escape_html(call.excinfo.value.msg)
+    if reason != "":
+        reason = "Reason: " + reason
+    return reason
 
 
 def decorate_comment(comment, clazz) -> str:

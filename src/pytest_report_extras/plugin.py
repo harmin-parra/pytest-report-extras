@@ -3,6 +3,7 @@ import pytest
 from . import decorators
 from . import utils
 from .extras import Extras
+from .status import Status
 
 
 #
@@ -20,12 +21,6 @@ def pytest_addoption(parser):
         type="bool",
         default=False,
         help="Whether to include webpage sources."
-    )
-    parser.addini(
-        "extras_description_tag",
-        type="string",
-        default="pre",
-        help="The HTML tag for the test description. Accepted values: h1, h2, h3, h4, h5, h6, p or pre.",
     )
     parser.addini(
         "extras_attachment_indent",
@@ -84,13 +79,6 @@ def _fx_report_allure(request):
 
 
 @pytest.fixture(scope="session")
-def _fx_description_tag(request):
-    """ The HTML tag for the description of each test. """
-    tag = request.config.getini("extras_description_tag")
-    return tag if tag in ("h1", "h2", "h3", "h4", "h5", "h6", "p", "pre") else "pre"
-
-
-@pytest.fixture(scope="session")
 def _fx_indent(request):
     """ The indent to use for attachments. """
     # Workaround for https://github.com/pytest-dev/pytest/issues/11381
@@ -135,10 +123,6 @@ def pytest_runtest_makereport(item, call):
     Complete pytest-html report with extras and Allure report with attachments.
     """
     global fx_html, fx_allure, fx_single_page, fx_issue_link, fx_tms_link
-    wasfailed = False
-    wasxpassed = False
-    wasxfailed = False
-    wasskipped = False
 
     outcome = yield
     pytest_html = item.config.pluginmanager.getplugin("html")
@@ -150,50 +134,73 @@ def pytest_runtest_makereport(item, call):
     utils.add_marker_link(item, extras, "tms", fx_tms_link, fx_html, fx_allure)
     utils.add_marker_url(item, extras, fx_html, fx_allure)
 
+    # Add extras for skipped or failed setup
+    if (
+        call.when == "setup" and 
+        (report.failed or report.skipped) and
+        fx_html is not None and pytest_html is not None
+    ):
+        if report.failed:
+            status = Status.ERROR
+        else:
+            status = Status.SKIPPED
+        decorators.append_header(item, call, report, extras, pytest_html, status)
+
     # Exit if the test is not using the 'report' fixtures
     if not ("request" in item.funcargs and "report" in item.funcargs):
         report.extras = extras  # add links to the report before exiting
         return
 
-    # Add extras to the pytest-html report if the test item is using the pytest-html plugin
+    # Add extras for test execution
     if report.when == "call" and (fx_html is not None and pytest_html is not None):
         # Get test fixture values
         try:
             feature_request = item.funcargs["request"]
             fx_report = feature_request.getfixturevalue("report")
-            fx_description_tag = feature_request.getfixturevalue("_fx_description_tag")
             fx_screenshots = feature_request.getfixturevalue("_fx_screenshots")
             target = fx_report.target
         except pytest.FixtureLookupError as error:
             utils.log_error(report, "Could not retrieve test fixtures", error)
             return
 
-        # Append test description and execution exception trace, if any.
-        decorators.append_header(item, call, report, extras, pytest_html, fx_description_tag)
+        # Set test status variables
+        wasfailed = False
+        wasxpassed = False
+        wasxfailed = False
+        wasskipped = False
+        status = Status.UNKNOWN
 
-        if not utils.check_lists_length(report, fx_report):
-            return
-
-        # Update test status variables
         xfail = hasattr(report, "wasxfail")
         if report.failed:
             wasfailed = True
+            status = Status.FAILED
         if report.skipped and not xfail:
             wasskipped = True
+            status = Status.SKIPPED
         if report.skipped and xfail:
             wasxfailed = True
+            status = Status.XFAILED
         if report.passed and xfail:
             wasxpassed = True
-
+            status = Status.XPASSED
+        if report.passed and not xfail:
+            status = Status.PASSED
+        
         # To check test failure/skip
         failure = wasfailed or wasxfailed or wasxpassed or wasskipped
+
+        # Append test description and execution exception trace, if any.
+        decorators.append_header(item, call, report, extras, pytest_html, status)
+
+        if not utils.check_lists_length(report, fx_report):
+            return
 
         # Generate HTML code for the extras to be added in the report
         rows = ""  # The HTML table rows of the test report
 
         # Add steps in the report
         for i in range(len(fx_report.comments)):
-            rows += decorators.get_table_row(
+            rows += decorators.get_step_row(
                 fx_report.comments[i],
                 fx_report.multimedia[i],
                 fx_report.sources[i],
@@ -205,7 +212,7 @@ def pytest_runtest_makereport(item, call):
         if fx_screenshots == "last" and failure is False and target is not None:
             fx_report.fx_screenshots = "all"  # To force screenshot gathering
             fx_report.screenshot(f"Last screenshot", target)
-            rows += decorators.get_table_row(
+            rows += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
@@ -215,28 +222,32 @@ def pytest_runtest_makereport(item, call):
 
         # Add screenshot for test failure/skip
         if fx_screenshots != "none" and failure and target is not None:
-            if wasfailed or wasxpassed:
-                event_class = "failure"
-            else:
-                event_class = "skip"
-            if wasfailed or wasxfailed or wasxpassed:
-                event_label = "failure"
-            else:
-                event_label = "skip"
+            comment = "Last screenshot"
+            if status == Status.FAILED:
+                comment += " before failure"
+            if status == Status.XFAILED:
+                comment += " before xfailure"
+            if status == Status.SKIPPED:
+                comment += " before skip"
             fx_report.fx_screenshots = "all"  # To force screenshot gathering
-            fx_report.screenshot(f"Last screenshot before {event_label}", target)
-            rows += decorators.get_table_row(
+            fx_report.screenshot(comment, target)
+            rows += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
                 fx_single_page,
-                f"extras_{event_class}"
+                f"extras_font extras_color_{status}"
             )
 
         # Add horizontal line between the header and the steps table
         if len(extras) > 0 and len(rows) > 0:
-            extras.append(pytest_html.extras.html(f'<hr class="extras_separator">'))
+            # extras.append(pytest_html.extras.html(
+            #     '<table><tr><td style="border: 0px">'
+            #     '<span class="extras_title">Execution</span>'
+            #     '</td></tr></table>'
+            # ))
+            extras.append(pytest_html.extras.html('<hr class="extras_separator">'))
 
         # Append steps table
         if rows != "":
