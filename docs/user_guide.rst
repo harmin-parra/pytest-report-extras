@@ -306,7 +306,7 @@ Sample CSS file
       color: red;
   }
   
-  .extras_comment {
+  .extras_color_comment {
       color: blue;
   }
   

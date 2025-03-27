@@ -41,6 +41,14 @@ span.error,
  * Plugin CSS style
  */
 
+.extras_font {
+    font-family: monospace;
+}
+
+.extras_color_comment {
+    color: blue;
+}
+
 .extras_color_skipped {
     color: #727272;
 }
@@ -118,14 +126,6 @@ span.error,
     height: 2px;
     background-color: gray;
     /* display: none; */
-}
-
-.extras_font {
-    font-family: monospace;
-}
-
-.extras_comment {
-    color: blue;
 }
 
 /*
