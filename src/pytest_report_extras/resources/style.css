@@ -41,10 +41,6 @@ span.error,
  * Plugin CSS style
  */
 
-.extras_font {
-    font-family: monospace;
-}
-
 .extras_color_skipped {
     color: #727272;
 }
@@ -62,16 +58,12 @@ span.error,
     color: red;
 }
 
-.extras_color_comment {
-    color: blue;
-}
-
-#test-header td {
+.extras_header td {
     padding-top: 10px;
     vertical-align: top;
 }
 
-#test-header-td {
+.extras_header_middle {
     width: 10px;
 }
 
@@ -126,6 +118,14 @@ span.error,
     height: 2px;
     background-color: gray;
     /* display: none; */
+}
+
+.extras_font {
+    font-family: monospace;
+}
+
+.extras_comment {
+    color: blue;
 }
 
 /*

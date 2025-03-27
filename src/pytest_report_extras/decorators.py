@@ -30,7 +30,7 @@ def append_header(item, call, report, extras, pytest_html, status: Status):
     )
 
     if rows != "":
-        table = f'<table id="test-header">{rows}</table>'
+        table = f'<table class="extras_header">{rows}</table>'
         extras.append(pytest_html.extras.html(table))
 
 
@@ -40,7 +40,7 @@ def get_status_row(call, report, status):
     return (
         "<tr>"
         f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
-        '<td id="test-header-td" style="border: 0px"></td>'
+        '<td class="extras_header_middle" style="border: 0px"></td>'
         f'<td style="border: 0px" class="extras_status_reason">{reason}</td>'
         "</tr>"
     )
@@ -54,7 +54,7 @@ def get_description_row(item):
         row = (
             "<tr>"
             f'<td style="border: 0px"><span class="extras_title">Description</span></td>'
-            '<td id="test-header-td" style="border: 0px"></td>'
+            '<td class="extras_header_middle" style="border: 0px"></td>'
             f'<td style="border: 0px">{decorate_description(description)}</td>'
             "</tr>"
         )
@@ -69,7 +69,7 @@ def get_parameters_row(item):
         row = (
             "<tr>"
             f'<td style="border: 0px"><span class="extras_title">Parameters</span></td>'
-            '<td id="test-header-td" style="border: 0px"></td>'
+            '<td class="extras_header_middle" style="border: 0px"></td>'
             f'<td style="border: 0px">{decorate_parameters(parameters)}</td>'
             "</tr>"
         )
@@ -84,7 +84,7 @@ def get_exception_row(call):
         row = (
             "<tr>"
             f'<td style="border: 0px"><span class="extras_title">Exception</span></td>'
-            '<td id="test-header-td" style="border: 0px"></td>'
+            '<td class="extras_header_middle" style="border: 0px"></td>'
             f'<td style="border: 0px">{exception}</td>'
             "</tr>"
         )

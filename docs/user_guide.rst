@@ -306,16 +306,16 @@ Sample CSS file
       color: red;
   }
   
-  .extras_color_comment {
+  .extras_comment {
       color: blue;
   }
   
-  #test-header td {
+  .extras_header td {
       padding-top: 10px;
       vertical-align: top;
   }
   
-  #test-header-td {
+  .extras_header_middle {
       width: 10px;
   }
   
