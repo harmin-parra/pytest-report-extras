@@ -1,3 +1,7 @@
+/*
+ * Override some pytest-html default CSS styles
+ */
+
 .col-links a {
     text-decoration: none;
 }
@@ -11,6 +15,66 @@
     min-height: unset;
 }
 
+span.error,
+.error .col-result {
+    color: black;
+}
+
+span.skipped,
+.skipped .col-result {
+    color: #727272;
+}
+
+span.xfailed,
+span.xpassed,
+.xfailed .col-result,
+.xpassed .col-result {
+    color: orange;
+}
+
+span.error,
+.error .col-result {
+    color: black;
+}
+
+/*
+ * Plugin CSS style
+ */
+
+.extras_font {
+    font-family: monospace;
+}
+
+.extras_color_skipped {
+    color: #727272;
+}
+
+.extras_color_xfailed,
+.extras_color_xpassed {
+    color: orange;
+}
+
+.extras_color_error {
+    color: black;
+}
+
+.extras_color_failed {
+    color: red;
+}
+
+.extras_color_comment {
+    color: blue;
+}
+
+#test-header td {
+    padding-top: 10px;
+    vertical-align: top;
+}
+
+#test-header-td {
+    width: 10px;
+}
+
 .extras_td {
     width: 320px;
     /* text-align: center; */
@@ -20,14 +84,19 @@
     text-align: center;
 }
 
-.extras_description {
-    color: black;
-    font-size: x-large;
+.extras_code {
+    white-space: pre-wrap;
     margin-top: 0px;
-    margin-bottom: 24px;
+    margin-bottom: 0px;
+    margin-left: 0px;
 }
 
-.extras_params_title {
+.extras_description {
+    color: black;
+    font-size: 16px;
+}
+
+.extras_title {
     color: black;
     font-size: medium;
     font-weight: bold;
@@ -36,10 +105,15 @@
 .extras_params_key {
     color: #999;
     font-size: 14px;
-    padding-left: 30px;
+    /* margin-left: 80px; */
 }
 
 .extras_params_value {
+    color: black;
+    font-size: 14px;
+}
+
+.extras_status_reason {
     color: black;
     font-size: 14px;
 }
@@ -52,21 +126,6 @@
     height: 2px;
     background-color: gray;
     /* display: none; */
-}
-
-.extras_comment {
-    color: blue;
-    font-family: monospace;
-}
-
-.extras_failure {
-    color: red;
-    font-family: monospace;
-}
-
-.extras_skip {
-    color: orange;
-    font-family: monospace;
 }
 
 /*
@@ -113,4 +172,35 @@
     overflow: auto;
     background-color: #faf0e6;
     inline-size: -webkit-fill-available;
+}
+
+.extras_status {
+    border-radius: 3px;
+    color: #fff;
+    font-size: medium;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 2px 4px 2px 5px;
+    vertical-align: baseline;
+}
+
+.extras_status_passed {
+    background: #97cc64;
+}
+
+.extras_status_failed {
+    background: #fd5a3e;
+}
+
+.extras_status_skipped {
+    background: #aaa;
+}
+
+.extras_status_xfailed,
+.extras_status_xpassed {
+    background: orange;
+}	
+
+.extras_status_error {
+    background: black;
 }
