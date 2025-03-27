@@ -113,6 +113,10 @@ span.error,
     margin-left: 0px;
 }
 
+.extras_execution {
+    display: none;
+}
+
 .extras_separator {
     height: 2px;
     background-color: gray;

@@ -242,11 +242,11 @@ def pytest_runtest_makereport(item, call):
 
         # Add horizontal line between the header and the steps table
         if len(extras) > 0 and len(rows) > 0:
-            # extras.append(pytest_html.extras.html(
-            #     '<table><tr><td style="border: 0px">'
-            #     '<span class="extras_title">Execution</span>'
-            #     '</td></tr></table>'
-            # ))
+            extras.append(pytest_html.extras.html(
+                '<table class="extras_execution">'
+                '<tr><td style="border: 0px"><span class="extras_title">Execution</span></td></tr>'
+                '</table>'
+            ))
             extras.append(pytest_html.extras.html('<hr class="extras_separator">'))
 
         # Append steps table
