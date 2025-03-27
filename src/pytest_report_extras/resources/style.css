@@ -84,22 +84,15 @@ span.error,
     text-align: center;
 }
 
-.extras_code {
-    white-space: pre-wrap;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    margin-left: 0px;
+.extras_title {
+    color: black;
+    font-size: medium;
+    font-weight: bold;
 }
 
 .extras_description {
     color: black;
     font-size: 16px;
-}
-
-.extras_title {
-    color: black;
-    font-size: medium;
-    font-weight: bold;
 }
 
 .extras_params_key {
@@ -113,13 +106,11 @@ span.error,
     font-size: 14px;
 }
 
-.extras_status_reason {
-    color: black;
-    font-size: 14px;
-}
-
-.extras_exception {
-    color: red;
+.extras_block {
+    white-space: pre-wrap;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
 }
 
 .extras_separator {
@@ -159,7 +150,7 @@ span.error,
     font-size: 12px;
 }
 
-.extras_pre {
+.extras_attachment {
     color: black;
     margin-left: 30px;
 }
@@ -203,4 +194,9 @@ span.error,
 
 .extras_status_error {
     background: black;
+}
+
+.extras_status_reason {
+    color: black;
+    font-size: 14px;
 }

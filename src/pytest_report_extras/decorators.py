@@ -159,7 +159,7 @@ def decorate_description(description) -> str:
         return ""
     description = escape_html(description).strip().replace('\n', "<br>")
     description = description.strip().replace('\n', "<br>")
-    return f'<pre class="extras_description extras_code">{description}</pre>'
+    return f'<pre class="extras_description extras_block">{description}</pre>'
 
 
 def decorate_parameters(parameters) -> str:
@@ -182,8 +182,8 @@ def decorate_exception(call) -> str:
         not isinstance(call.excinfo.value, (Failed, XFailed, Skipped))
     ):
         content = content + (
-            f'<pre class="extras_code">{escape_html(call.excinfo.typename)}</pre><br>'
-            f'<pre class="extras_code">{escape_html(call.excinfo.value)}</pre>'
+            f'<pre class="extras_block">{escape_html(call.excinfo.typename)}</pre><br>'
+            f'<pre class="extras_block">{escape_html(call.excinfo.value)}</pre>'
         )
     return content
 
@@ -328,7 +328,7 @@ def decorate_audio(uri: Optional[str], mime: str) -> str:
 
 def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
-    clazz_pre = "extras_pre"
+    clazz_pre = "extras_attachment"
     clazz_frm = "extras_iframe"
     if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '')):
         return ""
