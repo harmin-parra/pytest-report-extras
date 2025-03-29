@@ -51,10 +51,7 @@ def create_assets(report_html, single_page):
     global error_screenshot
     if report_html is None:
         return
-    # Recreate report_folder
-    folder = ""
-    if report_html is not None and report_html != '':
-        folder = f"{report_html}{os.sep}"
+    folder = f"{report_html}{os.sep}"
     try:
         # Create downloads folder
         shutil.rmtree(f"{folder}downloads", ignore_errors=True)
@@ -109,9 +106,9 @@ def get_folder(filepath) -> Optional[str]:
         filepath (str): The filepath.
     """
     folder = None
-    if filepath is not None:
+    if filepath not in (None, ''):
         folder = os.path.dirname(filepath)
-    return folder
+    return folder if folder != '' else '.'
 
 
 def escape_html(text, quote=False) -> Optional[str]:
