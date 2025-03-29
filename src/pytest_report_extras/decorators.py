@@ -35,7 +35,7 @@ def get_status_row(call, report, status):
     """ HTML table row for the test execution status and reason (if applicable). """
     reason = decorate_reason(call, report, status)
     return (
-        "<tr>"
+        '<tr class="visibility_status">'
         f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
         '<td class="extras_header_middle" style="border: 0px"></td>'
         f'<td style="border: 0px" class="extras_status_reason">{reason}</td>'
@@ -64,7 +64,7 @@ def get_parameters_row(item):
     parameters = item.callspec.params if hasattr(item, "callspec") else None
     if parameters is not None:
         row = (
-            "<tr>"
+            '<tr class="visibility_parameters">'
             f'<td style="border: 0px"><span class="extras_title">Parameters</span></td>'
             '<td class="extras_header_middle" style="border: 0px"></td>'
             f'<td style="border: 0px">{decorate_parameters(parameters)}</td>'

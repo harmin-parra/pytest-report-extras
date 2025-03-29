@@ -114,6 +114,10 @@ span.error,
     margin-left: 0px;
 }
 
+.visibility_status { }
+
+.visibility_parameters { }
+
 .visibility_links {
     visibility: collapse;
 }
