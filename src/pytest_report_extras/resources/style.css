@@ -128,7 +128,7 @@ span.error,
 }
 
 .visibility_execution {
-  visibility: collapse;
+    visibility: collapse;
 }
 
 .extras_separator {
