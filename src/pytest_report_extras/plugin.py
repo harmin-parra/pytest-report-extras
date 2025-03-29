@@ -135,7 +135,7 @@ def pytest_runtest_makereport(item, call):
 
     # Add extras for skipped or failed setup
     if (
-        call.when == "setup" and 
+        call.when == "setup" and
         (report.failed or report.skipped) and
         fx_html is not None and pytest_html is not None
     ):
@@ -185,7 +185,7 @@ def pytest_runtest_makereport(item, call):
             status = Status.XPASSED
         if report.passed and not xfail:
             status = Status.PASSED
-        
+
         # To check test failure/skip
         failure = wasfailed or wasxfailed or wasxpassed or wasskipped
 

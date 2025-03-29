@@ -2,7 +2,7 @@ from typing import Literal
 
 
 class Link:
-    
+
     icons = {
         "link": "&#127760;",
         "issue": "&#128030;",

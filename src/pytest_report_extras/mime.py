@@ -107,10 +107,10 @@ class Mime(StrEnum):
     def get_mime(cls, value: Optional[str]) -> Optional[Self | str]:
         """
         Returns a mime type enum or extension.
-        
+
         Args:
             value (str): A mime-type or an extension.
-        
+
         Returns:
             The mime type enum if the mime type is supported, otherwise returns the extension.
         """

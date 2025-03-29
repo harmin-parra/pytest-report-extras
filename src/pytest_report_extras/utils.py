@@ -31,14 +31,14 @@ def check_options(htmlpath, allurepath):
 def check_lists_length(report, fx_extras) -> bool:
     """
     Verifies if the comment, multimedia, page source and attachment lists have the same length
-    
+
     Args:
         report (pytest.TestReport): The pytest test report.
         fx_extras (Extras): The report extras.
     """
     message = ('"multimedia", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
                "Steps won't be logged for this test in pytest-html report.\n")
-    if not (len(fx_extras.multimedia) == len(fx_extras.comments) == 
+    if not (len(fx_extras.multimedia) == len(fx_extras.comments) ==
             len(fx_extras.sources) == len(fx_extras.attachments)):
         log_error(report, message)
         return False
@@ -165,7 +165,7 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[
             from selenium.webdriver.remote.webelement import WebElement
             if isinstance(target, WebElement) or isinstance(target, WebDriver):
                 image, source = _get_selenium_screenshot(target, full_page, page_source)
-    
+
         if importlib.util.find_spec("playwright") is not None:
             from playwright.sync_api import Page
             from playwright.sync_api import Locator
@@ -290,7 +290,7 @@ def save_data_and_get_link(
     """
     if data in (None, ''):
         return None
-    extension = '' if extension is None else '.' + extension 
+    extension = '' if extension is None else '.' + extension
     filename = str(uuid.uuid4()) + extension
     try:
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
@@ -332,7 +332,7 @@ def copy_file_and_get_link(
         return f"{folder}{os.sep}{pathlib.Path(filepath).name}"
     if extension is None and filepath.rfind('.') != -1:
         extension = filepath[filepath.rfind('.') + 1:]
-    extension = '' if extension is None else '.' + extension 
+    extension = '' if extension is None else '.' + extension
     filename = str(uuid.uuid4()) + extension
     try:
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
@@ -353,7 +353,7 @@ def get_marker_links(
 ) -> list[Link]:
     """
     Returns the urls and labels, as a list of tuples, of the links of a given marker.
-    
+
     Args:
         item (pytest.Item): The test item.
         link_type: The marker.
@@ -369,7 +369,7 @@ def get_marker_links(
             url = marker.kwargs.get("url", url)
             name = marker.kwargs.get("name", name)
             if url in (None, ''):
-                continue            
+                continue
             name = url if name is None else name
             links.append(Link(url, name, link_type))
     else:
@@ -393,7 +393,7 @@ def get_all_markers_links(
 ) -> list[Link]:
     """
     Returns the urls and labels, as a list of tuples, of the links of all markers.
-    
+
     Args:
         item (pytest.Item): The test item.
         fx_issue_link: The link pattern for the "issues" marker.
@@ -414,7 +414,7 @@ def add_markers(
 ):
     """
     Add links to the report.
-    
+
     Args:
         item (pytest.Item): The test item.
         extras (List[pytest_html.extras.extra]): The test extras.
