@@ -130,9 +130,8 @@ def pytest_runtest_makereport(item, call):
     extras = getattr(report, "extras", [])
 
     # Add links in decorators
-    utils.add_marker_link(item, extras, "issues", fx_issue_link, fx_html, fx_allure)
-    utils.add_marker_link(item, extras, "tms", fx_tms_link, fx_html, fx_allure)
-    utils.add_marker_url(item, extras, fx_html, fx_allure)
+    links = utils.get_all_markers_links(item, fx_issue_link, fx_tms_link)
+    utils.add_markers(item, extras, links, fx_html, fx_allure)
 
     # Add extras for skipped or failed setup
     if (
@@ -144,7 +143,8 @@ def pytest_runtest_makereport(item, call):
             status = Status.ERROR
         else:
             status = Status.SKIPPED
-        decorators.append_header(item, call, report, extras, pytest_html, status)
+        header = decorators.get_header_rows(item, call, report, links, status)
+        extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
 
     # Exit if the test is not using the 'report' fixtures
     if not ("request" in item.funcargs and "report" in item.funcargs):
@@ -189,18 +189,18 @@ def pytest_runtest_makereport(item, call):
         # To check test failure/skip
         failure = wasfailed or wasxfailed or wasxpassed or wasskipped
 
-        # Append test description and execution exception trace, if any.
-        decorators.append_header(item, call, report, extras, pytest_html, status)
+        header = decorators.get_header_rows(item, call, report, links, status)
 
         if not utils.check_lists_length(report, fx_report):
+            extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
             return
 
-        # Generate HTML code for the extras to be added in the report
-        rows = ""  # The HTML table rows of the test report
+        # Generate HTML code of the test execution steps to be added in the report
+        steps = ""
 
         # Add steps in the report
         for i in range(len(fx_report.comments)):
-            rows += decorators.get_step_row(
+            steps += decorators.get_step_row(
                 fx_report.comments[i],
                 fx_report.multimedia[i],
                 fx_report.sources[i],
@@ -212,7 +212,7 @@ def pytest_runtest_makereport(item, call):
         if fx_screenshots == "last" and failure is False and target is not None:
             fx_report.fx_screenshots = "all"  # To force screenshot gathering
             fx_report.screenshot(f"Last screenshot", target)
-            rows += decorators.get_step_row(
+            steps += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
@@ -231,7 +231,7 @@ def pytest_runtest_makereport(item, call):
                 comment += " before skip"
             fx_report.fx_screenshots = "all"  # To force screenshot gathering
             fx_report.screenshot(comment, target)
-            rows += decorators.get_step_row(
+            steps += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
@@ -240,19 +240,22 @@ def pytest_runtest_makereport(item, call):
                 f"extras_font extras_color_{status}"
             )
 
-        # Add horizontal line between the header and the steps table
-        if len(extras) > 0 and len(rows) > 0:
-            extras.append(pytest_html.extras.html(
-                '<table class="extras_execution">'
-                '<tr><td style="border: 0px"><span class="extras_title">Execution</span></td></tr>'
-                '</table>'
-            ))
+        # Add Execution title and horizontal line between the header and the steps table
+        if len(steps) > 0:
+            header += (
+                '<tr class="visibility_execution">'
+                '<td style="border: 0px"><span class="extras_title">Execution</span></td>'
+                '<td class="extras_header_middle" style="border: 0px"></td>'
+                '<td style="border: 0px"></td>'
+                "</tr>"
+            )
+        extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
+        if len(steps) > 0 and header.count("<tr>") > 1:
             extras.append(pytest_html.extras.html('<hr class="extras_separator">'))
 
         # Append steps table
-        if rows != "":
-            table = f'<table style="width: 100%;">{rows}</table>'
-            extras.append(pytest_html.extras.html(table))
+        if steps != "":
+            extras.append(pytest_html.extras.html(f'<table style="width: 100%;">{steps}</table>'))
 
     report.extras = extras
 

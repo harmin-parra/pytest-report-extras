@@ -4,6 +4,7 @@
 
 .col-links a {
     text-decoration: none;
+    color: darkslategrey;
 }
 
 .logwrapper {
@@ -55,7 +56,7 @@ span.error,
 
 .extras_color_xfailed,
 .extras_color_xpassed {
-    color: orange;
+    color: #b37400;
 }
 
 .extras_color_error {
@@ -113,14 +114,22 @@ span.error,
     margin-left: 0px;
 }
 
-.extras_execution {
-    display: none;
+.visibility_links {
+    visibility: collapse;
+}
+
+.visibility_links a {
+    text-decoration: none;
+    color: darkslategrey;
+}
+
+.visibility_execution {
+  visibility: collapse;
 }
 
 .extras_separator {
-    height: 2px;
+    height: 1px;
     background-color: gray;
-    /* display: none; */
 }
 
 /*

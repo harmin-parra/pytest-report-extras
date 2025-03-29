@@ -1,16 +1,17 @@
 import pathlib
 from typing import Optional
-from .utils import escape_html
-from .status import Status
 from _pytest.outcomes import Failed
 from _pytest.outcomes import Skipped
 from _pytest.outcomes import XFailed
+from . import utils
+from .link import Link
+from .status import Status
 
 
 #
 # Auxiliary functions for the report generation
 #
-def append_header(item, call, report, extras, pytest_html, status: Status):
+def get_header_rows(item, call, report, links, status: Status):
     """
     Decorates and appends the test description and execution exception trace, if any, to the report extras.
 
@@ -18,20 +19,16 @@ def append_header(item, call, report, extras, pytest_html, status: Status):
         item (pytest.Item): The test item.
         call (pytest.CallInfo): Information of the test call.
         report (pytest.TestReport): The pytest test report.
-        extras (List[pytest_html.extras.extra]): The report extras.
-        pytest_html (types.ModuleType): The pytest-html plugin.
+        links (List[Link]): The links to add to the header.
         status (Status): The test execution status.
     """
-    rows = (
+    return (
         get_status_row(call, report, status) +
         get_description_row(item) +
         get_parameters_row(item) +
-        get_exception_row(call)
+        get_exception_row(call) +
+        get_links_row(links)
     )
-
-    if rows != "":
-        table = f'<table class="extras_header">{rows}</table>'
-        extras.append(pytest_html.extras.html(table))
 
 
 def get_status_row(call, report, status):
@@ -86,6 +83,20 @@ def get_exception_row(call):
             f'<td style="border: 0px"><span class="extras_title">Exception</span></td>'
             '<td class="extras_header_middle" style="border: 0px"></td>'
             f'<td style="border: 0px">{exception}</td>'
+            "</tr>"
+        )
+    return row
+
+
+def get_links_row(links):
+    """ HTML table row for the test links. """
+    row = ""
+    if len(links) > 0:
+        row = (
+            '<tr class="visibility_links">'
+            f'<td style="border: 0px"><span class="extras_title">Links</span></td>'
+            '<td class="extras_header_middle" style="border: 0px"></td>'
+            f'<td style="border: 0px">{decorate_links(links)}</td>'
             "</tr>"
         )
     return row
@@ -157,7 +168,7 @@ def decorate_description(description) -> str:
     """  Applies a CSS style to the test description. """
     if description is None:
         return ""
-    description = escape_html(description).strip().replace('\n', "<br>")
+    description = utils.escape_html(description).strip().replace('\n', "<br>")
     description = description.strip().replace('\n', "<br>")
     return f'<pre class="extras_description extras_block">{description}</pre>'
 
@@ -182,8 +193,8 @@ def decorate_exception(call) -> str:
         not isinstance(call.excinfo.value, (Failed, XFailed, Skipped))
     ):
         content = content + (
-            f'<pre class="extras_block">{escape_html(call.excinfo.typename)}</pre><br>'
-            f'<pre class="extras_block">{escape_html(call.excinfo.value)}</pre>'
+            f'<pre class="extras_block">{utils.escape_html(call.excinfo.typename)}</pre><br>'
+            f'<pre class="extras_block">{utils.escape_html(call.excinfo.value)}</pre>'
         )
     return content
 
@@ -192,12 +203,12 @@ def decorate_reason(call, report, status: Status) -> str:
     reason = ""
     # Get Xfailed tests
     if status == Status.XFAILED:
-        reason = escape_html(report.wasxfail)
+        reason = utils.escape_html(report.wasxfail)
         if reason.startswith("reason: "):
             reason = reason[8:]
     # Get Xpassed tests
     if status == Status.XPASSED and call.excinfo is not None and hasattr(call.excinfo.value, "msg"):
-        reason = escape_html(report.wasxfail)
+        reason = utils.escape_html(report.wasxfail)
     # Get explicit pytest.fail and pytest.skip calls
     if (
         hasattr(call, "excinfo") and
@@ -205,10 +216,18 @@ def decorate_reason(call, report, status: Status) -> str:
         isinstance(call.excinfo.value, (Failed, Skipped)) and
         hasattr(call.excinfo.value, "msg")
     ):
-        reason = escape_html(call.excinfo.value.msg)
+        reason = utils.escape_html(call.excinfo.value.msg)
     if reason != "":
         reason = "Reason: " + reason
     return reason
+
+
+def decorate_links(links: list[Link]):
+    """ Applies CSS style to a list of links """
+    anchors = []
+    for link in links:
+        anchors.append(f'<a href="{link.url}" target="_blank" rel="noopener noreferrer">{link.icon} {link.label}</a>')
+    return " , ".join(anchors)
 
 
 def decorate_comment(comment, clazz) -> str:
@@ -341,4 +360,4 @@ def decorate_attachment(attachment) -> str:
         else:  # text/csv, text/uri-list
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
     else:  # application/*, text/plain
-        return f'<pre class="{clazz_pre}">{escape_html(attachment.body)}</pre>'
+        return f'<pre class="{clazz_pre}">{utils.escape_html(attachment.body)}</pre>'
