@@ -49,7 +49,7 @@ def pytest_addoption(parser):
 
 
 #
-# Read test parameters
+# Get test options
 #
 @pytest.fixture(scope="session")
 def _fx_screenshots(request):
