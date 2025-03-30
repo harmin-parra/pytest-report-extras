@@ -296,7 +296,8 @@ def pytest_configure(config):
 @pytest.hookimpl()
 def pytest_sessionfinish(session, exitstatus):
     global fx_html
-    utils.delete_empty_subfolders(fx_html)
+    if fx_html is not None:
+        utils.delete_empty_subfolders(fx_html)
 
 
 def pytest_html_report_title(report):
