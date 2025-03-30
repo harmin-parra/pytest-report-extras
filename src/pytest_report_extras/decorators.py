@@ -108,8 +108,8 @@ def get_step_row(
     source: str,
     attachment,
     single_page: bool,
-    clazz_row = None,
-    clazz = "extras_font extras_color_comment"
+    clazz_row=None,
+    clazz="extras_font extras_color_comment"
 ) -> str:
     """
     Returns the HTML table row of a test step.

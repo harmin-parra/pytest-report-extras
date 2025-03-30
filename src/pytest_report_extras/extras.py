@@ -55,8 +55,8 @@ class Extras:
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
-        self.target = target_obj if self.target is None else self.target
-        if not target_check:
+        self.target = target_obj if target_obj is not None else self.target
+        if target is not None and not target_check:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
             return
         if self.fx_screenshots != "all":
@@ -395,10 +395,10 @@ class Extras:
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
         target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
+        self.fx_screenshots = "all"
         if not target_check or not target_valid:
             self.screenshot("Cannot add last screenshot")
             return "visibility_last_row"
         else:
-            self.fx_screenshots = "all"
             self.screenshot(comment, target, full_page, page_source, escape_html)
             return None
