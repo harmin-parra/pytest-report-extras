@@ -131,6 +131,10 @@ span.error,
     visibility: collapse;
 }
 
+.visibility_last_row {
+    visibility: collapse;
+}
+
 .extras_separator {
     height: 1px;
     background-color: gray;
