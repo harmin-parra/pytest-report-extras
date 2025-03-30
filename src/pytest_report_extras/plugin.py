@@ -95,11 +95,19 @@ def _fx_sources(request):
     return request.config.getini("extras_sources")
 
 
+@pytest.fixture(scope='session')
+def _fx_setup(_fx_report_html, _fx_report_allure, _fx_single_page):
+    """ Verifies preconditions and create assets before using this plugin. """
+    utils.check_options(_fx_report_html, _fx_report_allure)
+    if _fx_report_html is not None:
+        utils.create_assets(_fx_report_html, _fx_single_page)
+
+
 #
 # Test fixture
 #
 @pytest.fixture(scope="function")
-def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure):
+def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure, _fx_setup):
     return Extras(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure)
 
 
@@ -283,18 +291,6 @@ def pytest_configure(config):
     style_css = pathlib.Path(resources_path, "style.css")
     if style_css.is_file():
         config_css.insert(0, style_css)
-
-
-@pytest.hookimpl()
-def pytest_sessionstart(session):
-    """
-    Check options and create report folders.
-    """
-    global fx_html, fx_allure, fx_single_page
-    utils.check_options(fx_html, fx_allure)
-    # Create assets
-    if fx_html is not None:
-        utils.create_assets(fx_html, fx_single_page)
 
 
 @pytest.hookimpl()
