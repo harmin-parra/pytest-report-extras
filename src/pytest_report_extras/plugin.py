@@ -218,14 +218,14 @@ def pytest_runtest_makereport(item, call):
 
         # Add screenshot for last step
         if fx_screenshots == "last" and failure is False and target is not None:
-            fx_report.fx_screenshots = "all"  # To force screenshot gathering
-            fx_report.screenshot(f"Last screenshot", target)
+            clazz_row = fx_report._last_screenshot(f"Last screenshot", target)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
-                fx_single_page
+                fx_single_page,
+                clazz_row
             )
 
         # Add screenshot for test failure/skip
@@ -237,14 +237,14 @@ def pytest_runtest_makereport(item, call):
                 comment += " before xfailure"
             if status == Status.SKIPPED:
                 comment += " before skip"
-            fx_report.fx_screenshots = "all"  # To force screenshot gathering
-            fx_report.screenshot(comment, target)
+            clazz_row = fx_report._last_screenshot(comment, target)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
                 fx_single_page,
+                clazz_row,
                 f"extras_font extras_color_{status}"
             )
 
