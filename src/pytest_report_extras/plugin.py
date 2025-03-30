@@ -258,7 +258,7 @@ def pytest_runtest_makereport(item, call):
                 "</tr>"
             )
         extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
-        if len(steps) > 0 and header.count("<tr>") > 1:
+        if len(steps) > 0 and header.count("</tr>") > 1:
             extras.append(pytest_html.extras.html('<hr class="extras_separator">'))
 
         # Append steps table
