@@ -130,7 +130,6 @@ def check_screenshot_target_type(target):
         WebDriver | Page: target if it is an instance of WebDriver or Page.
         bool: whether target is in a valid state (applicable only to Page objects).
     """
-
     if importlib.util.find_spec("selenium") is not None:
         from selenium.webdriver.remote.webdriver import WebDriver
         from selenium.webdriver.remote.webelement import WebElement
