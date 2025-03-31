@@ -206,13 +206,8 @@ def decorate_exception(call) -> str:
 
 def decorate_reason(call, report, status: Status) -> str:
     reason = ""
-    # Get Xfailed tests
-    if status == Status.XFAILED:
-        reason = utils.escape_html(report.wasxfail)
-        if reason.startswith("reason: "):
-            reason = reason[8:]
-    # Get Xpassed tests
-    if status == Status.XPASSED and call.excinfo is not None and hasattr(call.excinfo.value, "msg"):
+    # Get Xfailed and Xpassed tests
+    if status in (Status.XFAILED, Status.XPASSED):
         reason = utils.escape_html(report.wasxfail)
     # Get explicit pytest.fail and pytest.skip calls
     if (
