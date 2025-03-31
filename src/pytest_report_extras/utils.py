@@ -122,7 +122,15 @@ def escape_html(text, quote=False) -> Optional[str]:
 # Screenshot related functions
 #
 def check_screenshot_target_type(target):
-    """ Checks whether an object is an instance of WebDriver, WebElement, Page or Locator. """
+    """
+    Checks whether an object is an instance of WebDriver, WebElement, Page or Locator.
+
+    Returns:
+        bool: whether target is an instance of WebDriver, WebElement, Page or Locator.
+        WebDriver | Page: target if it is an instance of WebDriver or Page.
+        bool: whether target is in a valid state (applicable only to Page objects).
+    """
+
     if importlib.util.find_spec("selenium") is not None:
         from selenium.webdriver.remote.webdriver import WebDriver
         from selenium.webdriver.remote.webelement import WebElement
