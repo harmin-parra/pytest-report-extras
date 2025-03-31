@@ -380,8 +380,8 @@ def get_marker_links(
             name = url if name is None else name
             links.append(Link(url, name, link_type))
     else:
-        _marker = "issues" if link_type == "issue" else link_type
-        marker = item.iter_markers(name=_marker)
+        marker_name = "issues" if link_type == "issue" else link_type
+        marker = item.iter_markers(name=marker_name)
         marker = next(marker, None)
         if marker is not None and len(marker.args) > 0:
             keys = marker.args[0].replace(' ', '').split(',')
