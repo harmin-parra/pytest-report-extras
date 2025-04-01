@@ -249,7 +249,7 @@ def pytest_runtest_makereport(item, call):
                 fx_report.attachments[-1],
                 fx_single_page,
                 f"extras_font extras_color_{status}"
-                # clazz_row,
+                # clazz_row
             )
 
         # Add Execution title and horizontal line between the header and the steps table
