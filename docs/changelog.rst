@@ -9,7 +9,7 @@ Changelog
 **Features**
 
 * New design for the runtest header report.
-* Addition of runtest header report for failed and skipped tests during setup.
+* Addition of runtest header report for tests with ``error`` execution status (failed and skipped tests during setup).
 
 **Change**
 
