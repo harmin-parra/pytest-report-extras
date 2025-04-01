@@ -3,6 +3,19 @@ Changelog
 =========
 
 
+1.3.3
+=====
+
+**Features**
+
+* New design for the runtest header report.
+* Addition of runtest header report for tests with ``error`` execution status (failed and skipped tests during setup).
+
+**Change**
+
+* The ``extras_description_tag`` INI option has been removed.
+
+
 1.3.2
 =====
 

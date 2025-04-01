@@ -9,6 +9,7 @@ import sys
 import uuid
 from typing import Literal
 from typing import Optional
+from .link import Link
 
 
 error_screenshot = None
@@ -27,11 +28,17 @@ def check_options(htmlpath, allurepath):
         sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
-def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
-    """ Verifies if the comment, multimedia, page source and attachment lists have the same length """
+def check_lists_length(report, fx_extras) -> bool:
+    """
+    Verifies if the comment, multimedia, page source and attachment lists have the same length
+
+    Args:
+        report (pytest.TestReport): The pytest test report.
+        fx_extras (Extras): The report extras.
+    """
     message = ('"multimedia", "comments", "sources", and "attachments" lists don\'t have the same length.\n'
                "Steps won't be logged for this test in pytest-html report.\n")
-    if not (len(fx_extras.multimedia) == len(fx_extras.comments) == 
+    if not (len(fx_extras.multimedia) == len(fx_extras.comments) ==
             len(fx_extras.sources) == len(fx_extras.attachments)):
         log_error(report, message)
         return False
@@ -44,10 +51,7 @@ def create_assets(report_html, single_page):
     global error_screenshot
     if report_html is None:
         return
-    # Recreate report_folder
-    folder = ""
-    if report_html is not None and report_html != '':
-        folder = f"{report_html}{os.sep}"
+    folder = f"{report_html}{os.sep}"
     try:
         # Create downloads folder
         shutil.rmtree(f"{folder}downloads", ignore_errors=True)
@@ -102,9 +106,9 @@ def get_folder(filepath) -> Optional[str]:
         filepath (str): The filepath.
     """
     folder = None
-    if filepath is not None:
+    if filepath not in (None, ''):
         folder = os.path.dirname(filepath)
-    return folder
+    return folder if folder != '' else '.'
 
 
 def escape_html(text, quote=False) -> Optional[str]:
@@ -118,23 +122,33 @@ def escape_html(text, quote=False) -> Optional[str]:
 # Screenshot related functions
 #
 def check_screenshot_target_type(target):
-    """ Checks whether an object is an instance of WebDriver, WebElement, Page or Locator. """
+    """
+    Checks whether an object is an instance of WebDriver, WebElement, Page or Locator.
+
+    Returns:
+        bool: whether target is an instance of WebDriver, WebElement, Page or Locator.
+        WebDriver | Page: target if it is an instance of WebDriver or Page.
+        bool: whether target is in a valid state (applicable only to Page objects).
+    """
     if importlib.util.find_spec("selenium") is not None:
         from selenium.webdriver.remote.webdriver import WebDriver
         from selenium.webdriver.remote.webelement import WebElement
         if isinstance(target, WebDriver):
-            return True, target
+            return True, target, True
         if isinstance(target, WebElement):
-            return True, None
+            return True, None, True
 
     if importlib.util.find_spec("playwright") is not None:
         from playwright.sync_api import Page
         from playwright.sync_api import Locator
         if isinstance(target, Page):
-            return True, target
+            if target.is_closed():
+                return True, target, False
+            else:
+                return True, target, True
         if isinstance(target, Locator):
-            return True, None
-    return False, None
+            return True, None, True
+    return False, None, False
 
 
 def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[bytes], Optional[str]]:
@@ -158,7 +172,7 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[
             from selenium.webdriver.remote.webelement import WebElement
             if isinstance(target, WebElement) or isinstance(target, WebDriver):
                 image, source = _get_selenium_screenshot(target, full_page, page_source)
-    
+
         if importlib.util.find_spec("playwright") is not None:
             from playwright.sync_api import Page
             from playwright.sync_api import Locator
@@ -283,7 +297,7 @@ def save_data_and_get_link(
     """
     if data in (None, ''):
         return None
-    extension = '' if extension is None else '.' + extension 
+    extension = '' if extension is None else '.' + extension
     filename = str(uuid.uuid4()) + extension
     try:
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
@@ -325,7 +339,7 @@ def copy_file_and_get_link(
         return f"{folder}{os.sep}{pathlib.Path(filepath).name}"
     if extension is None and filepath.rfind('.') != -1:
         extension = filepath[filepath.rfind('.') + 1:]
-    extension = '' if extension is None else '.' + extension 
+    extension = '' if extension is None else '.' + extension
     filename = str(uuid.uuid4()) + extension
     try:
         destination = f"{report_html}{os.sep}{folder}{os.sep}{filename}"
@@ -339,80 +353,97 @@ def copy_file_and_get_link(
 #
 # Marker functions
 #
-def add_marker_link(
+def get_marker_links(
+    item: pytest.Item,
+    link_type: Literal["issue", "tms", "link"],
+    fx_link: Optional[str] = None
+) -> list[Link]:
+    """
+    Returns the urls and labels, as a list of tuples, of the links of a given marker.
+
+    Args:
+        item (pytest.Item): The test item.
+        link_type: The marker.
+        fx_link: The link pattern of the marker's url.
+    """
+    if fx_link is None and link_type in ("issue", "tms"):
+        return []
+    links = []
+    if link_type == "link":
+        for marker in item.iter_markers(name="link"):
+            url = marker.args[0] if len(marker.args) > 0 else None
+            name = marker.args[1] if len(marker.args) > 1 else None
+            url = marker.kwargs.get("url", url)
+            name = marker.kwargs.get("name", name)
+            if url in (None, ''):
+                continue
+            name = url if name is None else name
+            links.append(Link(url, name, link_type))
+    else:
+        marker_name = "issues" if link_type == "issue" else link_type
+        marker = item.iter_markers(name=marker_name)
+        marker = next(marker, None)
+        if marker is not None and len(marker.args) > 0:
+            keys = marker.args[0].replace(' ', '').split(',')
+            for key in keys:
+                if key in (None, ''):
+                    continue
+                links.append(Link(fx_link.replace("{}", key), key, link_type))
+
+    return links
+
+
+def get_all_markers_links(
+    item: pytest.Item,
+    fx_issue_link: Optional[str],
+    fx_tms_link: Optional[str]
+) -> list[Link]:
+    """
+    Returns the urls and labels, as a list of tuples, of the links of all markers.
+
+    Args:
+        item (pytest.Item): The test item.
+        fx_issue_link: The link pattern for the "issues" marker.
+        fx_tms_link: The link pattern for the "tms" marker.
+    """
+    links1 = get_marker_links(item, "issue", fx_issue_link)
+    links2 = get_marker_links(item, "tms", fx_tms_link)
+    links3 = get_marker_links(item, "link")
+    return links1 + links2 + links3
+
+
+def add_markers(
     item: pytest.Item,
     extras,
-    link_type: Literal["issues", "tms"],
-    fx_link: Optional[str],
+    links: list[Link],
     fx_html: Optional[str],
     fx_allure: Optional[str]
 ):
     """
-    Add links from @pytest.mark.issues and @pytest.mark.tms decorators.
-    
+    Add links to the report.
+
     Args:
         item (pytest.Item): The test item.
         extras (List[pytest_html.extras.extra]): The test extras.
-        link_type (str): The link type. Possible values: 'issues' and 'tms'.
-        fx_link (str): The link pattern.
+        links (List[tuple[str, str]]: The links to add.
         fx_html (str): The report_html fixture.
         fx_allure (str): The report_allure fixture.
     """
-    if fx_link is None or link_type not in ("issues", "tms"):
-        return
-    icons = {
-        "issues": "&#128030;",
-        "tms": "&#128203;",
-    }
-    icon = icons[link_type]
     pytest_html = item.config.pluginmanager.getplugin("html")
-    marker = item.iter_markers(name=link_type)
-    marker = next(marker, None)
-    if marker is not None and len(marker.args) > 0:
-        keys = marker.args[0].replace(' ', '').split(',')
-        for key in keys:
-            if key in (None, ''):
-                continue            
-            if fx_html is not None and pytest_html is not None:
-                extras.append(pytest_html.extras.url(fx_link.replace("{}", key), name=f"{icon} {key}"))
-            if fx_allure is not None and importlib.util.find_spec("allure") is not None:
-                import allure
-                from allure_commons.types import LinkType
-                allure_link_type = LinkType.ISSUE if link_type == "issues" else LinkType.TEST_CASE
-                allure.dynamic.link(fx_link.replace("{}", key), link_type=allure_link_type, name=key)
-
-
-def add_marker_url(
-    item: pytest.Item,
-    extras,
-    fx_html: Optional[str],
-    fx_allure: Optional[str]
-):
-    """
-    Add links from @pytest.mark.link decorator.
-    
-    Args:
-        item (pytest.Item): The test item.
-        extras (List[pytest_html.extras.extra]): The test extras.
-        fx_html (str): The report_html fixture.
-        fx_allure (str): The report_allure fixture.
-    """
-    icon = "&#127760;"
-    pytest_html = item.config.pluginmanager.getplugin("html")
-    for marker in item.iter_markers(name="link"):
-        url = marker.args[0] if len(marker.args) > 0 else None
-        name = marker.args[1] if len(marker.args) > 1 else None
-        url = marker.kwargs.get("url", url)
-        name = marker.kwargs.get("name", name)
-        if url in (None, ''):
-            continue            
-        name = url if name is None else name
+    for link in links:
         if fx_html is not None and pytest_html is not None:
-            extras.append(pytest_html.extras.url(url, name=f"{icon} {name}"))
+            extras.append(pytest_html.extras.url(link.url, name=f"{link.icon} {link.name}"))
         if fx_allure is not None and importlib.util.find_spec("allure") is not None:
             import allure
             from allure_commons.types import LinkType
-            allure.dynamic.link(url, link_type=LinkType.LINK, name=name)
+            allure_link_type = None
+            if link.type == "link":
+                allure_link_type = LinkType.LINK
+            if link.type == "issue":
+                allure_link_type = LinkType.ISSUE
+            if link.type == "tms":
+                allure_link_type = LinkType.TEST_CASE
+            allure.dynamic.link(link.url, link_type=allure_link_type, name=link.name)
 
 
 #

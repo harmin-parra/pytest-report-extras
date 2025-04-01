@@ -54,9 +54,9 @@ class Extras:
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        target_valid, target_obj = utils.check_screenshot_target_type(target)
-        self.target = target_obj if self.target is None else self.target
-        if target is not None and not target_valid:
+        target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
+        self.target = target_obj if target_obj is not None else self.target
+        if target is not None and not target_check:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
             return
         if self.fx_screenshots != "all":
@@ -374,3 +374,33 @@ class Extras:
             self.multimedia.append(link_multimedia)
             self.sources.append(link_source)
             self.attachments.append(attachment)
+
+    '''
+    def _last_screenshot(
+        self,
+        comment: str,
+        target=None,
+        full_page: bool = True,
+        page_source: bool = False,
+        escape_html: bool = False
+    ) -> Optional[str]:
+        """
+        Adds a step with the last screenshot to the report
+        Returns the CSS class to apply to the comment table row of the pytest HTML report.
+
+        Args:
+            comment (str): The comment of the test step.
+            target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
+            full_page (bool): Whether to take a full-page screenshot.
+            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
+            escape_html (bool): Whether to escape HTML characters in the comment.
+        """
+        target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
+        self.fx_screenshots = "all"
+        if not target_check or not target_valid:
+            self.screenshot("Cannot add last screenshot")
+            return "visibility_last_scr_error"
+        else:
+            self.screenshot(comment, target, full_page, page_source, escape_html)
+            return None
+        '''

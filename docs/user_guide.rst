@@ -36,16 +36,6 @@ Default value: ``False``
 
 ----
 
-* ``extras_description_tag``
-
-The HTML tag for the test description (test docstring).
-
-Accepted values: ``h1``, ``h2``, ``h3``, ``h4``, ``h5``, ``h6``, ``p`` or ``pre``
-
-Default value: ``pre``
-
-----
-
 * ``extras_attachment_indent``
 
 The indent to use for attachments.
@@ -190,7 +180,6 @@ Sample ``pytest.ini`` file
 
 .. code-block:: ini
 
-  extras_description_tag = h1
   extras_attachment_indent = 4
   extras_screenshots = all
   extras_sources = False
@@ -296,17 +285,38 @@ Sample CSS file
 
 .. code-block:: css
 
-  .col-links a {
-      text-decoration: none;
+  .extras_font {
+      font-family: monospace;
   }
   
-  .logwrapper {
-      min-height: unset;
-      max-height: 100px;
+  .extras_color_skipped {
+      color: #727272;
   }
   
-  .logwrapper .log {
-      min-height: unset;
+  .extras_color_xfailed,
+  .extras_color_xpassed {
+      color: orange;
+  }
+  
+  .extras_color_error {
+      color: black;
+  }
+  
+  .extras_color_failed {
+      color: red;
+  }
+  
+  .extras_color_comment {
+      color: blue;
+  }
+  
+  .extras_header td {
+      padding-top: 10px;
+      vertical-align: top;
+  }
+  
+  .extras_header_middle {
+      width: 10px;
   }
   
   .extras_td {
@@ -317,28 +327,37 @@ Sample CSS file
       text-align: center;
   }
   
-  .extras_description {
-      color: black;
-      font-size: x-large;
+  .extras_code {
+      white-space: pre-wrap;
       margin-top: 0px;
-      margin-bottom: 24px;
+      margin-bottom: 0px;
+      margin-left: 0px;
   }
   
-  .extras_params_title {
+  .extras_description {
+      color: black;
+      font-size: 16px;
+  }
+  
+  .extras_title {
+      color: black;
       font-size: medium;
       font-weight: bold;
-      color: black;
   }
   
   .extras_params_key {
-      font-size: 14px;
       color: #999;
-      padding-left: 30px;
+      font-size: 14px;
   }
   
   .extras_params_value {
-      font-size: 14px;
       color: black;
+      font-size: 14px;
+  }
+  
+  .extras_status_reason {
+      color: black;
+      font-size: 14px;
   }
   
   .extras_exception {
@@ -349,39 +368,21 @@ Sample CSS file
       height: 2px;
       background-color: gray;
   }
-  
-  .extras_comment {
-      font-family: monospace;
-      color: blue;
-  }
-  
-  .extras_pre {
-      margin-left: 30px;
-      color: black;
-  }
-  
-  .extras_failure {
-      font-family: monospace;
-      color: red;
-  }
-  
-  .extras_skip {
-      font-family: monospace;
-      color: orange;
-  }
-  
+    
   .extras_video {
+      border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
   }
   
   .extras_td svg {
+      border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
   }
   
   .extras_image {
-      border: 1px solid black;
+      border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
       object-fit: cover;
@@ -389,16 +390,54 @@ Sample CSS file
   }
   
   .extras_page_src {
-      font-size: 12px;
       color: #00b5ff;
+      font-size: 12px;
+  }
+  
+  .extras_pre {
+      color: black;
+      margin-left: 30px;
   }
   
   .extras_iframe {
+      margin-top: 15px;
       margin-left: 30px;
       margin-right: 30px;
-      margin-top: 15px;
-      inline-size: -webkit-fill-available;
+      resize: both;
+      overflow: auto;
       background-color: #faf0e6;
+      inline-size: -webkit-fill-available;
+  }
+  
+  .extras_status {
+      border-radius: 3px;
+      color: #fff;
+      font-size: medium;
+      font-weight: bold;
+      letter-spacing: 1px;
+      padding: 2px 4px 2px 5px;
+      vertical-align: baseline;
+  }
+  
+  .extras_status_passed {
+      background: #97cc64;
+  }
+  
+  .extras_status_failed {
+      background: #fd5a3e;
+  }
+  
+  .extras_status_skipped {
+      background: #aaa;
+  }
+  
+  .extras_status_xfailed,
+  .extras_status_xpassed {
+      background: orange;
+  }	
+  
+  .extras_status_error {
+      background: black;
   }
 
 
