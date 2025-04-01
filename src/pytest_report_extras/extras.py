@@ -398,7 +398,7 @@ class Extras:
         self.fx_screenshots = "all"
         if not target_check or not target_valid:
             self.screenshot("Cannot add last screenshot")
-            return "visibility_last_row"
+            return "visibility_last_scr_error"
         else:
             self.screenshot(comment, target, full_page, page_source, escape_html)
             return None
