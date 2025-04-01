@@ -375,6 +375,7 @@ class Extras:
             self.sources.append(link_source)
             self.attachments.append(attachment)
 
+    '''
     def _last_screenshot(
         self,
         comment: str,
@@ -402,3 +403,4 @@ class Extras:
         else:
             self.screenshot(comment, target, full_page, page_source, escape_html)
             return None
+        '''
