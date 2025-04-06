@@ -213,7 +213,7 @@ def decorate_reason(call, report, status: Status) -> str:
     if (
         hasattr(call, "excinfo") and
         call.excinfo is not None and
-        isinstance(call.excinfo.value, (Failed, Skipped)) and
+        isinstance(call.excinfo.value, (Failed, XFailed, Skipped)) and
         hasattr(call.excinfo.value, "msg")
     ):
         reason = utils.escape_html(call.excinfo.value.msg)
