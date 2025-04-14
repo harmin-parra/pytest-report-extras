@@ -148,7 +148,7 @@ span.error,
     height: 170px;
 }
 
-#extras_td_multimedia svg {
+.extras_td_multimedia svg {
     border: 1px solid #e6e6e6;
     width: 300px;
     height: 170px;
