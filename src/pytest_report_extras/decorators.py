@@ -37,7 +37,7 @@ def get_status_row(call, report, status):
     return (
         '<tr class="visibility_status">'
         f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
-        '<td class="extras_header_middle" style="border: 0px"></td>'
+        '<td class="extras_header_separator" style="border: 0px"></td>'
         f'<td style="border: 0px" class="extras_status_reason">{reason}</td>'
         "</tr>"
     )
@@ -51,7 +51,7 @@ def get_description_row(item):
         row = (
             "<tr>"
             f'<td style="border: 0px"><span class="extras_title">Description</span></td>'
-            '<td class="extras_header_middle" style="border: 0px"></td>'
+            '<td class="extras_header_separator" style="border: 0px"></td>'
             f'<td style="border: 0px">{decorate_description(description)}</td>'
             "</tr>"
         )
@@ -66,7 +66,7 @@ def get_parameters_row(item):
         row = (
             '<tr class="visibility_parameters">'
             f'<td style="border: 0px"><span class="extras_title">Parameters</span></td>'
-            '<td class="extras_header_middle" style="border: 0px"></td>'
+            '<td class="extras_header_separator" style="border: 0px"></td>'
             f'<td style="border: 0px">{decorate_parameters(parameters)}</td>'
             "</tr>"
         )
@@ -81,7 +81,7 @@ def get_exception_row(call):
         row = (
             "<tr>"
             f'<td style="border: 0px"><span class="extras_title">Exception</span></td>'
-            '<td class="extras_header_middle" style="border: 0px"></td>'
+            '<td class="extras_header_separator" style="border: 0px"></td>'
             f'<td style="border: 0px">{exception}</td>'
             "</tr>"
         )
@@ -95,7 +95,7 @@ def get_links_row(links):
         row = (
             '<tr class="visibility_links">'
             f'<td style="border: 0px"><span class="extras_title">Links</span></td>'
-            '<td class="extras_header_middle" style="border: 0px"></td>'
+            '<td class="extras_header_separator" style="border: 0px"></td>'
             f'<td style="border: 0px">{decorate_links(links)}</td>'
             "</tr>"
         )
@@ -108,8 +108,8 @@ def get_step_row(
     source: str,
     attachment,
     single_page: bool,
-    clazz="extras_font extras_color_comment",
-    clazz_row=None
+    clazz_row: Optional[str] = None,
+    clazz_comment: Optional[str] = "extras_font extras_color_comment"
 ) -> str:
     """
     Returns the HTML table row of a test step.
@@ -121,7 +121,7 @@ def get_step_row(
         attachment (Attachment): The attachment.
         single_page (bool): Whether to generate the HTML report in a single page.
         clazz_row (str): The CSS class to apply to the comment table row.
-        clazz (str): The CSS class to apply to the comment table cell.
+        clazz_comment (str): The CSS class to apply to the comment table cell.
 
     Returns:
         str: The <tr> element.
@@ -132,7 +132,7 @@ def get_step_row(
     if clazz_row is not None:
         clazz_row_str = f'class="{clazz_row}"'
     if multimedia is not None:
-        comment = decorate_comment(comment, clazz)
+        comment = decorate_comment(comment, clazz_comment)
         if attachment is not None and attachment.mime is not None:
             if attachment.mime.startswith("image/svg"):
                 multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
@@ -149,18 +149,18 @@ def get_step_row(
             return (
                 f'<tr {clazz_row_str}>'
                 f"<td>{comment}</td>"
-                f'<td class="extras_td"><div class="extras_td_div">{multimedia}<br>{source}</div></td>'
+                f'<td id="extras_td_multimedia"><div>{multimedia}<br>{source}</div></td>'
                 f"</tr>"
             )
         else:
             return (
                 f'<tr {clazz_row_str}>'
                 f"<td>{comment}</td>"
-                f'<td class="extras_td"><div class="extras_td_div">{multimedia}</div></td>'
+                f'<td id="extras_td_multimedia"><div>{multimedia}</div></td>'
                 "</tr>"
             )
     else:
-        comment = decorate_comment(comment, clazz)
+        comment = decorate_comment(comment, clazz_comment)
         comment += decorate_attachment(attachment)
         return (
             f'<tr {clazz_row_str}>'

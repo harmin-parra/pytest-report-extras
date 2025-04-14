@@ -87,13 +87,18 @@ def delete_empty_subfolders(report_html):
     if report_html is not None and report_html != '':
         folder = f"{report_html}{os.sep}"
     try:
-        for subfolder in ("images", "sources", "videos", "audio", "downloads"):
+        for subfolder in ("sources", "videos", "audio", "downloads"):
             if (
                 os.path.exists(f"{folder}{subfolder}") and
-                not os.path.isfile(f"{folder}{subfolder}") and
-                not os.listdir(f"{folder}{subfolder}")
+                os.path.isdir(f"{folder}{subfolder}") and
+                len(os.listdir(f"{folder}{subfolder}")) == 0
             ):
                 pathlib.Path(f"{folder}{subfolder}").rmdir()
+        # check whether to delete 'images' subfolder
+        if os.path.exists(f"{folder}images") and os.path.isdir(f"{folder}images"):
+            files = os.listdir(f"{folder}images")
+            if len(files) == 1 and files[0] == "error.png":
+                shutil.rmtree(f"{folder}images", ignore_errors=True)
     except OSError:
         pass
 
@@ -218,7 +223,10 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
         else:
             image = target.get_screenshot_as_png()
         if page_source:
-            source = target.page_source
+            try:
+                source = target.page_source
+            except Exception:
+                pass
     return image, source
 
 
@@ -244,7 +252,10 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
             raise Exception("Page instance is closed")
         image = target.screenshot(full_page=full_page)
         if page_source:
-            source = target.content()
+            try:
+                source = target.content()
+            except Exception:
+                pass
     else:
         image = target.screenshot()
     return image, source
@@ -451,7 +462,7 @@ def add_markers(
 #
 def log_error(
     report: Optional[pytest.TestReport],
-    message: str,
+    message: Optional[str],
     error: Optional[Exception] = None
 ):
     """
@@ -462,6 +473,8 @@ def log_error(
         message (str): The message to log.
         error (Exception): The exception to log (optional).
     """
+    if message is None and error is None:
+        return
     message = f"{message}\n" if error is None else f"{message}\n{repr(error)}\n"
     if report is None:
         print(message, file=sys.stderr)
@@ -471,7 +484,7 @@ def log_error(
             if "stderr" in report.sections[i][0]:
                 report.sections[i] = (
                     report.sections[i][0],
-                    report.sections[i][1] + '\n' + message + '\n'
+                    report.sections[i][1] + message + '\n'
                 )
                 found = True
                 break

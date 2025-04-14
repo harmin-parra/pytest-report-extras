@@ -34,6 +34,7 @@ class Extras:
         self.fx_html = report_html
         self.fx_allure = report_allure
         self.fx_indent = indent
+        self.last_screenshot = False
         self.Mime = Mime
 
     def screenshot(
@@ -53,22 +54,29 @@ class Extras:
             full_page (bool): Whether to take a full-page screenshot.
             page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
             escape_html (bool): Whether to escape HTML characters in the comment.
+
+        Raises:
+            Exception: If the screenshot action raises an exception and self.last_screenshot = True.
         """
         target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
         self.target = target_obj if target_obj is not None else self.target
         if target is not None and not target_check:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
-            return
         if self.fx_screenshots != "all":
             target = None
         try:
             image, source = self._get_image_source(target, full_page, page_source)
-        except Exception:
-            self.comments.append(comment)
-            self.multimedia.append(utils.error_screenshot)
-            self.sources.append(None)
-            self.attachments.append(None)
-            return
+        except Exception as error:
+            if not self.last_screenshot:
+                self.comments.append(comment)
+                self.multimedia.append(utils.error_screenshot)
+                self.sources.append(None)
+                self.attachments.append(None)
+                utils.log_error(None, "Error gathering screenshot", error)
+                return
+            else:
+                self._add_extra("Error gathering last screenshot", None, None, escape_html)
+                raise error
         if target is None:  # A comment alone
             self._add_extra(comment, None, None, escape_html)
         else:
@@ -375,15 +383,11 @@ class Extras:
             self.sources.append(link_source)
             self.attachments.append(attachment)
 
-    '''
     def _last_screenshot(
         self,
         comment: str,
-        target=None,
-        full_page: bool = True,
-        page_source: bool = False,
-        escape_html: bool = False
-    ) -> Optional[str]:
+        target=None
+    ):
         """
         Adds a step with the last screenshot to the report
         Returns the CSS class to apply to the comment table row of the pytest HTML report.
@@ -391,16 +395,7 @@ class Extras:
         Args:
             comment (str): The comment of the test step.
             target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
-            full_page (bool): Whether to take a full-page screenshot.
-            page_source (bool): Whether to include the page source. Overrides the global `sources` fixture.
-            escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
         self.fx_screenshots = "all"
-        if not target_check or not target_valid:
-            self.screenshot("Cannot add last screenshot")
-            return "visibility_last_scr_error"
-        else:
-            self.screenshot(comment, target, full_page, page_source, escape_html)
-            return None
-        '''
+        self.last_screenshot = True
+        self.screenshot(comment, target, full_page=True)
