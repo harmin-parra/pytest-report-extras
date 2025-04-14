@@ -76,11 +76,11 @@ span.error,
     width: 10px;
 }
 
-#extras_td_multimedia {
+.extras_td_multimedia {
     width: 320px;
 }
 
-#extras_td_multimedia div {
+.extras_td_multimedia div {
     text-align: center;
 }
 

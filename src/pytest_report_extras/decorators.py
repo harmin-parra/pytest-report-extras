@@ -149,14 +149,14 @@ def get_step_row(
             return (
                 f'<tr {clazz_row_str}>'
                 f"<td>{comment}</td>"
-                f'<td id="extras_td_multimedia"><div>{multimedia}<br>{source}</div></td>'
+                f'<td class="extras_td_multimedia"><div>{multimedia}<br>{source}</div></td>'
                 f"</tr>"
             )
         else:
             return (
                 f'<tr {clazz_row_str}>'
                 f"<td>{comment}</td>"
-                f'<td id="extras_td_multimedia"><div>{multimedia}</div></td>'
+                f'<td class="extras_td_multimedia"><div>{multimedia}</div></td>'
                 "</tr>"
             )
     else:
