@@ -22,6 +22,7 @@ Changelog
 
 * New design for the runtest header report.
 * Addition of runtest header report for tests with ``error`` execution status (failed and skipped tests during setup).
+* Link icons can be customized.
 
 **Change**
 

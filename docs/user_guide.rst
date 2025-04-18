@@ -129,12 +129,9 @@ To add links to the report:
 
 .. code-block:: python
 
-  @pytest.mark.issues("<issue keys separated by comma>")
-  @pytest.mark.tms("<test-case keys separated by comma>")
-  @pytest.mark.link(url="<url>", name="<name>")
-  @pytest.mark.link(url="<url>")
-  @pytest.mark.link("<url>", "<name>")
-  @pytest.mark.link("<url>")
+  @pytest.mark.issues("<issue keys separated by comma>", icon: str)
+  @pytest.mark.tms("<test-case keys separated by comma>", icon: str)
+  @pytest.mark.link(url: str, name: str, icon: str)
 
 
 Limitations
