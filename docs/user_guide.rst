@@ -276,6 +276,7 @@ Sample code
   @pytest.mark.issues("PROJ-123, PROJ-456")
   @pytest.mark.link("https://example.com")
   @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
+  @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia", icon="&#129373;")
   def test_link_markers(report)
       # Your test goes here
 
