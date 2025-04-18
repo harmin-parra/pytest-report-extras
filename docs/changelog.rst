@@ -6,6 +6,10 @@ Changelog
 1.3.4
 =====
 
+**Feature**
+
+* Link icons can be customized.
+
 **Improvement**
 
 * Code refactoring.
@@ -13,6 +17,7 @@ Changelog
 **Change**
 
 * This version of the plugin is compatible with pytest v8.4.0 or later.
+* The ``@pytest.mark.issues`` marker has been renamed to ``@pytest.mark.issue``.
 
 
 1.3.3
@@ -22,7 +27,6 @@ Changelog
 
 * New design for the runtest header report.
 * Addition of runtest header report for tests with ``error`` execution status (failed and skipped tests during setup).
-* Link icons can be customized.
 
 **Change**
 

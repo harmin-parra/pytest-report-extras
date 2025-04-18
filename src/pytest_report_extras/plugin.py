@@ -289,9 +289,9 @@ def pytest_configure(config):
     fx_issue_link = config.getini("extras_issue_link_pattern")
     fx_title = config.getini("extras_title")
     # Add markers
-    config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
-    config.addinivalue_line("markers", "tms(keys): The list of test case keys to add as links")
-    config.addinivalue_line("markers", "link(url=<url>, name=<name>): The url to add as link")
+    config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as links")
+    config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as links")
+    config.addinivalue_line("markers", "link(url, name, icon): The url to add as link")
     # Add default CSS file
     config_css = config.getoption("--css", default=[])
     resources_path = pathlib.Path(__file__).parent.joinpath("resources")
