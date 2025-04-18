@@ -384,22 +384,25 @@ def get_marker_links(
         for marker in item.iter_markers(name="link"):
             url = marker.args[0] if len(marker.args) > 0 else None
             name = marker.args[1] if len(marker.args) > 1 else None
+            icon = marker.args[2] if len(marker.args) > 2 else None
             url = marker.kwargs.get("url", url)
             name = marker.kwargs.get("name", name)
+            icon = marker.kwargs.get("icon", icon)
             if url in (None, ''):
                 continue
             name = url if name is None else name
-            links.append(Link(url, name, link_type))
+            links.append(Link(url, name, link_type, icon))
     else:
         marker_name = "issues" if link_type == "issue" else link_type
         marker = item.iter_markers(name=marker_name)
         marker = next(marker, None)
         if marker is not None and len(marker.args) > 0:
             keys = marker.args[0].replace(' ', '').split(',')
+            icon = marker.args[1] if len(marker.args) > 1 else None
+            icon = marker.kwargs.get("icon", icon)
             for key in keys:
-                if key in (None, ''):
-                    continue
-                links.append(Link(fx_link.replace("{}", key), key, link_type))
+                if key not in (None, ''):
+                    links.append(Link(fx_link.replace("{}", key), key, link_type, icon))
 
     return links
 
