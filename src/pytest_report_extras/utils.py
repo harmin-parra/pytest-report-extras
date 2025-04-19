@@ -7,8 +7,7 @@ import pytest
 import shutil
 import sys
 import uuid
-from typing import Literal
-from typing import Optional
+from typing import Literal, Optional
 from .link import Link
 
 
@@ -381,7 +380,7 @@ def get_marker_links(
         return []
     links = []
     if link_type == "link":
-        for marker in item.iter_markers(name="link"):
+        for marker in item.iter_markers(name=link_type):
             url = marker.args[0] if len(marker.args) > 0 else None
             name = marker.args[1] if len(marker.args) > 1 else None
             icon = marker.args[2] if len(marker.args) > 2 else None
@@ -393,11 +392,8 @@ def get_marker_links(
             name = url if name is None else name
             links.append(Link(url, name, link_type, icon))
     else:
-        marker_name = "issues" if link_type == "issue" else link_type
-        marker = item.iter_markers(name=marker_name)
-        marker = next(marker, None)
-        if marker is not None and len(marker.args) > 0:
-            keys = marker.args[0].replace(' ', '').split(',')
+        for marker in item.iter_markers(name=link_type):
+            keys = marker.args[0].replace(' ', '').split(',') if len(marker.args) > 0 else []
             icon = marker.args[1] if len(marker.args) > 1 else None
             icon = marker.kwargs.get("icon", icon)
             for key in keys:
