@@ -387,10 +387,9 @@ def get_marker_links(
             url = marker.kwargs.get("url", url)
             name = marker.kwargs.get("name", name)
             icon = marker.kwargs.get("icon", icon)
-            if url in (None, ''):
-                continue
-            name = url if name is None else name
-            links.append(Link(url, name, link_type, icon))
+            if url not in (None, ''):
+                name = url if name is None else name
+                links.append(Link(url, name, link_type, icon))
     else:
         for marker in item.iter_markers(name=link_type):
             keys = marker.args[0].replace(' ', '').split(',') if len(marker.args) > 0 else []
@@ -403,7 +402,7 @@ def get_marker_links(
     return links
 
 
-def get_all_markers_links(
+def get_markers_links(
     item: pytest.Item,
     fx_issue_link: Optional[str],
     fx_tms_link: Optional[str]
