@@ -1,7 +1,6 @@
 import pathlib
 import pytest
-from . import decorators
-from . import utils
+from . import decorators, utils
 from .extras import Extras
 from .status import Status
 
