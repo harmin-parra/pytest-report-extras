@@ -137,6 +137,7 @@ def pytest_runtest_makereport(item, call):
     # Add links in decorators
     links = utils.get_all_markers_links(item, fx_issue_link, fx_tms_link)
     utils.add_links(item, extras, links, fx_html, fx_allure)
+
     # Add extras for skipped or failed setup
     if (
         call.when == "setup" and
