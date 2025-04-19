@@ -422,7 +422,7 @@ def get_all_markers_links(
     return links1 + links2 + links3
 
 
-def add_markers(
+def add_links(
     item: pytest.Item,
     extras,
     links: list[Link],
@@ -453,7 +453,7 @@ def add_markers(
                 allure_link_type = LinkType.ISSUE
             if link.type == "tms":
                 allure_link_type = LinkType.TEST_CASE
-            allure.dynamic.link(link.url, link_type=allure_link_type, name=link.name)
+            allure.dynamic.link(url=link.url, link_type=allure_link_type, name=link.name)
 
 
 #

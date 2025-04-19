@@ -224,7 +224,7 @@ def decorate_links(links: list[Link]):
     """ Applies CSS style to a list of links """
     anchors = []
     for link in links:
-        anchors.append(f'<a href="{link.url}" target="_blank" rel="noopener noreferrer">{link.icon} {link.label}</a>')
+        anchors.append(f'<a href="{link.url}" target="_blank" rel="noopener noreferrer">{link.icon} {link.name}</a>')
     return " , ".join(anchors)
 
 
