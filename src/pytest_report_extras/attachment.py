@@ -5,11 +5,8 @@ import json
 import re
 import xml.dom.minidom as xdom
 import yaml
-from typing import List
-from typing import Optional
-from typing import Self
-from . import decorators
-from . import utils
+from typing import List, Optional, Self
+from . import decorators, utils
 from .mime import Mime
 
 

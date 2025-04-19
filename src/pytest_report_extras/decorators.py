@@ -1,8 +1,6 @@
 import pathlib
 from typing import Optional
-from _pytest.outcomes import Failed
-from _pytest.outcomes import Skipped
-from _pytest.outcomes import XFailed
+from _pytest.outcomes import Failed, Skipped, XFailed
 from . import utils
 from .link import Link
 from .status import Status

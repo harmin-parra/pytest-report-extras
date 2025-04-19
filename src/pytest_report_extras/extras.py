@@ -1,7 +1,6 @@
 import base64
 import importlib
-from typing import Literal
-from typing import Optional
+from typing import Literal, Optional
 from . import utils
 from .attachment import Attachment
 from .mime import Mime

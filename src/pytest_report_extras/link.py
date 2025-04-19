@@ -9,7 +9,12 @@ class Link:
         "tms": "&#128221;",
     }
 
-    def __init__(self, url: str, label: str, link_type: Literal["link", "issue", "tms"] = "link", icon: Optional[str] = None):
+    def __init__(
+        self, url: str,
+        label: str,
+        link_type: Literal["link", "issue", "tms"] = "link",
+        icon: Optional[str] = None
+    ):
         self.url = url
         self.label = label
         self.name = self.label
