@@ -10,10 +10,6 @@ Changelog
 
 * Link icons can be customized.
 
-**Improvement**
-
-* Code refactoring.
-
 **Change**
 
 * This version of the plugin is compatible with pytest v8.4.0 or later.
