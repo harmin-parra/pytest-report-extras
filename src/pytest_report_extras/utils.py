@@ -7,8 +7,7 @@ import pytest
 import shutil
 import sys
 import uuid
-from typing import Literal
-from typing import Optional
+from typing import Literal, Optional
 from .link import Link
 
 
@@ -87,13 +86,18 @@ def delete_empty_subfolders(report_html):
     if report_html is not None and report_html != '':
         folder = f"{report_html}{os.sep}"
     try:
-        for subfolder in ("images", "sources", "videos", "audio", "downloads"):
+        for subfolder in ("sources", "videos", "audio", "downloads"):
             if (
                 os.path.exists(f"{folder}{subfolder}") and
-                not os.path.isfile(f"{folder}{subfolder}") and
-                not os.listdir(f"{folder}{subfolder}")
+                os.path.isdir(f"{folder}{subfolder}") and
+                len(os.listdir(f"{folder}{subfolder}")) == 0
             ):
                 pathlib.Path(f"{folder}{subfolder}").rmdir()
+        # check whether to delete 'images' subfolder
+        if os.path.exists(f"{folder}images") and os.path.isdir(f"{folder}images"):
+            files = os.listdir(f"{folder}images")
+            if len(files) == 1 and files[0] == "error.png":
+                shutil.rmtree(f"{folder}images", ignore_errors=True)
     except OSError:
         pass
 
@@ -218,7 +222,10 @@ def _get_selenium_screenshot(target, full_page=True, page_source=False) -> tuple
         else:
             image = target.get_screenshot_as_png()
         if page_source:
-            source = target.page_source
+            try:
+                source = target.page_source
+            except Exception:
+                pass
     return image, source
 
 
@@ -244,7 +251,10 @@ def _get_playwright_screenshot(target, full_page=True, page_source=False) -> tup
             raise Exception("Page instance is closed")
         image = target.screenshot(full_page=full_page)
         if page_source:
-            source = target.content()
+            try:
+                source = target.content()
+            except Exception:
+                pass
     else:
         image = target.screenshot()
     return image, source
@@ -370,30 +380,29 @@ def get_marker_links(
         return []
     links = []
     if link_type == "link":
-        for marker in item.iter_markers(name="link"):
+        for marker in item.iter_markers(name=link_type):
             url = marker.args[0] if len(marker.args) > 0 else None
             name = marker.args[1] if len(marker.args) > 1 else None
+            icon = marker.args[2] if len(marker.args) > 2 else None
             url = marker.kwargs.get("url", url)
             name = marker.kwargs.get("name", name)
-            if url in (None, ''):
-                continue
-            name = url if name is None else name
-            links.append(Link(url, name, link_type))
+            icon = marker.kwargs.get("icon", icon)
+            if url not in (None, ''):
+                name = url if name is None else name
+                links.append(Link(url, name, link_type, icon))
     else:
-        marker_name = "issues" if link_type == "issue" else link_type
-        marker = item.iter_markers(name=marker_name)
-        marker = next(marker, None)
-        if marker is not None and len(marker.args) > 0:
-            keys = marker.args[0].replace(' ', '').split(',')
+        for marker in item.iter_markers(name=link_type):
+            keys = marker.args[0].replace(' ', '').split(',') if len(marker.args) > 0 else []
+            icon = marker.args[1] if len(marker.args) > 1 else None
+            icon = marker.kwargs.get("icon", icon)
             for key in keys:
-                if key in (None, ''):
-                    continue
-                links.append(Link(fx_link.replace("{}", key), key, link_type))
+                if key not in (None, ''):
+                    links.append(Link(fx_link.replace("{}", key), key, link_type, icon))
 
     return links
 
 
-def get_all_markers_links(
+def get_markers_links(
     item: pytest.Item,
     fx_issue_link: Optional[str],
     fx_tms_link: Optional[str]
@@ -412,7 +421,7 @@ def get_all_markers_links(
     return links1 + links2 + links3
 
 
-def add_markers(
+def add_links(
     item: pytest.Item,
     extras,
     links: list[Link],
@@ -443,7 +452,7 @@ def add_markers(
                 allure_link_type = LinkType.ISSUE
             if link.type == "tms":
                 allure_link_type = LinkType.TEST_CASE
-            allure.dynamic.link(link.url, link_type=allure_link_type, name=link.name)
+            allure.dynamic.link(url=link.url, link_type=allure_link_type, name=link.name)
 
 
 #
@@ -451,7 +460,7 @@ def add_markers(
 #
 def log_error(
     report: Optional[pytest.TestReport],
-    message: str,
+    message: Optional[str],
     error: Optional[Exception] = None
 ):
     """
@@ -462,6 +471,8 @@ def log_error(
         message (str): The message to log.
         error (Exception): The exception to log (optional).
     """
+    if message is None and error is None:
+        return
     message = f"{message}\n" if error is None else f"{message}\n{repr(error)}\n"
     if report is None:
         print(message, file=sys.stderr)
@@ -471,7 +482,7 @@ def log_error(
             if "stderr" in report.sections[i][0]:
                 report.sections[i] = (
                     report.sections[i][0],
-                    report.sections[i][1] + '\n' + message + '\n'
+                    report.sections[i][1] + message + '\n'
                 )
                 found = True
                 break

@@ -1,7 +1,6 @@
 import re
 from enum import StrEnum
-from typing import Optional
-from typing import Self
+from typing import Optional, Self
 
 
 class Mime(StrEnum):

@@ -1,7 +1,6 @@
 import pathlib
 import pytest
-from . import decorators
-from . import utils
+from . import decorators, utils
 from .extras import Extras
 from .status import Status
 
@@ -96,18 +95,16 @@ def _fx_sources(request):
 
 
 @pytest.fixture(scope='session')
-def _fx_setup(_fx_report_html, _fx_report_allure, _fx_single_page):
-    """ Verifies preconditions and create assets before using this plugin. """
+def _fx_check(_fx_report_html, _fx_report_allure, _fx_single_page):
+    """ Verifies preconditions before using this plugin. """
     utils.check_options(_fx_report_html, _fx_report_allure)
-    if _fx_report_html is not None:
-        utils.create_assets(_fx_report_html, _fx_single_page)
 
 
 #
 # Test fixture
 #
 @pytest.fixture(scope="function")
-def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure, _fx_setup):
+def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure, _fx_check):
     return Extras(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure)
 
 
@@ -138,8 +135,8 @@ def pytest_runtest_makereport(item, call):
     extras = getattr(report, "extras", [])
 
     # Add links in decorators
-    links = utils.get_all_markers_links(item, fx_issue_link, fx_tms_link)
-    utils.add_markers(item, extras, links, fx_html, fx_allure)
+    links = utils.get_markers_links(item, fx_issue_link, fx_tms_link)
+    utils.add_links(item, extras, links, fx_html, fx_allure)
 
     # Add extras for skipped or failed setup
     if (
@@ -216,18 +213,21 @@ def pytest_runtest_makereport(item, call):
                 fx_single_page
             )
 
+        clazz_row = None
         # Add screenshot for last step
         if fx_screenshots == "last" and failure is False and target is not None:
-            fx_report.fx_screenshots = "all"  # To force screenshot gathering
-            fx_report.screenshot(f"Last screenshot", target)
-            # clazz_row = fx_report._last_screenshot(f"Last screenshot", target)
+            try:
+                fx_report._last_screenshot("Last screenshot", target)
+            except Exception as error:
+                clazz_row = "visibility_last_scr_error"
+                utils.log_error(report, "Error gathering screenshot", error)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
-                fx_single_page
-                # clazz_row
+                fx_single_page,
+                clazz_row
             )
 
         # Add screenshot for test failure/skip
@@ -239,17 +239,19 @@ def pytest_runtest_makereport(item, call):
                 comment += " before xfailure"
             if status == Status.SKIPPED:
                 comment += " before skip"
-            fx_report.fx_screenshots = "all"  # To force screenshot gathering
-            fx_report.screenshot(comment, target)
-            # clazz_row = fx_report._last_screenshot(comment, target)
+            try:
+                fx_report._last_screenshot(comment, target)
+            except Exception as error:
+                clazz_row = "visibility_last_scr_error"
+                utils.log_error(report, "Error gathering screenshot", error)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
                 fx_report.multimedia[-1],
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
                 fx_single_page,
+                clazz_row,
                 f"extras_font extras_color_{status}"
-                # clazz_row
             )
 
         # Add Execution title and horizontal line between the header and the steps table
@@ -286,9 +288,9 @@ def pytest_configure(config):
     fx_issue_link = config.getini("extras_issue_link_pattern")
     fx_title = config.getini("extras_title")
     # Add markers
-    config.addinivalue_line("markers", "issues(keys): The list of issue keys to add as links")
-    config.addinivalue_line("markers", "tms(keys): The list of test case keys to add as links")
-    config.addinivalue_line("markers", "link(url=<url>, name=<name>): The url to add as link")
+    config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as links")
+    config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as links")
+    config.addinivalue_line("markers", "link(url, name, icon): The url to add as link")
     # Add default CSS file
     config_css = config.getoption("--css", default=[])
     resources_path = pathlib.Path(__file__).parent.joinpath("resources")
@@ -297,8 +299,17 @@ def pytest_configure(config):
         config_css.insert(0, style_css)
 
 
+@pytest.hookimpl(tryfirst=True)
+def pytest_sessionstart(session):
+    """ Create report asserts. """
+    global fx_html, fx_single_page
+    if fx_html is not None:
+        utils.create_assets(fx_html, fx_single_page)
+
+
 @pytest.hookimpl()
 def pytest_sessionfinish(session, exitstatus):
+    """ delete empty report subfolders. """
     global fx_html
     if fx_html is not None:
         utils.delete_empty_subfolders(fx_html)

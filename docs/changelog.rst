@@ -3,6 +3,23 @@ Changelog
 =========
 
 
+1.3.4
+=====
+
+**Feature**
+
+* Link icons can be customized.
+
+**Improvement**
+
+* Code refactoring.
+
+**Change**
+
+* This version of the plugin is compatible with pytest v8.4.0 or later.
+* The ``@pytest.mark.issues`` marker has been renamed to ``@pytest.mark.issue``.
+
+
 1.3.3
 =====
 
