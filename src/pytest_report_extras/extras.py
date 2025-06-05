@@ -11,8 +11,15 @@ class Extras:
     Class to hold pytest-html 'extras' to be added for each test in the HTML report.
     """
 
-    def __init__(self, report_html: str, single_page: bool, screenshots: Literal["all", "last", "fail", "none"],
-                 sources: bool, indent: int, report_allure: str):
+    def __init__(
+        self,
+        report_html: str,
+        single_page: bool,
+        screenshots: Literal["all", "last", "fail", "none"],
+        sources: bool,
+        indent: int,
+        report_allure: str
+    ):
         """
         Args:
             report_html (str): The HTML report folder.
@@ -184,11 +191,13 @@ class Extras:
     def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]):
         """
         Saves multimedia data.
-        When not using the --self-contained-html option, saves the data,
-           and returns the filepaths relative to the <report_html> folder.
+
+        When not using the --self-contained-html option, saves the data
+            and returns the filepaths relative to the <report_html> folder.
         The image is saved in <report_html>/images folder.
         The video is saved in <report_html>/videos folder.
         The audio is saved in <report_html>/audio folder.
+
         When using the --self-contained-html option, returns the data URI schema of the data.
 
         Args:
@@ -249,6 +258,7 @@ class Extras:
     def _save_webpage_source(self, source: Optional[str]):
         """
         Saves a webpage source.
+
         When not using the --self-contained-html option, saves the webpage in <report_html>/sources folder
            and returns the filepaths relative to the <report_html> folder.
         When using the --self-contained-html option, returns the data URI schema of the webpage source.
@@ -273,11 +283,13 @@ class Extras:
     def _copy_file(self, filepath: str, mime: Optional[Mime]) -> Optional[str]:
         """
         Copies a multimedia file.
-        When not using the --self-contained-html option, copies the file,
-           and returns the filepaths relative to the <report_html> folder.
+
+        When not using the --self-contained-html option, copies the file
+            and returns the filepaths relative to the <report_html> folder.
         The image is copied into <report_html>/images folder.
         The video is copied into <report_html>/videos folder.
         The audio is copied into <report_html>/audio folder.
+
         When using the --self-contained-html option, returns the data URI schema of the file data.
 
         Args:

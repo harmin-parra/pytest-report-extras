@@ -301,6 +301,9 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
 
 
 def _attachment_html(text: str, report):
+    """
+    Returns an attachment object representing an HTML document.
+    """
     inner_html = None
     mime = Mime.HTML
     error_msg = "Error creating HTML attachment from body"
