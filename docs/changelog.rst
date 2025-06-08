@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.3.5
+=====
+
+**Change**
+
+* This version of the plugin is compatible with pytest v8.4.0 or later.
+
+
 1.3.4
 =====
 

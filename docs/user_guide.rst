@@ -287,13 +287,17 @@ Sample CSS file
       font-family: monospace;
   }
   
+  .extras_color_comment {
+      color: blue;
+  }
+
   .extras_color_skipped {
       color: #727272;
   }
   
   .extras_color_xfailed,
   .extras_color_xpassed {
-      color: orange;
+      color: #b37400;
   }
   
   .extras_color_error {
@@ -304,37 +308,21 @@ Sample CSS file
       color: red;
   }
   
-  .extras_color_comment {
-      color: blue;
-  }
-  
   .extras_header td {
       padding-top: 10px;
       vertical-align: top;
   }
   
-  .extras_header_middle {
+  .extras_header_separator {
       width: 10px;
   }
   
-  .extras_td {
+  .extras_td_multimedia {
       width: 320px;
   }
   
-  .extras_td_div {
+  .extras_td_multimedia div {
       text-align: center;
-  }
-  
-  .extras_code {
-      white-space: pre-wrap;
-      margin-top: 0px;
-      margin-bottom: 0px;
-      margin-left: 0px;
-  }
-  
-  .extras_description {
-      color: black;
-      font-size: 16px;
   }
   
   .extras_title {
@@ -343,6 +331,11 @@ Sample CSS file
       font-weight: bold;
   }
   
+  .extras_description {
+      color: black;
+      font-size: 16px;
+  }
+
   .extras_params_key {
       color: #999;
       font-size: 14px;
@@ -353,27 +346,25 @@ Sample CSS file
       font-size: 14px;
   }
   
-  .extras_status_reason {
-      color: black;
-      font-size: 14px;
-  }
-  
-  .extras_exception {
-      color: red;
+  .extras_block {
+      white-space: pre-wrap;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      margin-left: 0px;
   }
   
   .extras_separator {
-      height: 2px;
+      height: 1px;
       background-color: gray;
   }
-    
+  
   .extras_video {
       border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
   }
   
-  .extras_td svg {
+  .extras_td_multimedia svg {
       border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
@@ -392,7 +383,7 @@ Sample CSS file
       font-size: 12px;
   }
   
-  .extras_pre {
+  .extras_attachment {
       color: black;
       margin-left: 30px;
   }
@@ -432,10 +423,15 @@ Sample CSS file
   .extras_status_xfailed,
   .extras_status_xpassed {
       background: orange;
-  }	
+  }
   
   .extras_status_error {
       background: black;
+  }
+  
+  .extras_status_reason {
+      color: black;
+      font-size: 14px;
   }
 
 
