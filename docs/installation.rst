@@ -7,7 +7,7 @@ Requirements
 
 The plugin requires Python version 3.11 or higher.
 
-* ``pytest >= 8.0.0``
+* ``pytest >= 8.4.0``
 * ``pyyaml >= 6.0.2``
 
 
