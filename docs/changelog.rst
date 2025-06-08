@@ -8,7 +8,7 @@ Changelog
 
 **Change**
 
-* This version of the plugin is compatible with pytest v8.4.0 or later.
+* This version of the plugin requires **pytest** v8.4.0 or later.
 
 
 1.3.4
