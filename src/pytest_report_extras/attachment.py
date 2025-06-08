@@ -112,6 +112,8 @@ class Attachment:
         if source in (None, ''):
             return cls(body="Attachment source is None or empty", mime=Mime.TEXT)
         error_msg = f"Error creating attachment from source {source}"
+        if not report.fx_html:
+            return Attachment(source=source, mime=mime)
         if Mime.is_unsupported(mime):
             inner_html = decorators.decorate_uri(
                 utils.copy_file_and_get_link(report.fx_html, source, Mime.get_extension(mime), "downloads")
@@ -301,6 +303,9 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
 
 
 def _attachment_html(text: str, report):
+    """
+    Returns an attachment object representing an HTML document.
+    """
     inner_html = None
     mime = Mime.HTML
     error_msg = "Error creating HTML attachment from body"

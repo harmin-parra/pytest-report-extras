@@ -31,7 +31,7 @@ def get_header_rows(item, call, report, links, status: Status):
 
 def get_status_row(call, report, status):
     """ HTML table row for the test execution status and reason (if applicable). """
-    reason = decorate_reason(call, report, status)
+    reason = get_reason_msg(call, report, status)
     return (
         '<tr class="visibility_status">'
         f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
@@ -167,6 +167,25 @@ def get_step_row(
         )
 
 
+def get_reason_msg(call, report, status: Status) -> str:
+    """  Returns the fail, xfail or skip reason. """
+    reason = ""
+    # Get Xfailed and Xpassed tests
+    if status in (Status.XFAILED, Status.XPASSED):
+        reason = utils.escape_html(report.wasxfail)
+    # Get explicit pytest.fail and pytest.skip calls
+    if (
+        hasattr(call, "excinfo") and
+        call.excinfo is not None and
+        isinstance(call.excinfo.value, (Failed, XFailed, Skipped)) and
+        hasattr(call.excinfo.value, "msg")
+    ):
+        reason = utils.escape_html(call.excinfo.value.msg)
+    if reason != "":
+        reason = "Reason: " + reason
+    return reason
+
+
 def decorate_description(description) -> str:
     """  Applies a CSS style to the test description. """
     if description is None:
@@ -202,24 +221,6 @@ def decorate_exception(call) -> str:
     return content
 
 
-def decorate_reason(call, report, status: Status) -> str:
-    reason = ""
-    # Get Xfailed and Xpassed tests
-    if status in (Status.XFAILED, Status.XPASSED):
-        reason = utils.escape_html(report.wasxfail)
-    # Get explicit pytest.fail and pytest.skip calls
-    if (
-        hasattr(call, "excinfo") and
-        call.excinfo is not None and
-        isinstance(call.excinfo.value, (Failed, XFailed, Skipped)) and
-        hasattr(call.excinfo.value, "msg")
-    ):
-        reason = utils.escape_html(call.excinfo.value.msg)
-    if reason != "":
-        reason = "Reason: " + reason
-    return reason
-
-
 def decorate_links(links: list[Link]):
     """ Applies CSS style to a list of links """
     anchors = []
@@ -242,20 +243,6 @@ def decorate_comment(comment, clazz) -> str:
     if comment in (None, ''):
         return ""
     return f'<span class="{clazz}">{comment}</span>'
-
-
-'''
-def decorate_anchors(image, source):
-    """ Applies CSS style to a screenshot and page source anchor elements. """
-    if image is None:
-        return ''
-    image = decorate_image(image)
-    if source is not None:
-        source = decorate_page_source(source)
-        return f'<div class="extras_div">{image}<br>{source}</div>'
-    else:
-        return image
-'''
 
 
 def decorate_image(uri: Optional[str], single_page: bool) -> str:

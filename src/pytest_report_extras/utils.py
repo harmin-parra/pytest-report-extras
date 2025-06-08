@@ -110,7 +110,7 @@ def get_folder(filepath) -> Optional[str]:
         filepath (str): The filepath.
     """
     folder = None
-    if filepath not in (None, ''):
+    if filepath is not None:
         folder = os.path.dirname(filepath)
     return folder if folder != '' else '.'
 
