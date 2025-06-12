@@ -6,9 +6,9 @@ Changelog
 1.3.5
 =====
 
-**Change**
+**Bug fix**
 
-* This version of the plugin requires **pytest** v8.4.0 or later.
+* Wrong dependency version in ``pyproject.toml`` file.
 
 
 1.3.4

@@ -23,8 +23,8 @@ def pytest_addoption(parser):
     )
     parser.addini(
         "extras_attachment_indent",
-        type="int",
-        default=4,
+        type="string",
+        default="4",
         help="The indent to use for attachments. Accepted value: a positive integer",
     )
     parser.addini(
@@ -80,7 +80,12 @@ def _fx_report_allure(request):
 @pytest.fixture(scope="session")
 def _fx_indent(request):
     """ The indent to use for attachments. """
-    return request.config.getini("extras_attachment_indent")
+    # Workaround for https://github.com/pytest-dev/pytest/issues/11381
+    indent = request.config.getini("extras_attachment_indent")
+    try:
+        return int(indent)
+    except ValueError:
+        return 4
 
 
 @pytest.fixture(scope="session")
