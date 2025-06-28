@@ -6,6 +6,10 @@ Changelog
 1.3.6
 =====
 
+**Feature**
+
+* Addition of ``extras_links_column`` INI option to filter the type of links to display in the **Links** column of the pytest report.
+
 **Change**
 
 * This version of the plugin requires **pytest** v8.4.0 or later.
