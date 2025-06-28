@@ -62,6 +62,16 @@ Default value: ``None``
 
 ----
 
+* ``extras_links_column``
+
+The type of links to display in the **Links** columns of the pytest report.
+
+Accepted values: ``all``, ``issue``, ``tms``, ``link`` or ``none``
+
+Default value: ``all``
+
+----
+
 * ``extras_title``
 
 The test report title
@@ -182,6 +192,7 @@ Sample ``pytest.ini`` file
   extras_sources = False
   extras_issue_link_pattern = http://bugtracker.com/{}
   extras_tms_link_pattern = http://tms.com/tests/{}
+  extras_links_column = all
   extras_title = My awesome test report
 
 

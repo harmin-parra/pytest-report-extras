@@ -426,7 +426,8 @@ def add_links(
     extras,
     links: list[Link],
     fx_html: Optional[str],
-    fx_allure: Optional[str]
+    fx_allure: Optional[str],
+    fx_links_column: Literal["all", "link", "issue", "tms", "none"] = "all"
 ):
     """
     Add links to the report.
@@ -437,11 +438,13 @@ def add_links(
         links (List[tuple[str, str]]: The links to add.
         fx_html (str): The report_html fixture.
         fx_allure (str): The report_allure fixture.
+        fx_links_column (str): The links_column fixture.
     """
     pytest_html = item.config.pluginmanager.getplugin("html")
     for link in links:
         if fx_html is not None and pytest_html is not None:
-            extras.append(pytest_html.extras.url(link.url, name=f"{link.icon} {link.name}"))
+            if fx_links_column in ("all", link.type):
+                extras.append(pytest_html.extras.url(link.url, name=f"{link.icon} {link.name}"))
         if fx_allure is not None and importlib.util.find_spec("allure") is not None:
             import allure
             from allure_commons.types import LinkType

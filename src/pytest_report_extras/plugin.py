@@ -40,6 +40,12 @@ def pytest_addoption(parser):
         help="The test case link pattern. Example: https://tms.com/tests/{}",
     )
     parser.addini(
+        "extras_links_column",
+        type="string",
+        default="all",
+        help="The links type to show in the links columns. Accepted values: all, issue, tms, link, none",
+    )
+    parser.addini(
         "extras_title",
         type="string",
         default="Test Report",
@@ -111,10 +117,9 @@ def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_i
 # Workaround for https://github.com/pytest-dev/pytest/issues/13101
 fx_html = None
 fx_allure = None
-fx_tms_link = None
-fx_issue_link = None
 fx_tms_link_pattern = None
 fx_issue_link_pattern = None
+fx_links_column = "all"
 fx_single_page = False
 fx_title = ""
 
@@ -281,15 +286,16 @@ def pytest_configure(config):
     fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_allure = config.getoption("--alluredir", default=None)
     fx_single_page = config.getoption("--self-contained-html", default=False)
-    fx_tms_link = config.getini("extras_tms_link_pattern")
-    fx_issue_link = config.getini("extras_issue_link_pattern")
     fx_tms_link_pattern = config.getini("extras_tms_link_pattern")
     fx_issue_link_pattern = config.getini("extras_issue_link_pattern")
+    fx_links_column = config.getini("extras_links_column")
     fx_title = config.getini("extras_title")
+
     # Add markers
     config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as links")
     config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as links")
     config.addinivalue_line("markers", "link(url, name, icon): The url to add as link")
+
     # Add default CSS file
     config_css = config.getoption("--css", default=[])
     resources_path = pathlib.Path(__file__).parent.joinpath("resources")
