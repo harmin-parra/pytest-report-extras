@@ -366,7 +366,7 @@ def copy_file_and_get_link(
 def get_marker_links(
     item: pytest.Item,
     link_type: Literal["issue", "tms", "link"],
-    fx_link: Optional[str] = None
+    fx_link_pattern: Optional[str] = None
 ) -> list[Link]:
     """
     Returns the urls and labels, as a list of tuples, of the links of a given marker.
@@ -374,9 +374,9 @@ def get_marker_links(
     Args:
         item (pytest.Item): The test item.
         link_type: The marker.
-        fx_link: The link pattern of the marker's url.
+        fx_link_pattern: The link pattern of the marker's url.
     """
-    if fx_link is None and link_type in ("issue", "tms"):
+    if fx_link_pattern is None and link_type in ("issue", "tms"):
         return []
     links = []
     if link_type == "link":
@@ -397,26 +397,26 @@ def get_marker_links(
             icon = marker.kwargs.get("icon", icon)
             for key in keys:
                 if key not in (None, ''):
-                    links.append(Link(fx_link.replace("{}", key), key, link_type, icon))
+                    links.append(Link(fx_link_pattern.replace("{}", key), key, link_type, icon))
 
     return links
 
 
 def get_markers_links(
     item: pytest.Item,
-    fx_issue_link: Optional[str],
-    fx_tms_link: Optional[str]
+    fx_issue_link_pattern: Optional[str],
+    fx_tms_link_pattern: Optional[str]
 ) -> list[Link]:
     """
     Returns the urls and labels, as a list of tuples, of the links of all markers.
 
     Args:
         item (pytest.Item): The test item.
-        fx_issue_link: The link pattern for the "issues" marker.
+        fx_issue_link_pattern: The link pattern for the "issues" marker.
         fx_tms_link: The link pattern for the "tms" marker.
     """
-    links1 = get_marker_links(item, "issue", fx_issue_link)
-    links2 = get_marker_links(item, "tms", fx_tms_link)
+    links1 = get_marker_links(item, "issue", fx_issue_link_pattern)
+    links2 = get_marker_links(item, "tms", fx_tms_link_pattern)
     links3 = get_marker_links(item, "link")
     return links1 + links2 + links3
 
