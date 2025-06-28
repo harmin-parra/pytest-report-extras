@@ -8,7 +8,7 @@ Changelog
 
 **Feature**
 
-* Addition of ``extras_links_column`` INI option to filter the type of links to display in the **Links** columns of the pytest report.
+* Addition of ``extras_links_column`` INI option to filter the type of links to display in the **Links** column of the pytest report.
 
 **Change**
 
