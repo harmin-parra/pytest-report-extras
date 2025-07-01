@@ -49,7 +49,7 @@ class Extras:
         target=None,
         full_page: bool = True,
         page_source: bool = False,
-        escape_html: bool = False
+        escape_html: bool = True
     ):
         """
         Adds a step with a screenshot to the report.
@@ -95,7 +95,7 @@ class Extras:
         source: str = None,
         mime: str = None,
         csv_delimiter: str = ',',
-        escape_html: bool = False
+        escape_html: bool = True
     ):
         """
         Adds a step with an attachment to the report.
