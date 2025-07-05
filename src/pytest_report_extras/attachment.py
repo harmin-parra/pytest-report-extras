@@ -21,7 +21,7 @@ class Attachment:
         source: Optional[str] = None,
         mime: Optional[Mime | str] = None,
         inner_html: Optional[str] = None,
-        error: bool = False
+        error: str | Exception = None
     ):
         """
         Args:
@@ -33,13 +33,13 @@ class Attachment:
             mime (str): The mime type (optional).
             inner_html: The inner_html to display the attachment in the HTML report.
                         Used for mime types: text/csv, text/html, text/uri-list and also for unsupported mime types.
-            error: Whether there was an error parsing the attachment.
+            error (str | Exception): The error when parsing the attachment.
         """
         self.body = body
         self.source = source
-        self.mime = mime
+        self.mime = mime if error is None else Mime.TEXT
         self.inner_html = inner_html
-        self.error = error
+        self.error = None if error is None else str(error)
 
     @classmethod
     def parse_body(
@@ -67,7 +67,7 @@ class Attachment:
             An Attachment object representing the attachment.
         """
         if body in (None, ''):
-            return cls(body="Attachment body is None or empty", mime=Mime.TEXT, error=True)
+            return cls(error="Attachment body is None or empty")
         if isinstance(body, List):
             mime = Mime.URI
         if Mime.is_image(mime):
@@ -113,18 +113,18 @@ class Attachment:
             An Attachment object representing the attachment.
         """
         if source in (None, ''):
-            return cls(body="Attachment source is None or empty", mime=Mime.TEXT, error=True)
+            return cls(error="Attachment source is None or empty")
         error_msg = f"Error creating attachment from source {source}"
         if not report.fx_html:
             return Attachment(source=source, mime=mime)
         if Mime.is_unsupported(mime):
-            inner_html = decorators.decorate_uri(
-                utils.copy_file_and_get_link(report.fx_html, source, Mime.get_extension(mime), "downloads")
-            )
-            if inner_html == '':
-                return Attachment(body=error_msg, mime=Mime.TEXT, error=True)
-            else:
+            try:
+                inner_html = decorators.decorate_uri(
+                    utils.copy_file_and_get_link(report.fx_html, source, Mime.get_extension(mime), "downloads")
+                )
                 return Attachment(source=source, inner_html=inner_html)
+            except OSError as error:
+                return Attachment(error=f"{error_msg}\n{error}")
         elif mime == Mime.HTML:
             if report.fx_single_page:
                 try:
@@ -134,13 +134,13 @@ class Attachment:
                     return _attachment_html(body, report)
                 except Exception as error:
                     utils.log_error(None, f"{error_msg}: ", error)
-                    return Attachment(body=f"{error_msg}\n{error}", mime=Mime.TEXT, error=True)
+                    return Attachment(error=f"{error_msg}\n{error}")
             else:
-                inner_html = utils.copy_file_and_get_link(report.fx_html, source, "html", "sources")
-                if inner_html != '':
+                try:
+                    inner_html = utils.copy_file_and_get_link(report.fx_html, source, "html", "sources")
                     return Attachment(source=source, mime=Mime.HTML, inner_html=inner_html)
-                else:
-                    return Attachment(body=error_msg, mime=Mime.TEXT, error=True)
+                except OSError as error:
+                    return Attachment(error=f"{error_msg}\n{error}")
 
     def __repr__(self) -> str:
         if isinstance(self.body, bytes):
@@ -160,15 +160,15 @@ def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
     Returns an attachment object with a string holding a JSON document.
     """
     if not isinstance(text, (str, dict)):
-        msg = f"Error parsing JSON body of type '{type(text)}'"
-        utils.log_error(None, msg)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing JSON body of type '{type(text)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     try:
         text = json.loads(text) if isinstance(text, str) else text
         return Attachment(body=json.dumps(text, indent=indent), mime=Mime.JSON)
     except Exception as error:
         utils.log_error(None, "Error formatting JSON:", error)
-        return Attachment(body="Error formatting JSON:\n" + str(text), mime=Mime.TEXT, error=True)
+        return Attachment(body=str(text), mime=Mime.TEXT, error=f"Error formatting JSON:\n{error}")
 
 
 def _attachment_xml(text: str, indent: int = 4) -> Attachment:
@@ -176,9 +176,9 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
     Returns an attachment object with a string holding an XML document.
     """
     if not isinstance(text, str):
-        msg = f"Error parsing XML body of type '{type(text)}'"
-        utils.log_error(None, msg)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing XML body of type '{type(text)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     try:
         result = (xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', ''))
                   .toprettyxml(indent=" " * indent))
@@ -186,7 +186,7 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
         return Attachment(body=result, mime=Mime.XML)
     except Exception as error:
         utils.log_error(None, "Error formatting XML:", error)
-        return Attachment(body="Error formatting XML:\n" + str(text), mime=Mime.TEXT, error=True)
+        return Attachment(body=str(text), mime=Mime.TEXT, error=f"Error formatting XML:\n{error}")
 
 
 def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
@@ -194,15 +194,15 @@ def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
     Returns an attachment object with a string holding a YAML document.
     """
     if not isinstance(text, str):
-        msg = f"Error parsing YAML body of type '{type(text)}'"
-        utils.log_error(None, msg)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing YAML body of type '{type(text)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     try:
         text = yaml.safe_load(text)
         return Attachment(body=yaml.dump(text, indent=indent), mime=Mime.YAML)
     except Exception as error:
         utils.log_error(None, "Error formatting YAML:", error)
-        return Attachment(body="Error formatting YAML:\n" + str(text), mime=Mime.TEXT, error=True)
+        return Attachment(body=str(text), mime=Mime.TEXT, error=f"Error formatting YAML:\n{error}")
 
 
 def _attachment_txt(text: str) -> Attachment:
@@ -210,9 +210,9 @@ def _attachment_txt(text: str) -> Attachment:
     Returns an attachment object with a plain/text string.
     """
     if not isinstance(text, str):
-        msg = f"Error parsing text body of type '{type(text)}'"
-        utils.log_error(None, msg, None)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing text body of type '{type(text)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     return Attachment(body=text, mime=Mime.TEXT)
 
 
@@ -221,9 +221,9 @@ def _attachment_csv(text: str, delimiter=',') -> Attachment:
     Returns an attachment object with a string holding a CVS document.
     """
     if not isinstance(text, str):
-        msg = f"Error parsing csv body of type '{type(text)}'"
-        utils.log_error(None, msg)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing csv body of type '{type(text)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     try:
         f = io.StringIO(text)
         csv_reader = csv.reader(f, delimiter=delimiter)
@@ -240,7 +240,7 @@ def _attachment_csv(text: str, delimiter=',') -> Attachment:
         return Attachment(body=text, mime=Mime.CSV, inner_html=inner_html)
     except Exception as error:
         utils.log_error(None, "Error formatting CSV:", error)
-        return Attachment(body="Error formatting CSV:\n" + str(text), mime=Mime.TEXT, error=True)
+        return Attachment(body=str(text), mime=Mime.TEXT, error=f"Error formatting CSV:\n{error}")
 
 
 def _attachment_uri_list(text: str | list[str]) -> Attachment:
@@ -248,9 +248,9 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
     Returns an attachment object with a uri list.
     """
     if not isinstance(text, (str, list)):
-        msg = f"Error parsing uri-list body of type '{type(text)}'"
-        utils.log_error(None, msg)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing uri-list body of type '{type(text)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     try:
         uri_list = None
         body = None
@@ -268,7 +268,7 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
         return Attachment(body=body, mime=Mime.URI, inner_html=inner_html)
     except Exception as error:
         utils.log_error(None, "Error parsing uri list:", error)
-        return Attachment(body="Error parsing uri list.", mime=Mime.TEXT, error=True)
+        return Attachment(error=f"Error parsing uri list.\n{error}")
 
 
 def _attachment_image(data: bytes | str, mime: str) -> Attachment:
@@ -276,15 +276,15 @@ def _attachment_image(data: bytes | str, mime: str) -> Attachment:
     Returns an attachment object with bytes representing an image.
     """
     if not isinstance(data, (str, bytes)):
-        msg = f"Error parsing image body of type '{type(data)}'"
-        utils.log_error(None, msg)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing image body of type '{type(data)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     if isinstance(data, str):
         try:
             data = base64.b64decode(data)
         except Exception as error:
             utils.log_error(None, "Error parsing image bytes:", error)
-            return Attachment(body="Error parsing image bytes.", mime=Mime.TEXT, error=True)
+            return Attachment(error=f"Error parsing image bytes.\n{error}")
     return Attachment(body=data, mime=mime)
 
 
@@ -293,15 +293,15 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
     Returns an attachment object with bytes representing a video.
     """
     if not isinstance(data, (str, bytes)):
-        msg = f"Error parsing video body of type '{type(data)}'"
-        utils.log_error(None, msg)
-        return Attachment(body=msg, mime=Mime.TEXT, error=True)
+        error_msg = f"Error parsing video body of type '{type(data)}'"
+        utils.log_error(None, error_msg)
+        return Attachment(error=error_msg)
     if isinstance(data, str):
         try:
             data = base64.b64decode(data)
         except Exception as error:
             utils.log_error(None, "Error parsing video bytes:", error)
-            return Attachment(body="Error parsing video bytes.", mime=Mime.TEXT, error=True)
+            return Attachment(error=f"Error parsing video bytes.\n{error}")
     return Attachment(body=data, mime=mime)
 
 
@@ -312,7 +312,6 @@ def _attachment_html(text: str, report):
     inner_html = None
     mime = Mime.HTML
     error_msg = "Error creating HTML attachment from body"
-    error = False
     if report.fx_html:
         if report.fx_single_page:
             try:
@@ -320,17 +319,14 @@ def _attachment_html(text: str, report):
                 encoded_str = encoded_bytes.decode("utf-8")
                 inner_html = f"data:text/html;base64,{encoded_str}"
             except Exception as error:
-                text = f"{error_msg}\n{error}"
-                mime = Mime.TEXT
                 utils.log_error(None, error_msg, error)
-                error = True
+                return Attachment(error=f"{error_msg}\n{error}")
         else:
-            inner_html = utils.save_data_and_get_link(report.fx_html, text, "html", "sources")
-            if inner_html == '':
-                text = error_msg
-                mime = Mime.TEXT
-                error = True
-    return Attachment(body=text, mime=mime, inner_html=inner_html, error=error)
+            try:
+                inner_html = utils.save_data_and_get_link(report.fx_html, text, "html", "sources")
+                return Attachment(body=text, mime=mime, inner_html=inner_html)
+            except OSError as error:
+                return Attachment(error=f"Error saving HTML\n{error}")
 
 
 def _attachment_unsupported(text: str, mime, report):
@@ -340,5 +336,5 @@ def _attachment_unsupported(text: str, mime, report):
             utils.save_data_and_get_link(report.fx_html, text, Mime.get_extension(mime), "downloads")
         )
         if inner_html == '':
-            return Attachment(body="Error creating attachment from body", mime=Mime.TEXT, error=True)
+            return Attachment(error="Error saving attachment")
     return Attachment(body=text, inner_html=inner_html)

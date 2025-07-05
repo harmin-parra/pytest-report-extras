@@ -334,13 +334,17 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_attachment"
     clazz_frm = "extras_iframe"
-    if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '')):
+    if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '') and attachment.error in (None, '')):
         return ""
 
-    if attachment.error:
-        attachment.body = f'<span style="color: red">{utils.escape_html(attachment.body)}</span>'
+    if attachment.error is not None:
+        attachment.error = f'<span style="color: red">{attachment.error}</span>'
     else:
-        attachment.body = utils.escape_html(attachment.body)
+        attachment.error = ""
+    if attachment.body is None:
+        attachment.body = ""
+    if attachment.error != "" and attachment.body != "":
+        attachment.error += '\n'
 
     if attachment.inner_html is not None:
         if attachment.mime is None:  # downloadable file with unknown mime type
@@ -350,4 +354,7 @@ def decorate_attachment(attachment) -> str:
         else:  # text/csv, text/uri-list
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
     else:  # application/*, text/plain
-        return f'<pre class="{clazz_pre} block_code">{attachment.body}</pre>'
+        if attachment.body == "" and attachment.error == "":
+            return ""
+        else:
+            return f'<pre class="{clazz_pre} block_code">{attachment.error}{utils.escape_html(attachment.body)}</pre>'

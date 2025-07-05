@@ -112,14 +112,16 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        if body is None and source is None:
+        if body is None and source is None and mime is None:
             if comment is not None:  # A comment alone
                 attachment = Attachment(body="", mime=Mime.TEXT)
             else:
                 attachment = None
         else:
             if body is not None and mime is None:
-                attachment = Attachment(body="Mime is required for attachments with body", mime=Mime.TEXT, error=True)
+                attachment = Attachment(error="Mime is required for attachments with body")
+            elif body is None and source is None and mime is not None:
+                attachment = Attachment(error="Attachment body or source is None")
             else:
                 mime = Mime.get_mime(Mime.get_extension(source)) if mime is None else Mime.get_mime(mime)
                 attachment = self._get_attachment(body, source, mime, csv_delimiter)
@@ -158,10 +160,9 @@ class Extras:
                     body = f.read()
                     f.close()
                 except Exception as error:
-                    body = f"Error creating attachment from source {source}\n{error}"
-                    utils.log_error(None, f"Error creating attachment from source {source}: ", error)
-                    mime = Mime.TEXT
-                    return Attachment(body=body, mime=mime, error=True)
+                    error_msg = f"Error creating attachment from source {source}"
+                    utils.log_error(None, error_msg, error)
+                    return Attachment(error=f"{error_msg}\n{error}")
         else:
             if mime == Mime.HTML or Mime.is_unsupported(mime):
                 return Attachment.parse_body(body=body, mime=mime, report=self)
@@ -375,16 +376,20 @@ class Extras:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
             if attachment is not None and Mime.is_multimedia(mime):
-                msg = None
+                error_msg = None
                 if attachment.source is not None:
-                    link_multimedia = self._copy_file(attachment.source, mime)
-                    msg = "Error copying file" if link_multimedia is None else None
+                    try:
+                        link_multimedia = self._copy_file(attachment.source, mime)
+                    except OSError as error:
+                        error_msg = f"Error copying file {attachment.source}\n{error}"
                 else:
-                    link_multimedia = self._save_data(attachment.body, mime)
-                    link_source = self._save_webpage_source(websource)
-                    msg = "Error saving data" if link_multimedia is None else None
-                if msg is not None:
-                    attachment = Attachment(body=msg, mime=Mime.TEXT, error=True)
+                    try:
+                        link_multimedia = self._save_data(attachment.body, mime)
+                        link_source = self._save_webpage_source(websource)
+                    except OSError as error:
+                        error_msg = f"Error saving data\n{error}"
+                if error_msg is not None:
+                    attachment = Attachment(error=error_msg)
                 else:  # Cleanup of useless attachment's info
                     if Mime.is_video(mime):
                         attachment.body = None
