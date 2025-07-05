@@ -119,7 +119,7 @@ class Extras:
                 attachment = None
         else:
             if body is not None and mime is None:
-                attachment = Attachment(body="Mime is required for attachments with body", mime=Mime.TEXT)
+                attachment = Attachment(body="Mime is required for attachments with body", mime=Mime.TEXT, error=True)
             else:
                 mime = Mime.get_mime(Mime.get_extension(source)) if mime is None else Mime.get_mime(mime)
                 attachment = self._get_attachment(body, source, mime, csv_delimiter)
@@ -161,6 +161,7 @@ class Extras:
                     body = f"Error creating attachment from source {source}\n{error}"
                     utils.log_error(None, f"Error creating attachment from source {source}: ", error)
                     mime = Mime.TEXT
+                    return Attachment(body=body, mime=mime, error=True)
         else:
             if mime == Mime.HTML or Mime.is_unsupported(mime):
                 return Attachment.parse_body(body=body, mime=mime, report=self)
@@ -383,7 +384,7 @@ class Extras:
                     link_source = self._save_webpage_source(websource)
                     msg = "Error saving data" if link_multimedia is None else None
                 if msg is not None:
-                    attachment = Attachment(body=msg, mime=Mime.TEXT)
+                    attachment = Attachment(body=msg, mime=Mime.TEXT, error=True)
                 else:  # Cleanup of useless attachment's info
                     if Mime.is_video(mime):
                         attachment.body = None
