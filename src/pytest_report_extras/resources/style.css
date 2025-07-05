@@ -217,3 +217,11 @@ span.error,
     color: black;
     font-size: 14px;
 }
+
+code,
+.block_code {
+    padding: .2em .4em;
+    color: black;
+    background-color: #818b981f;
+    border-radius: 6px;
+}

@@ -337,6 +337,11 @@ def decorate_attachment(attachment) -> str:
     if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '')):
         return ""
 
+    if attachment.error:
+        attachment.body = f'<span style="color: red">{utils.escape_html(attachment.body)}</span>'
+    else:
+        attachment.body = utils.escape_html(attachment.body)
+
     if attachment.inner_html is not None:
         if attachment.mime is None:  # downloadable file with unknown mime type
             return ' ' + attachment.inner_html
@@ -345,4 +350,4 @@ def decorate_attachment(attachment) -> str:
         else:  # text/csv, text/uri-list
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
     else:  # application/*, text/plain
-        return f'<pre class="{clazz_pre}">{utils.escape_html(attachment.body)}</pre>'
+        return f'<pre class="{clazz_pre} block_code">{attachment.body}</pre>'
