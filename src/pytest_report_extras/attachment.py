@@ -1,5 +1,6 @@
 import base64
 import csv
+import html
 import io
 import json
 import re
@@ -39,7 +40,7 @@ class Attachment:
         self.source = source
         self.mime = mime if error is None else Mime.TEXT
         self.inner_html = inner_html
-        self.error = None if error is None else str(error)
+        self.error = None if error is None else html.escape(str(error))
 
     @classmethod
     def parse_body(
@@ -160,7 +161,7 @@ def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
     Returns an attachment object with a string holding a JSON document.
     """
     if not isinstance(text, (str, dict)):
-        error_msg = f"Error parsing JSON body of type '{type(text)}'"
+        error_msg = f"Error parsing JSON body of type {type(text)}"
         utils.log_error(None, error_msg)
         return Attachment(error=error_msg)
     try:
@@ -176,8 +177,9 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
     Returns an attachment object with a string holding an XML document.
     """
     if not isinstance(text, str):
-        error_msg = f"Error parsing XML body of type '{type(text)}'"
+        error_msg = f"Error parsing XML body of type {type(text)}"
         utils.log_error(None, error_msg)
+        print(error_msg)
         return Attachment(error=error_msg)
     try:
         result = (xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', ''))
@@ -194,7 +196,7 @@ def _attachment_yaml(text: str, indent: int = 4) -> Attachment:
     Returns an attachment object with a string holding a YAML document.
     """
     if not isinstance(text, str):
-        error_msg = f"Error parsing YAML body of type '{type(text)}'"
+        error_msg = f"Error parsing YAML body of type {type(text)}"
         utils.log_error(None, error_msg)
         return Attachment(error=error_msg)
     try:
@@ -210,7 +212,7 @@ def _attachment_txt(text: str) -> Attachment:
     Returns an attachment object with a plain/text string.
     """
     if not isinstance(text, str):
-        error_msg = f"Error parsing text body of type '{type(text)}'"
+        error_msg = f"Error parsing text body of type {type(text)}"
         utils.log_error(None, error_msg)
         return Attachment(error=error_msg)
     return Attachment(body=text, mime=Mime.TEXT)
@@ -221,7 +223,7 @@ def _attachment_csv(text: str, delimiter=',') -> Attachment:
     Returns an attachment object with a string holding a CVS document.
     """
     if not isinstance(text, str):
-        error_msg = f"Error parsing csv body of type '{type(text)}'"
+        error_msg = f"Error parsing csv body of type {type(text)}"
         utils.log_error(None, error_msg)
         return Attachment(error=error_msg)
     try:
@@ -248,7 +250,7 @@ def _attachment_uri_list(text: str | list[str]) -> Attachment:
     Returns an attachment object with a uri list.
     """
     if not isinstance(text, (str, list)):
-        error_msg = f"Error parsing uri-list body of type '{type(text)}'"
+        error_msg = f"Error parsing uri-list body of type {type(text)}"
         utils.log_error(None, error_msg)
         return Attachment(error=error_msg)
     try:
@@ -276,7 +278,7 @@ def _attachment_image(data: bytes | str, mime: str) -> Attachment:
     Returns an attachment object with bytes representing an image.
     """
     if not isinstance(data, (str, bytes)):
-        error_msg = f"Error parsing image body of type '{type(data)}'"
+        error_msg = f"Error parsing image body of type {type(data)}"
         utils.log_error(None, error_msg)
         return Attachment(error=error_msg)
     if isinstance(data, str):
@@ -293,7 +295,7 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
     Returns an attachment object with bytes representing a video.
     """
     if not isinstance(data, (str, bytes)):
-        error_msg = f"Error parsing video body of type '{type(data)}'"
+        error_msg = f"Error parsing video body of type {type(data)}"
         utils.log_error(None, error_msg)
         return Attachment(error=error_msg)
     if isinstance(data, str):
