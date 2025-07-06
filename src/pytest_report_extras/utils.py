@@ -319,7 +319,7 @@ def save_data_and_get_link(
         f.close()
         return f"{folder}{os.sep}{filename}"
     except OSError as error:
-        log_error(None, f"Error saving file to '{folder}' folder:", error)
+        log_error(None, f"Error saving file into '{folder}' folder:", error)
         raise
 
 
@@ -356,7 +356,7 @@ def copy_file_and_get_link(
         shutil.copyfile(filepath, destination)
         return f"{folder}{os.sep}{filename}"
     except OSError as error:
-        log_error(None, f"Error copying file '{filepath}' into folder '{folder}':", error)
+        log_error(None, f"Error copying file '{filepath}' into '{folder}' folder:", error)
         raise
 
 
