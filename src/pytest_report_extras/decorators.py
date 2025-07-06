@@ -338,7 +338,7 @@ def decorate_attachment(attachment) -> str:
         return ""
 
     if attachment.error is not None:
-        attachment.error = f'<span style="color: red">{attachment.error}</span>'
+        attachment.error = f'<span class="extras_attachment_error">{attachment.error}</span>'
     else:
         attachment.error = ""
     if attachment.body is None:

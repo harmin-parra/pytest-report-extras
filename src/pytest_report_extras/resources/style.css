@@ -173,6 +173,18 @@ span.error,
     margin-right: 30px;
 }
 
+code,
+.extras_attachment_code {
+    padding: .2em .4em;
+    color: black;
+    background-color: #818b981f;
+    border-radius: 6px;
+}
+
+.extras_attachment_error {
+    color: red;
+}
+
 .extras_iframe {
     margin-top: 15px;
     margin-left: 30px;
@@ -217,12 +229,4 @@ span.error,
 .extras_status_reason {
     color: black;
     font-size: 14px;
-}
-
-code,
-.extras_attachment_code {
-    padding: .2em .4em;
-    color: black;
-    background-color: #818b981f;
-    border-radius: 6px;
 }
