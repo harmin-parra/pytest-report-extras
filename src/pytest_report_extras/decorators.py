@@ -192,7 +192,7 @@ def decorate_description(description) -> str:
         return ""
     description = utils.escape_html(description).strip().replace('\n', "<br>")
     description = description.strip().replace('\n', "<br>")
-    return f'<pre class="extras_description extras_block">{description}</pre>'
+    return f'<pre class="extras_description extras_header_block">{description}</pre>'
 
 
 def decorate_parameters(parameters) -> str:
@@ -215,8 +215,8 @@ def decorate_exception(call) -> str:
         not isinstance(call.excinfo.value, (Failed, XFailed, Skipped))
     ):
         content = content + (
-            f'<pre class="extras_block">{utils.escape_html(call.excinfo.typename)}</pre><br>'
-            f'<pre class="extras_block">{utils.escape_html(call.excinfo.value)}</pre>'
+            f'<pre class="extras_header_block">{utils.escape_html(call.excinfo.typename)}</pre><br>'
+            f'<pre class="extras_header_block">{utils.escape_html(call.excinfo.value)}</pre>'
         )
     return content
 
@@ -334,8 +334,17 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_attachment"
     clazz_frm = "extras_iframe"
-    if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '')):
+    if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '') and attachment.error in (None, '')):
         return ""
+
+    if attachment.error is not None:
+        attachment.error = f'<span class="extras_attachment_error">{attachment.error}</span>'
+    else:
+        attachment.error = ""
+    if attachment.body is None:
+        attachment.body = ""
+    if attachment.error != "" and attachment.body != "":
+        attachment.error += '\n'
 
     if attachment.inner_html is not None:
         if attachment.mime is None:  # downloadable file with unknown mime type
@@ -345,4 +354,7 @@ def decorate_attachment(attachment) -> str:
         else:  # text/csv, text/uri-list
             return f'<pre class="{clazz_pre}">{attachment.inner_html}</pre>'
     else:  # application/*, text/plain
-        return f'<pre class="{clazz_pre}">{utils.escape_html(attachment.body)}</pre>'
+        if attachment.body == "" and attachment.error == "":
+            return ""
+        else:
+            return f'<pre class="{clazz_pre} extras_attachment_code">{attachment.error}{utils.escape_html(attachment.body)}</pre>'

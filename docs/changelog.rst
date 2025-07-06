@@ -10,6 +10,10 @@ Changelog
 
 * Addition of ``extras_links_column`` INI option to filter the type of links to display in the **Links** column of the pytest report.
 
+**Improvement**
+
+* Attachment's related error messages are displayed in red color.
+
 **Change**
 
 * This version of the plugin requires **pytest** v8.4.0 or later.

@@ -319,8 +319,8 @@ def save_data_and_get_link(
         f.close()
         return f"{folder}{os.sep}{filename}"
     except OSError as error:
-        log_error(None, f"Error saving file to '{folder}' folder:", error)
-        return None
+        log_error(None, f"Error saving file into '{folder}' folder:", error)
+        raise
 
 
 def copy_file_and_get_link(
@@ -356,8 +356,8 @@ def copy_file_and_get_link(
         shutil.copyfile(filepath, destination)
         return f"{folder}{os.sep}{filename}"
     except OSError as error:
-        log_error(None, f"Error copying file '{filepath}' into folder '{folder}':", error)
-        return None
+        log_error(None, f"Error copying file '{filepath}' into '{folder}' folder:", error)
+        raise
 
 
 #
@@ -413,7 +413,7 @@ def get_markers_links(
     Args:
         item (pytest.Item): The test item.
         fx_issue_link_pattern: The link pattern for the "issues" marker.
-        fx_tms_link: The link pattern for the "tms" marker.
+        fx_tms_link_pattern: The link pattern for the "tms" marker.
     """
     links1 = get_marker_links(item, "issue", fx_issue_link_pattern)
     links2 = get_marker_links(item, "tms", fx_tms_link_pattern)
