@@ -105,7 +105,7 @@ span.error,
     font-size: 14px;
 }
 
-.extras_block {
+.extras_header_block {
     white-space: pre-wrap;
     margin-top: 0px;
     margin-bottom: 0px;
@@ -170,6 +170,7 @@ span.error,
 .extras_attachment {
     color: black;
     margin-left: 30px;
+    margin-right: 30px;
 }
 
 .extras_iframe {
@@ -219,7 +220,7 @@ span.error,
 }
 
 code,
-.block_code {
+.extras_attachment_code {
     padding: .2em .4em;
     color: black;
     background-color: #818b981f;
