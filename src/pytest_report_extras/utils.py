@@ -485,7 +485,7 @@ def log_error(
             if "stderr" in report.sections[i][0]:
                 report.sections[i] = (
                     report.sections[i][0],
-                    report.sections[i][1] + message + '\n'
+                    report.sections[i][1] + '\n' + message
                 )
                 found = True
                 break

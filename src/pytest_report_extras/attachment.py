@@ -179,7 +179,6 @@ def _attachment_xml(text: str, indent: int = 4) -> Attachment:
     if not isinstance(text, str):
         error_msg = f"Error parsing XML body of type {type(text)}"
         utils.log_error(None, error_msg)
-        print(error_msg)
         return Attachment(error=error_msg)
     try:
         result = (xdom.parseString(re.sub(r"\n\s+", '',  text).replace('\n', ''))
