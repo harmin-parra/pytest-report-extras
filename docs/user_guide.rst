@@ -357,7 +357,7 @@ Sample CSS file
       font-size: 14px;
   }
   
-  .extras_block {
+  .extras_header_block {
       white-space: pre-wrap;
       margin-top: 0px;
       margin-bottom: 0px;
@@ -397,6 +397,18 @@ Sample CSS file
   .extras_attachment {
       color: black;
       margin-left: 30px;
+  }
+  
+  code,
+  .extras_attachment_block {
+      padding: .2em .4em;
+      color: black;
+      background-color: #818b981f;
+      border-radius: 6px;
+  }
+
+  .extras_attachment_error {
+      color: red;
   }
   
   .extras_iframe {
