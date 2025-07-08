@@ -357,4 +357,4 @@ def decorate_attachment(attachment) -> str:
         if attachment.body == "" and attachment.error == "":
             return ""
         else:
-            return f'<pre class="{clazz_pre} extras_attachment_code">{attachment.error}{utils.escape_html(attachment.body)}</pre>'
+            return f'<pre class="{clazz_pre} extras_attachment_block">{attachment.error}{utils.escape_html(attachment.body)}</pre>'
