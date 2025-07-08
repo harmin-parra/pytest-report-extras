@@ -144,11 +144,12 @@ def pytest_runtest_makereport(item, call):
     if (
         call.when == "setup" and
         (report.failed or report.skipped) and
-        fx_html is not None and pytest_html is not None
+        fx_html is not None and pytest_html is not None and
+        "report" in item._fixtureinfo.argnames
     ):
         if report.failed:
             status = Status.ERROR
-        else:
+        else:  # report.skipped
             status = Status.SKIPPED
         header = decorators.get_header_rows(item, call, report, links, status)
         extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))

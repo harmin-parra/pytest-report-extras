@@ -12,7 +12,7 @@ Changelog
 
 **Improvement**
 
-* Attachment's related error messages are displayed in red color.
+* CSS class added for error messages related to attachments.
 
 **Change**
 
