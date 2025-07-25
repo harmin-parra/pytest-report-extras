@@ -1,3 +1,4 @@
+import importlib
 import pathlib
 import pytest
 from . import decorators, utils
@@ -321,6 +322,7 @@ def pytest_sessionfinish(session, exitstatus):
         utils.delete_empty_subfolders(fx_html)
 
 
-def pytest_html_report_title(report):
-    global fx_title
-    report.title = fx_title
+if importlib.util.find_spec("pytest-html") is not None:
+    def pytest_html_report_title(report):
+        global fx_title
+        report.title = fx_title

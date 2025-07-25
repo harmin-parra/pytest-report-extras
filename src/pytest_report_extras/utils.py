@@ -24,7 +24,7 @@ def check_options(htmlpath, allurepath):
                    "pytest-html or pytest-allure plugin is required.\n"
                    "'--html' or '--alluredir' option is missing.\n")
         print(message, file=sys.stderr)
-        sys.exit(pytest.ExitCode.USAGE_ERROR)
+        # sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
 def check_lists_length(report, fx_extras) -> bool:
