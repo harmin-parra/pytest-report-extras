@@ -3,6 +3,14 @@ Changelog
 =========
 
 
+1.3.7
+=====
+
+**Bug fix**
+
+* Impossible to execute **pytest** when **pytest-html** is not installed.
+
+
 1.3.6
 =====
 

@@ -64,6 +64,8 @@ class Extras:
         Raises:
             Exception: If the screenshot action raises an exception and self.last_screenshot = True.
         """
+        if self.fx_allure is None and self.fx_html is None:
+            return
         target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
         self.target = target_obj if target_obj is not None else self.target
         if target is not None and not target_check:
@@ -112,6 +114,8 @@ class Extras:
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
+        if self.fx_allure is None and self.fx_html is None:
+            return
         if body is None and source is None and mime is None:
             if comment is not None:  # A comment alone
                 attachment = Attachment(body="", mime=Mime.TEXT)
