@@ -322,7 +322,7 @@ def pytest_sessionfinish(session, exitstatus):
         utils.delete_empty_subfolders(fx_html)
 
 
-if importlib.util.find_spec("pytest-html") is not None:
+if importlib.util.find_spec("html") is not None:
     def pytest_html_report_title(report):
         global fx_title
         report.title = fx_title
