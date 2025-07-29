@@ -10,6 +10,10 @@ Changelog
 
 * Impossible to execute **pytest** when **pytest-html** is not installed.
 
+**Improvement**
+
+* CSS improvements.
+
 
 1.3.6
 =====
