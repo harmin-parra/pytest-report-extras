@@ -325,9 +325,9 @@ def _attachment_html(text: str, report):
         else:
             try:
                 inner_html = utils.save_data_and_get_link(report.fx_html, text, "html", "sources")
-                return Attachment(body=text, mime=mime, inner_html=inner_html)
             except OSError as error:
                 return Attachment(error=f"Error saving HTML\n{error}")
+    return Attachment(body=text, mime=mime, inner_html=inner_html)
 
 
 def _attachment_unsupported(text: str, mime, report):
