@@ -297,68 +297,69 @@ Sample CSS file
   .extras_font {
       font-family: monospace;
   }
-
+  
   .extras_color_comment {
       color: blue;
   }
-
+  
   .extras_color_skipped {
       color: #727272;
   }
-
+  
   .extras_color_xfailed,
   .extras_color_xpassed {
       color: #b37400;
   }
-
+  
   .extras_color_error {
       color: black;
   }
-
+  
   .extras_color_failed {
       color: red;
   }
-
+  
   .extras_header td {
       padding-top: 10px;
       vertical-align: top;
   }
-
+  
   .extras_header_separator {
       width: 10px;
   }
-
+  
   .extras_td_multimedia {
       width: 320px;
   }
-
+  
   .extras_td_multimedia div {
       text-align: center;
   }
-
+  
   .extras_title {
       color: black;
       font-size: medium;
       font-weight: bold;
   }
-
+  
   .extras_description {
       color: black;
       font-size: 16px;
   }
-
+  
   .extras_params_key {
       color: #999;
       font-size: 14px;
   }
-
+  
   .extras_params_value {
       color: black;
       font-size: 14px;
   }
-
+  
   .extras_header_block {
       white-space: pre-wrap;
+      overflow-wrap: break-word;
       margin-top: 0px;
       margin-bottom: 0px;
       margin-left: 0px;
@@ -368,24 +369,24 @@ Sample CSS file
       text-decoration: none;
       color: darkslategrey;
   }
-
+  
   .extras_separator {
       height: 1px;
       background-color: gray;
   }
-
+  
   .extras_video {
       border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
   }
-
+  
   .extras_td_multimedia svg {
       border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
   }
-
+  
   .extras_image {
       border: 1px solid #e6e6e6;
       width: 300px;
@@ -393,30 +394,32 @@ Sample CSS file
       object-fit: cover;
       object-position: top;
   }
-
+  
   .extras_page_src {
       color: #00b5ff;
       font-size: 12px;
   }
-
+  
   .extras_attachment {
       color: black;
       margin-left: 30px;
       margin-right: 30px;
   }
-
+  
   code,
   .extras_attachment_block {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
       padding: .2em .4em;
       color: black;
       background-color: #818b981f;
       border-radius: 6px;
   }
-
+  
   .extras_attachment_error {
       color: red;
   }
-
+  
   .extras_iframe {
       margin-top: 15px;
       margin-left: 30px;
@@ -426,7 +429,7 @@ Sample CSS file
       background-color: #faf0e6;
       inline-size: -webkit-fill-available;
   }
-
+  
   .extras_status {
       border-radius: 3px;
       color: #fff;
@@ -436,28 +439,28 @@ Sample CSS file
       padding: 2px 4px 2px 5px;
       vertical-align: baseline;
   }
-
+  
   .extras_status_passed {
       background: #97cc64;
   }
-
+  
   .extras_status_failed {
       background: #fd5a3e;
   }
-
+  
   .extras_status_skipped {
       background: #aaa;
   }
-
+  
   .extras_status_xfailed,
   .extras_status_xpassed {
       background: orange;
   }
-
+  
   .extras_status_error {
       background: black;
   }
-
+  
   .extras_status_reason {
       color: black;
       font-size: 14px;
