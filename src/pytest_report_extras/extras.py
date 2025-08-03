@@ -1,5 +1,4 @@
 import base64
-import importlib
 from typing import Literal, Optional
 from . import utils
 from .attachment import Attachment
@@ -50,7 +49,7 @@ class Extras:
         full_page: bool = True,
         page_source: bool = False,
         escape_html: bool = True
-    ):
+    ) -> None:
         """
         Adds a step with a screenshot to the report.
 
@@ -98,7 +97,7 @@ class Extras:
         mime: str = None,
         csv_delimiter: str = ',',
         escape_html: bool = True
-    ):
+    ) -> None:
         """
         Adds a step with an attachment to the report.
         The 'body' and 'source' parameters are exclusive.
@@ -194,7 +193,7 @@ class Extras:
             return None, None
         return utils.get_screenshot(target, full_page, self.fx_sources or page_source)
 
-    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]):
+    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]) -> None:
         """
         Saves multimedia data.
 
@@ -261,7 +260,7 @@ class Extras:
 
         return link_multimedia
 
-    def _save_webpage_source(self, source: Optional[str]):
+    def _save_webpage_source(self, source: Optional[str]) -> None:
         """
         Saves a webpage source.
 
@@ -337,7 +336,7 @@ class Extras:
         websource: Optional[str],
         attachment: Optional[Attachment],
         escape_html: bool
-    ):
+    ) -> None:
         """
         Adds the comment, webpage source and attachment to the lists of the 'report' fixture.
         Screenshots are stored in the attachment argument.
@@ -359,7 +358,7 @@ class Extras:
         mime = attachment.mime if attachment is not None else None
 
         # Add extras to Allure report if allure-pytest plugin is being used.
-        if self.fx_allure and importlib.util.find_spec("allure") is not None:
+        if self.fx_allure:
             import allure
             if attachment is not None:
                 try:
@@ -408,7 +407,7 @@ class Extras:
         self,
         comment: str,
         target=None
-    ):
+    ) -> None:
         """
         Adds a step with the last screenshot to the report
         Returns the CSS class to apply to the comment table row of the pytest HTML report.

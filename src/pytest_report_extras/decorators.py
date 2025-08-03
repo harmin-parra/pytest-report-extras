@@ -1,3 +1,4 @@
+import os
 import pathlib
 from typing import Optional
 from _pytest.outcomes import Failed, Skipped, XFailed
@@ -9,7 +10,7 @@ from .status import Status
 #
 # Auxiliary functions for the report generation
 #
-def get_header_rows(item, call, report, links, status: Status):
+def get_header_rows(item, call, report, links, status: Status) -> str:
     """
     Decorates and appends the test description and execution exception trace, if any, to the report extras.
 
@@ -29,7 +30,7 @@ def get_header_rows(item, call, report, links, status: Status):
     )
 
 
-def get_status_row(call, report, status):
+def get_status_row(call, report, status) -> str:
     """ HTML table row for the test execution status and reason (if applicable). """
     reason = get_reason_msg(call, report, status)
     return (
@@ -41,10 +42,12 @@ def get_status_row(call, report, status):
     )
 
 
-def get_description_row(item):
+def get_description_row(item) -> str:
     """ HTML table row for the test description. """
     row = ""
     description = item.function.__doc__ if hasattr(item, "function") else None
+    if "_pytest_bdd_example" in item.fixturenames and description is not None:
+        description = description[description.rindex(os.sep) + 1:]
     if description is not None:
         row = (
             "<tr>"
@@ -56,7 +59,7 @@ def get_description_row(item):
     return row
 
 
-def get_parameters_row(item):
+def get_parameters_row(item) -> str:
     """ HTML table row for the test parameters. """
     row = ""
     parameters = item.callspec.params if hasattr(item, "callspec") else None
@@ -71,7 +74,7 @@ def get_parameters_row(item):
     return row
 
 
-def get_exception_row(call):
+def get_exception_row(call) -> str:
     """ HTML table row for the test execution exception. """
     row = ""
     exception = decorate_exception(call)
@@ -86,7 +89,7 @@ def get_exception_row(call):
     return row
 
 
-def get_links_row(links):
+def get_links_row(links) -> str:
     """ HTML table row for the test links. """
     row = ""
     if len(links) > 0:

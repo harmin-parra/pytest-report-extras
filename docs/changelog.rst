@@ -10,9 +10,9 @@ Changelog
 
 * Impossible to execute **pytest** when **pytest-html** is not installed.
 
-**Improvement**
+**Feature**
 
-* CSS improvements.
+* Support for **pytest-bdd** tests.
 
 
 1.3.6
