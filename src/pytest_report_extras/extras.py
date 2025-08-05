@@ -1,4 +1,5 @@
 import base64
+from bs4 import BeautifulSoup
 from typing import Literal, Optional
 from . import utils
 from .attachment import Attachment
@@ -355,30 +356,31 @@ class Extras:
             attachment (Attachment): The attachment.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        comment = utils.escape_html(comment) if escape_html else comment
         link_multimedia = None
         link_source = None
         mime = attachment.mime if attachment is not None else None
 
         # Add extras to Allure report if allure-pytest plugin is being used.
         if self.fx_allure:
+            comment_allure = BeautifulSoup(comment, 'html.parser').text if not escape_html else comment
             import allure
             if attachment is not None:
                 try:
                     if attachment.body is not None:
-                        allure.attach(attachment.body, name=comment, attachment_type=mime)
+                        allure.attach(attachment.body, name=comment_allure, attachment_type=mime)
                     elif attachment.source is not None:
-                        allure.attach.file(attachment.source, name=comment)
+                        allure.attach.file(attachment.source, name=comment_allure)
                     if websource is not None:
                         allure.attach(websource, name="page source", attachment_type=allure.attachment_type.TEXT)
                 except Exception as err:
                     allure.attach(str(err), name="Error adding attachment", attachment_type=allure.attachment_type.TEXT)
             else:  # Comment alone
-                allure.attach("", name=comment, attachment_type=allure.attachment_type.TEXT)
+                allure.attach("", name=comment_allure, attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self.fx_html:
-            if comment is None and attachment is None:
+            comment_html = utils.escape_html(comment) if escape_html else comment
+            if comment_html is None and attachment is None:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
             if attachment is not None and Mime.is_multimedia(mime):
@@ -401,7 +403,7 @@ class Extras:
                         attachment.body = None
                     if Mime.is_image_binary(mime):
                         attachment = None
-            self.comments.append(comment)
+            self.comments.append(comment_html)
             self.multimedia.append(link_multimedia)
             self.sources.append(link_source)
             self.attachments.append(attachment)
