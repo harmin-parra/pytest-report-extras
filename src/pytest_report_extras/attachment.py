@@ -151,8 +151,8 @@ class Attachment:
         body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
         inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 65 else repr(self.inner_html)[:65] + "....'"
         return (
-            "{ " + f"body: {body_str}, source: {repr(self.source)}, "
-                   f"mime: {repr(self.mime)}, inner_html: {inner_str}" + "}"
+            f"{{body: {body_str}, source: {repr(self.source)}, "
+            f"mime: {repr(self.mime)}, inner_html: {inner_str}}}"
         )
 
 

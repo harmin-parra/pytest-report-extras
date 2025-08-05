@@ -163,8 +163,13 @@ def pytest_runtest_makereport(item, call):
         "request" in item.fixturenames and
         "_pytest_bdd_example" in item.fixturenames
     ):
-        item.funcargs["report"] = Extras(_fx_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_allure)
-        item.fixturenames.append("report")
+        try:
+            feature_request = item.funcargs["request"]
+            fx_report = feature_request.getfixturevalue("report")
+            item.funcargs["report"] = fx_report
+            item.fixturenames.append("report")
+        except pytest.FixtureLookupError as error:
+            utils.log_error(report, "Could not inject 'report' fixture to pytest-bdd test", error)
 
     # Exit if the test is not using the 'report' fixture
     if not ("request" in item.funcargs and "report" in item.funcargs):
@@ -172,7 +177,7 @@ def pytest_runtest_makereport(item, call):
         return
 
     # Add extras for test execution
-    if report.when == "call" and (fx_html is not None and pytest_html is not None):
+    if report.when == "call" and fx_html is not None and pytest_html is not None:
         # Get test fixture values
         try:
             feature_request = item.funcargs["request"]
@@ -345,7 +350,7 @@ def pytest_sessionstart(session):
 @pytest.hookimpl()
 def pytest_sessionfinish(session, exitstatus):
     """ delete empty report subfolders. """
-    global fx_html
+    global fx_html, fx_allure
     if fx_html is not None:
         utils.delete_empty_subfolders(fx_html)
     utils.check_options(fx_html, fx_allure)
