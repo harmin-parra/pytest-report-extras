@@ -1,5 +1,6 @@
 import os
 import pathlib
+import textwrap
 from typing import Optional
 from _pytest.outcomes import Failed, Skipped, XFailed
 from . import utils
@@ -45,7 +46,9 @@ def get_status_row(call, report, status) -> str:
 def get_description_row(item) -> str:
     """ HTML table row for the test description. """
     row = ""
-    description = item.function.__doc__ if hasattr(item, "function") else None
+    description = None
+    if hasattr(item, "function") and item.function.__doc__ is not None:
+        description = textwrap.dedent(item.function.__doc__)
     if (
         description is not None and
         item.config.pluginmanager.has_plugin("pytest-bdd") and
@@ -152,14 +155,14 @@ def get_step_row(
         if source is not None:
             source = decorate_page_source(source)
             return (
-                f'<tr {clazz_row_str}>'
+                f"<tr {clazz_row_str}>"
                 f"<td>{comment}</td>"
                 f'<td class="extras_td_multimedia"><div>{multimedia}<br>{source}</div></td>'
                 f"</tr>"
             )
         else:
             return (
-                f'<tr {clazz_row_str}>'
+                f"<tr {clazz_row_str}>"
                 f"<td>{comment}</td>"
                 f'<td class="extras_td_multimedia"><div>{multimedia}</div></td>'
                 "</tr>"
@@ -168,7 +171,7 @@ def get_step_row(
         comment = decorate_comment(comment, clazz_comment)
         comment += decorate_attachment(attachment)
         return (
-            f'<tr {clazz_row_str}>'
+            f"<tr {clazz_row_str}>"
             f'<td colspan="2">{comment}</td>'
             f"</tr>"
         )
