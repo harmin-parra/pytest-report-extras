@@ -306,7 +306,7 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
     return Attachment(body=data, mime=mime)
 
 
-def _attachment_html(text: str, report):
+def _attachment_html(text: str, report) -> Attachment:
     """
     Returns an attachment object representing an HTML document.
     """
@@ -330,7 +330,7 @@ def _attachment_html(text: str, report):
     return Attachment(body=text, mime=mime, inner_html=inner_html)
 
 
-def _attachment_unsupported(text: str, mime, report):
+def _attachment_unsupported(text: str, mime, report) -> Attachment:
     inner_html = None
     if report.fx_html:
         inner_html = decorators.decorate_uri(

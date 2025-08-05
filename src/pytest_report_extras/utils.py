@@ -410,7 +410,7 @@ def get_marker_links(
     return links
 
 
-def get_markers_links(
+def get_all_markers_links(
     item: pytest.Item,
     fx_issue_link_pattern: Optional[str],
     fx_tms_link_pattern: Optional[str]

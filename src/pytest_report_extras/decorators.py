@@ -46,7 +46,11 @@ def get_description_row(item) -> str:
     """ HTML table row for the test description. """
     row = ""
     description = item.function.__doc__ if hasattr(item, "function") else None
-    if "_pytest_bdd_example" in item.fixturenames and description is not None:
+    if (
+        description is not None and
+        item.config.pluginmanager.has_plugin("pytest-bdd") and
+        "_pytest_bdd_example" in item.fixturenames
+    ):
         description = description[description.rindex(os.sep) + 1:]
     if description is not None:
         row = (
@@ -89,7 +93,7 @@ def get_exception_row(call) -> str:
     return row
 
 
-def get_links_row(links) -> str:
+def get_links_row(links: list[Link]) -> str:
     """ HTML table row for the test links. """
     row = ""
     if len(links) > 0:
@@ -224,7 +228,7 @@ def decorate_exception(call) -> str:
     return content
 
 
-def decorate_links(links: list[Link]):
+def decorate_links(links: list[Link]) -> str:
     """ Applies CSS style to a list of links """
     anchors = []
     for link in links:

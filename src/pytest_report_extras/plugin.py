@@ -138,7 +138,7 @@ def pytest_runtest_makereport(item, call):
     extras = getattr(report, "extras", [])
 
     # Add links in decorators
-    links = utils.get_markers_links(item, fx_issue_link_pattern, fx_tms_link_pattern)
+    links = utils.get_all_markers_links(item, fx_issue_link_pattern, fx_tms_link_pattern)
     utils.add_links(item, extras, links, fx_html, fx_allure, fx_links_column)
 
     # Add extras for skipped or failed setup
@@ -146,7 +146,7 @@ def pytest_runtest_makereport(item, call):
         call.when == "setup" and
         (report.failed or report.skipped) and
         fx_html is not None and pytest_html is not None and
-        "report" in item.fixturenames  # _fixtureinfo.argnames
+        "report" in item.fixturenames
     ):
         if report.failed:
             status = Status.ERROR

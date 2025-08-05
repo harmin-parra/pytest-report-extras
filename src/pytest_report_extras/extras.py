@@ -193,7 +193,7 @@ class Extras:
             return None, None
         return utils.get_screenshot(target, full_page, self.fx_sources or page_source)
 
-    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]) -> None:
+    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]) -> Optional[str]:
         """
         Saves multimedia data.
 
@@ -260,7 +260,7 @@ class Extras:
 
         return link_multimedia
 
-    def _save_webpage_source(self, source: Optional[str]) -> None:
+    def _save_webpage_source(self, source: Optional[str]) -> Optional[str]:
         """
         Saves a webpage source.
 

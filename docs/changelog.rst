@@ -12,7 +12,7 @@ Changelog
 
 **Feature**
 
-* Support for **pytest-bdd** tests.
+* Support for **pytest-bdd** tests. if using **Allure**, install **allure-pytest** instead of **allure-pytest-bdd**.
 
 
 1.3.6
