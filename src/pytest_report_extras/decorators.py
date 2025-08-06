@@ -117,7 +117,7 @@ def get_step_row(
     attachment,
     single_page: bool,
     clazz_row: Optional[str] = None,
-    clazz_comment: Optional[str] = "extras_font extras_color_comment"
+    clazz_comment: Optional[str] = "extras_comment"
 ) -> str:
     """
     Returns the HTML table row of a test step.
