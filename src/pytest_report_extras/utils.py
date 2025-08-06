@@ -130,6 +130,17 @@ def is_package_installed(pkg: str) -> bool:
         return False
 
 
+def get_scenario_steps(item) -> str:
+    """ Return the steps of a pytest-bdd test scenario """
+    result = ""
+    try:
+        for step in item.__scenario_report__.scenario.steps:
+            result += f"{step.keyword} {step.name}\n"
+    except Exception:
+        pass
+    return result
+
+
 #
 # Screenshot related functions
 #

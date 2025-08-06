@@ -54,7 +54,7 @@ def get_description_row(item) -> str:
         item.config.pluginmanager.has_plugin("pytest-bdd") and
         "_pytest_bdd_example" in item.fixturenames
     ):
-        description = description[description.rindex(os.sep) + 1:]
+        description = f"{description[description.rindex(os.sep) + 1:]}\n\n{utils.get_scenario_steps(item)}"
     if description is not None:
         row = (
             "<tr>"
