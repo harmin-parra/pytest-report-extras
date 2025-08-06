@@ -1,4 +1,3 @@
-import importlib
 import pathlib
 import pytest
 from . import decorators, utils
@@ -155,13 +154,16 @@ def pytest_runtest_makereport(item, call):
         header = decorators.get_header_rows(item, call, report, links, status)
         extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
 
-    # Add 'report' fixture for pytest-bdd tests
+    # Add 'report' fixture for tests not using it
     if (
         report.when == "call" and
         fx_html and pytest_html is not None and
         item.config.pluginmanager.has_plugin("pytest-bdd") and
+        hasattr(item, "fixturenames") and
+        hasattr(item, "funcargs") and
         "request" in item.fixturenames and
-        "_pytest_bdd_example" in item.fixturenames
+        "report" not in item.fixturenames
+        # "_pytest_bdd_example" in item.fixturenames
     ):
         try:
             feature_request = item.funcargs["request"]
@@ -172,7 +174,7 @@ def pytest_runtest_makereport(item, call):
             utils.log_error(report, "Could not inject 'report' fixture to pytest-bdd test", error)
 
     # Exit if the test is not using the 'report' fixture
-    if not ("request" in item.funcargs and "report" in item.funcargs):
+    if not (hasattr(item, "funcargs") and "request" in item.funcargs and "report" in item.funcargs):
         report.extras = extras  # add links to the report before exiting
         return
 
@@ -182,11 +184,6 @@ def pytest_runtest_makereport(item, call):
         try:
             feature_request = item.funcargs["request"]
             fx_report = feature_request.getfixturevalue("report")
-            if (
-                "_pytest_bdd_example" in item.fixturenames and 
-                len(fx_report.comments) + len(fx_report.attachments) + len(fx_report.multimedia) == 0
-            ):
-                return
             fx_screenshots = feature_request.getfixturevalue("_fx_screenshots")
             fx_single_page = feature_request.getfixturevalue("_fx_single_page")
             target = fx_report.target

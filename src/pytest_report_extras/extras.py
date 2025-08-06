@@ -43,7 +43,7 @@ class Extras:
         self.last_screenshot = False
         self.Mime = Mime
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{{id: {hex(id(self))}, comments: {self.comments}, multimedia: {self.multimedia}, sources: {self.sources}, attachments: {self.attachments}}}"
 
     def screenshot(
