@@ -324,9 +324,9 @@ def pytest_configure(config):
         fx_allure = None
 
     # Add markers
-    config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as links")
-    config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as links")
-    config.addinivalue_line("markers", "link(url, name, icon): The url to add as link")
+    config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as issue links")
+    config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as tms links")
+    config.addinivalue_line("markers", "link(url, name, icon): The url to add as web link")
 
     # Add default CSS file
     config_css = config.getoption("--css", default=[])
