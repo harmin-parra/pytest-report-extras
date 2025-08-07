@@ -16,10 +16,10 @@ If you like this software, consider contributing to the project through [buy me 
 
 ## Screenshots ##
 
-* Pytest-html report
+- Pytest-html report
 
 ![](docs/demo-pytest.png)
 
-* Allure report
+- Allure report
 
 ![](docs/demo-allure.png)
