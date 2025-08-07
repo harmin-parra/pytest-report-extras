@@ -20,5 +20,5 @@ class Link:
         self.type = link_type
         self.icon = icon if icon is not None else Link.icons[link_type]
 
-    def __repr__(self):
-        return "{" + f"url: {self.url}, name: {self.name}, type: {self.type}, icon: {self.icon}" + "}"
+    def __repr__(self) -> str:
+        return f"{{url: {self.url}, name: {self.name}, type: {self.type}, icon: {self.icon}}}"

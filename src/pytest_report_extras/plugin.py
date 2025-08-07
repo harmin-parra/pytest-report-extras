@@ -1,4 +1,3 @@
-import importlib
 import pathlib
 import pytest
 from . import decorators, utils
@@ -67,9 +66,10 @@ def _fx_screenshots(request):
 
 
 @pytest.fixture(scope="session")
-def _fx_report_html(request):
+def _fx_html(request):
     """ The folder storing the pytest-html report """
-    return utils.get_folder(request.config.getoption("--html", default=None))
+    path = utils.get_folder(request.config.getoption("--html", default=None))
+    return path if utils.is_package_installed("pytest-html") else None
 
 
 @pytest.fixture(scope="session")
@@ -79,9 +79,10 @@ def _fx_single_page(request):
 
 
 @pytest.fixture(scope="session")
-def _fx_report_allure(request):
-    """ Whether the allure-pytest plugin is being used """
-    return request.config.getoption("--alluredir", default=None)
+def _fx_allure(request):
+    """ The folder storing the allure report """
+    path = request.config.getoption("--alluredir", default=None)
+    return path if utils.is_package_installed("allure-pytest") else None
 
 
 @pytest.fixture(scope="session")
@@ -96,18 +97,12 @@ def _fx_sources(request):
     return request.config.getini("extras_sources")
 
 
-@pytest.fixture(scope='session')
-def _fx_check(_fx_report_html, _fx_report_allure, _fx_single_page):
-    """ Verifies preconditions before using this plugin. """
-    utils.check_options(_fx_report_html, _fx_report_allure)
-
-
 #
 # Test fixture
 #
 @pytest.fixture(scope="function")
-def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure, _fx_check):
-    return Extras(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_report_allure)
+def report(_fx_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_allure):
+    return Extras(_fx_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_indent, _fx_allure)
 
 
 #
@@ -116,13 +111,13 @@ def report(_fx_report_html, _fx_single_page, _fx_screenshots, _fx_sources, _fx_i
 
 # Global variables to store required fixtures to handle tms and issue markers
 # Workaround for https://github.com/pytest-dev/pytest/issues/13101
-fx_html = None
 fx_allure = None
-fx_tms_link_pattern = None
+fx_html = None
 fx_issue_link_pattern = None
 fx_links_column = "all"
 fx_single_page = False
 fx_title = ""
+fx_tms_link_pattern = None
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -130,7 +125,11 @@ def pytest_runtest_makereport(item, call):
     """
     Complete pytest-html report with extras and Allure report with attachments.
     """
-    global fx_html, fx_allure, fx_single_page, fx_issue_link_pattern, fx_tms_link_pattern, fx_links_column
+    global fx_allure
+    global fx_html
+    global fx_issue_link_pattern
+    global fx_links_column
+    global fx_tms_link_pattern
 
     outcome = yield
     pytest_html = item.config.pluginmanager.getplugin("html")
@@ -138,7 +137,7 @@ def pytest_runtest_makereport(item, call):
     extras = getattr(report, "extras", [])
 
     # Add links in decorators
-    links = utils.get_markers_links(item, fx_issue_link_pattern, fx_tms_link_pattern)
+    links = utils.get_all_markers_links(item, fx_issue_link_pattern, fx_tms_link_pattern)
     utils.add_links(item, extras, links, fx_html, fx_allure, fx_links_column)
 
     # Add extras for skipped or failed setup
@@ -146,7 +145,7 @@ def pytest_runtest_makereport(item, call):
         call.when == "setup" and
         (report.failed or report.skipped) and
         fx_html is not None and pytest_html is not None and
-        "report" in item._fixtureinfo.argnames
+        "report" in item.fixturenames
     ):
         if report.failed:
             status = Status.ERROR
@@ -155,18 +154,38 @@ def pytest_runtest_makereport(item, call):
         header = decorators.get_header_rows(item, call, report, links, status)
         extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
 
-    # Exit if the test is not using the 'report' fixtures
-    if not ("request" in item.funcargs and "report" in item.funcargs):
+    # Add 'report' fixture for tests not using it
+    if (
+        report.when == "call" and
+        fx_html and pytest_html is not None and
+        item.config.pluginmanager.has_plugin("pytest-bdd") and
+        hasattr(item, "fixturenames") and
+        hasattr(item, "funcargs") and
+        "request" in item.fixturenames and
+        "report" not in item.fixturenames
+        # "_pytest_bdd_example" in item.fixturenames
+    ):
+        try:
+            feature_request = item.funcargs["request"]
+            fx_report = feature_request.getfixturevalue("report")
+            item.funcargs["report"] = fx_report
+            item.fixturenames.append("report")
+        except pytest.FixtureLookupError as error:
+            utils.log_error(report, "Could not inject 'report' fixture to pytest-bdd test", error)
+
+    # Exit if the test is not using the 'report' fixture
+    if not (hasattr(item, "funcargs") and "request" in item.funcargs and "report" in item.funcargs):
         report.extras = extras  # add links to the report before exiting
         return
 
     # Add extras for test execution
-    if report.when == "call" and (fx_html is not None and pytest_html is not None):
+    if report.when == "call" and fx_html is not None and pytest_html is not None:
         # Get test fixture values
         try:
             feature_request = item.funcargs["request"]
             fx_report = feature_request.getfixturevalue("report")
             fx_screenshots = feature_request.getfixturevalue("_fx_screenshots")
+            fx_single_page = feature_request.getfixturevalue("_fx_single_page")
             target = fx_report.target
         except pytest.FixtureLookupError as error:
             utils.log_error(report, "Could not retrieve test fixtures", error)
@@ -217,13 +236,13 @@ def pytest_runtest_makereport(item, call):
                 fx_single_page
             )
 
-        clazz_row = None
+        clazz_visibility_row = None
         # Add screenshot for last step
         if fx_screenshots == "last" and failure is False and target is not None:
             try:
                 fx_report._last_screenshot("Last screenshot", target)
             except Exception as error:
-                clazz_row = "visibility_last_scr_error"
+                clazz_visibility_row = "visibility_last_scr_error"
                 utils.log_error(report, "Error gathering screenshot", error)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
@@ -231,7 +250,7 @@ def pytest_runtest_makereport(item, call):
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
                 fx_single_page,
-                clazz_row
+                clazz_visibility_row
             )
 
         # Add screenshot for test failure/skip
@@ -246,7 +265,7 @@ def pytest_runtest_makereport(item, call):
             try:
                 fx_report._last_screenshot(comment, target)
             except Exception as error:
-                clazz_row = "visibility_last_scr_error"
+                clazz_visibility_row = "visibility_last_scr_error"
                 utils.log_error(report, "Error gathering screenshot", error)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
@@ -254,8 +273,8 @@ def pytest_runtest_makereport(item, call):
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
                 fx_single_page,
-                clazz_row,
-                f"extras_font extras_color_{status}"
+                clazz_visibility_row,
+                f"extras_color_{status}"
             )
 
         # Add Execution title and horizontal line between the header and the steps table
@@ -283,20 +302,31 @@ def pytest_configure(config):
     """
     Performs setup actions and sets global variables.
     """
-    global fx_html, fx_allure, fx_issue_link_pattern, fx_tms_link_pattern, fx_single_page, fx_title, fx_links_column
-    # Retrieve some options
-    fx_html = utils.get_folder(config.getoption("--html", default=None))
+    global fx_allure
+    global fx_html
+    global fx_issue_link_pattern
+    global fx_links_column
+    global fx_single_page
+    global fx_title
+    global fx_tms_link_pattern
+
+    # Initialize global variables
     fx_allure = config.getoption("--alluredir", default=None)
-    fx_single_page = config.getoption("--self-contained-html", default=False)
-    fx_tms_link_pattern = config.getini("extras_tms_link_pattern")
+    fx_html = utils.get_folder(config.getoption("--html", default=None))
     fx_issue_link_pattern = config.getini("extras_issue_link_pattern")
     fx_links_column = config.getini("extras_links_column")
+    fx_single_page = config.getoption("--self-contained-html", default=False)
     fx_title = config.getini("extras_title")
+    fx_tms_link_pattern = config.getini("extras_tms_link_pattern")
+    if not utils.is_package_installed("pytest-html"):
+        fx_html = None
+    if not utils.is_package_installed("allure-pytest"):
+        fx_allure = None
 
     # Add markers
-    config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as links")
-    config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as links")
-    config.addinivalue_line("markers", "link(url, name, icon): The url to add as link")
+    config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as issue links")
+    config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as tms links")
+    config.addinivalue_line("markers", "link(url, name, icon): The url to add as web link")
 
     # Add default CSS file
     config_css = config.getoption("--css", default=[])
@@ -308,7 +338,7 @@ def pytest_configure(config):
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_sessionstart(session):
-    """ Create report asserts. """
+    """ Create report assets. """
     global fx_html, fx_single_page
     if fx_html is not None:
         utils.create_assets(fx_html, fx_single_page)
@@ -317,12 +347,13 @@ def pytest_sessionstart(session):
 @pytest.hookimpl()
 def pytest_sessionfinish(session, exitstatus):
     """ delete empty report subfolders. """
-    global fx_html
+    global fx_html, fx_allure
     if fx_html is not None:
         utils.delete_empty_subfolders(fx_html)
+    utils.check_options(fx_html, fx_allure)
 
 
-if importlib.util.find_spec("pytest-html") is not None:
+if utils.is_package_installed("pytest-html"):
     def pytest_html_report_title(report):
         global fx_title
         report.title = fx_title

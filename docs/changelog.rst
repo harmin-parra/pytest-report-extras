@@ -10,6 +10,10 @@ Changelog
 
 * Impossible to execute **pytest** when **pytest-html** is not installed.
 
+**Feature**
+
+* Support for **pytest-bdd** tests. if using **Allure**, install **allure-pytest** instead of **allure-pytest-bdd**.
+
 
 1.3.6
 =====

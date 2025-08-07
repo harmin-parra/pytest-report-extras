@@ -1,4 +1,6 @@
+import os
 import pathlib
+import textwrap
 from typing import Optional
 from _pytest.outcomes import Failed, Skipped, XFailed
 from . import utils
@@ -9,7 +11,7 @@ from .status import Status
 #
 # Auxiliary functions for the report generation
 #
-def get_header_rows(item, call, report, links, status: Status):
+def get_header_rows(item, call, report, links, status: Status) -> str:
     """
     Decorates and appends the test description and execution exception trace, if any, to the report extras.
 
@@ -29,7 +31,7 @@ def get_header_rows(item, call, report, links, status: Status):
     )
 
 
-def get_status_row(call, report, status):
+def get_status_row(call, report, status) -> str:
     """ HTML table row for the test execution status and reason (if applicable). """
     reason = get_reason_msg(call, report, status)
     return (
@@ -41,10 +43,18 @@ def get_status_row(call, report, status):
     )
 
 
-def get_description_row(item):
+def get_description_row(item) -> str:
     """ HTML table row for the test description. """
     row = ""
-    description = item.function.__doc__ if hasattr(item, "function") else None
+    description = None
+    if hasattr(item, "function") and item.function.__doc__ is not None:
+        description = textwrap.dedent(item.function.__doc__)
+    if (
+        description is not None and
+        item.config.pluginmanager.has_plugin("pytest-bdd") and
+        "_pytest_bdd_example" in item.fixturenames
+    ):
+        description = f"{description[description.rindex(os.sep) + 1:]}\n\n{utils.get_scenario_steps(item)}"
     if description is not None:
         row = (
             "<tr>"
@@ -56,7 +66,7 @@ def get_description_row(item):
     return row
 
 
-def get_parameters_row(item):
+def get_parameters_row(item) -> str:
     """ HTML table row for the test parameters. """
     row = ""
     parameters = item.callspec.params if hasattr(item, "callspec") else None
@@ -71,7 +81,7 @@ def get_parameters_row(item):
     return row
 
 
-def get_exception_row(call):
+def get_exception_row(call) -> str:
     """ HTML table row for the test execution exception. """
     row = ""
     exception = decorate_exception(call)
@@ -86,7 +96,7 @@ def get_exception_row(call):
     return row
 
 
-def get_links_row(links):
+def get_links_row(links: list[Link]) -> str:
     """ HTML table row for the test links. """
     row = ""
     if len(links) > 0:
@@ -106,8 +116,8 @@ def get_step_row(
     source: str,
     attachment,
     single_page: bool,
-    clazz_row: Optional[str] = None,
-    clazz_comment: Optional[str] = "extras_font extras_color_comment"
+    clazz_visibility_row: Optional[str] = None,
+    clazz_color: Optional[str] = None
 ) -> str:
     """
     Returns the HTML table row of a test step.
@@ -118,17 +128,18 @@ def get_step_row(
         source (str): The page source anchor element.
         attachment (Attachment): The attachment.
         single_page (bool): Whether to generate the HTML report in a single page.
-        clazz_row (str): The CSS class to apply to the comment table row.
-        clazz_comment (str): The CSS class to apply to the comment table cell.
+        clazz_visibility_row (str): The CSS class to apply to the comment table row (<tr> tag).
+        clazz_color (str): The CSS class to apply to the comment table cell (<td> tag).
 
     Returns:
         str: The <tr> element.
     """
+    clazz_comment = f"extras_comment {clazz_color}" if clazz_color else "extras_comment"
     if comment is None:
         comment = ""
-    clazz_row_str = ""
-    if clazz_row is not None:
-        clazz_row_str = f'class="{clazz_row}"'
+    clazz_row = ""
+    if clazz_visibility_row is not None:
+        clazz_row = f'class="{clazz_visibility_row}"'
     if multimedia is not None:
         comment = decorate_comment(comment, clazz_comment)
         if attachment is not None and attachment.mime is not None:
@@ -145,14 +156,14 @@ def get_step_row(
         if source is not None:
             source = decorate_page_source(source)
             return (
-                f'<tr {clazz_row_str}>'
+                f"<tr {clazz_row}>"
                 f"<td>{comment}</td>"
                 f'<td class="extras_td_multimedia"><div>{multimedia}<br>{source}</div></td>'
                 f"</tr>"
             )
         else:
             return (
-                f'<tr {clazz_row_str}>'
+                f"<tr {clazz_row}>"
                 f"<td>{comment}</td>"
                 f'<td class="extras_td_multimedia"><div>{multimedia}</div></td>'
                 "</tr>"
@@ -161,7 +172,7 @@ def get_step_row(
         comment = decorate_comment(comment, clazz_comment)
         comment += decorate_attachment(attachment)
         return (
-            f'<tr {clazz_row_str}>'
+            f"<tr {clazz_row}>"
             f'<td colspan="2">{comment}</td>'
             f"</tr>"
         )
@@ -221,7 +232,7 @@ def decorate_exception(call) -> str:
     return content
 
 
-def decorate_links(links: list[Link]):
+def decorate_links(links: list[Link]) -> str:
     """ Applies CSS style to a list of links """
     anchors = []
     for link in links:
@@ -334,7 +345,9 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_attachment"
     clazz_frm = "extras_iframe"
-    if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '') and attachment.error in (None, '')):
+    if attachment is None or all(
+        field in (None, '') for field in (attachment.body, attachment.inner_html, attachment.error)
+    ):
         return ""
 
     if attachment.error is not None:

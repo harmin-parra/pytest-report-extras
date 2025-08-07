@@ -148,12 +148,27 @@ class Attachment:
             body_str = base64.b64encode(self.body).decode()
         else:
             body_str = self.body
-        body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
-        inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 65 else repr(self.inner_html)[:65] + "....'"
-        return (
-            "{ " + f"body: {body_str}, source: {repr(self.source)}, "
-                   f"mime: {repr(self.mime)}, inner_html: {inner_str}" + "}"
-        )
+        if self.body is not None:
+            body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
+        inner_str = None
+        if self.inner_html is not None:
+            inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 65 else repr(self.inner_html)[:65] + "....'"
+        error_str = None
+        if self.error is not None:
+            error_str = repr(self.error) if len(repr(self.error)) < 50 else repr(self.error)[:50] + "....'"
+
+        parts = []
+        if body_str is not None:
+            parts.append(f"body: {body_str}")
+        if self.source is not None:
+            parts.append(f"source: {repr(self.source)}")
+        if self.mime is not None:
+            parts.append(f"mime: {repr(self.mime)}")
+        if inner_str is not None:
+            parts.append(f"inner_html: {inner_str}")
+        if error_str is not None:
+            parts.append(f"error: {error_str}")
+        return "{" + ", ".join(parts) + "}"
 
 
 def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:
@@ -306,7 +321,7 @@ def _attachment_video(data: bytes | str, mime: str) -> Attachment:
     return Attachment(body=data, mime=mime)
 
 
-def _attachment_html(text: str, report):
+def _attachment_html(text: str, report) -> Attachment:
     """
     Returns an attachment object representing an HTML document.
     """
@@ -325,12 +340,12 @@ def _attachment_html(text: str, report):
         else:
             try:
                 inner_html = utils.save_data_and_get_link(report.fx_html, text, "html", "sources")
-                return Attachment(body=text, mime=mime, inner_html=inner_html)
             except OSError as error:
                 return Attachment(error=f"Error saving HTML\n{error}")
+    return Attachment(body=text, mime=mime, inner_html=inner_html)
 
 
-def _attachment_unsupported(text: str, mime, report):
+def _attachment_unsupported(text: str, mime, report) -> Attachment:
     inner_html = None
     if report.fx_html:
         inner_html = decorators.decorate_uri(

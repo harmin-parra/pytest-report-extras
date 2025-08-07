@@ -154,8 +154,8 @@ Limitations
 * For Playwright, only **sync_api** is supported.
 
 
-Example
-=======
+Examples
+========
 
 When using the **pytest-html** plugin (with the ``--html`` option), an external CSS file may be provided with the ``--css`` option.
 
@@ -199,7 +199,7 @@ Sample ``pytest.ini`` file
 Sample code
 -----------
 
-* Example adding Selenium screenshots
+* Example with Selenium
 
 .. code-block:: python
 
@@ -219,46 +219,35 @@ Sample code
       driver.quit()
 
 
-* Example adding Playwright screenshots
-
-.. code-block:: python
-
-  def test_with_playwright(page: Page, report):
-      """
-      This is a test using Playwright
-      """
-      page.goto("https://www.selenium.dev/selenium/web/web-form.html")
-      report.screenshot("Get the webpage to test", page)
-      report.screenshot(comment="Get the webpage to test", target=page, full_page=False)
-
-
-* Example adding Playwright video
+* Example with Playwright
 
 .. code-block:: python
 
   def test_with_playwright(browser: Browser, report):
+      """
+      This is a test using Playwright
+      """
       context = browser.new_context(record_video_dir="path/to/videos/")
       page = context.new_page()
-      # Your test goes here
+      page.goto("https://www.wikipedia.org")
+      report.screenshot("Wikipedia page", page)
       context.close()
       page.close()
       report.attach("Recorded video", source=page.video.path(), mime="webm")
 
 
-* Example adding attachments
+* Example with attachments
 
 .. code-block:: python
 
+  from pytest_report_extras import Mime
+
   def test_attachments(report):
-      """
-      This is a test adding XML & JSON attachments
-      """
       report.attach(
           "This is a XML document:",
           body="<root><child>text</child></root>",
           mime=report.Mime.XML
       )
-      from pytest_report_extras import Mime
       report.attach(
           "This is a XML document:",
           body="<root><child>text</child></root>",
@@ -276,7 +265,7 @@ Sample code
       )
 
 
-* Example adding links
+* Example with links
 
 .. code-block:: python
 
@@ -286,7 +275,53 @@ Sample code
   @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
   @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia", icon="&#129373;")
   def test_link_markers(report)
-      # Your test goes here
+      pass
+
+
+* Example with pytest-bdd (cucumber)
+
+.. code-block:: text
+
+  Feature: Wikipedia
+
+  Scenario: Search in Wikipedia
+    Given I go to Wikipedia
+    When I search for "pizza"
+    Then the page title is "Pizza - Wikipedia"
+
+
+.. code-block:: python
+
+  import pytest
+  from pytest_bdd import scenarios, given, when, then, parsers
+  from playwright.sync_api import sync_playwright, Page
+  
+  scenarios('features/wikipedia.feature')
+  
+  @pytest.fixture
+  def playwright_context():
+      with sync_playwright() as p:
+          browser = p.chromium.launch(headless=True)
+          page = browser.new_page()
+          yield page
+          browser.close()
+  
+  @given('I go to Wikipedia')
+  def go_to_wikipedia(playwright_context: Page, report):
+      playwright_context.goto("https://www.wikipedia.org")
+      assert "Wikipedia" in playwright_context.title()
+      report.screenshot("Wikipedia page", playwright_context)
+  
+  @when(parsers.parse('I search for "{term}"'))
+  def search_wikipedia(playwright_context: Page, term, report):
+      playwright_context.locator("[id='searchInput']").fill(term)
+      playwright_context.keyboard.press("Enter")
+      playwright_context.wait_for_load_state("load")
+      report.screenshot("The searched page", playwright_context)
+  
+  @then(parsers.parse('the page title is "{title}"'))
+  def check_title(playwright_context: Page, title):
+      assert playwright_context.title() == title
 
 
 Sample CSS file
@@ -294,71 +329,73 @@ Sample CSS file
 
 .. code-block:: css
 
-  .extras_font {
+  .extras_comment {
       font-family: monospace;
-  }
-
-  .extras_color_comment {
       color: blue;
   }
-
+  
+  .extras_comment strong {
+      color: black;
+  }
+  
   .extras_color_skipped {
       color: #727272;
   }
-
+  
   .extras_color_xfailed,
   .extras_color_xpassed {
       color: #b37400;
   }
-
+  
   .extras_color_error {
       color: black;
   }
-
+  
   .extras_color_failed {
       color: red;
   }
-
+  
   .extras_header td {
       padding-top: 10px;
       vertical-align: top;
   }
-
+  
   .extras_header_separator {
       width: 10px;
   }
-
+  
   .extras_td_multimedia {
       width: 320px;
   }
-
+  
   .extras_td_multimedia div {
       text-align: center;
   }
-
+  
   .extras_title {
       color: black;
       font-size: medium;
       font-weight: bold;
   }
-
+  
   .extras_description {
       color: black;
       font-size: 16px;
   }
-
+  
   .extras_params_key {
       color: #999;
       font-size: 14px;
   }
-
+  
   .extras_params_value {
       color: black;
       font-size: 14px;
   }
-
+  
   .extras_header_block {
       white-space: pre-wrap;
+      overflow-wrap: break-word;
       margin-top: 0px;
       margin-bottom: 0px;
       margin-left: 0px;
@@ -368,24 +405,24 @@ Sample CSS file
       text-decoration: none;
       color: darkslategrey;
   }
-
+  
   .extras_separator {
       height: 1px;
       background-color: gray;
   }
-
+  
   .extras_video {
       border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
   }
-
+  
   .extras_td_multimedia svg {
       border: 1px solid #e6e6e6;
       width: 300px;
       height: 170px;
   }
-
+  
   .extras_image {
       border: 1px solid #e6e6e6;
       width: 300px;
@@ -393,30 +430,32 @@ Sample CSS file
       object-fit: cover;
       object-position: top;
   }
-
+  
   .extras_page_src {
       color: #00b5ff;
       font-size: 12px;
   }
-
+  
   .extras_attachment {
       color: black;
       margin-left: 30px;
       margin-right: 30px;
   }
-
-  code,
+  
+  .extras_comment code,
   .extras_attachment_block {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
       padding: .2em .4em;
       color: black;
       background-color: #818b981f;
       border-radius: 6px;
   }
-
+  
   .extras_attachment_error {
       color: red;
   }
-
+  
   .extras_iframe {
       margin-top: 15px;
       margin-left: 30px;
@@ -426,7 +465,7 @@ Sample CSS file
       background-color: #faf0e6;
       inline-size: -webkit-fill-available;
   }
-
+  
   .extras_status {
       border-radius: 3px;
       color: #fff;
@@ -436,28 +475,28 @@ Sample CSS file
       padding: 2px 4px 2px 5px;
       vertical-align: baseline;
   }
-
+  
   .extras_status_passed {
       background: #97cc64;
   }
-
+  
   .extras_status_failed {
       background: #fd5a3e;
   }
-
+  
   .extras_status_skipped {
       background: #aaa;
   }
-
+  
   .extras_status_xfailed,
   .extras_status_xpassed {
       background: orange;
   }
-
+  
   .extras_status_error {
       background: black;
   }
-
+  
   .extras_status_reason {
       color: black;
       font-size: 14px;
@@ -467,7 +506,7 @@ Sample CSS file
 Sample reports
 ==============
 
-* Pytest-html sample report
+* pytest-html sample report
 
 .. image:: demo-pytest.png
 

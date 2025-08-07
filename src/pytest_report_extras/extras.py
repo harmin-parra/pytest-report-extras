@@ -1,5 +1,5 @@
 import base64
-import importlib
+from bs4 import BeautifulSoup
 from typing import Literal, Optional
 from . import utils
 from .attachment import Attachment
@@ -43,6 +43,15 @@ class Extras:
         self.last_screenshot = False
         self.Mime = Mime
 
+    def __repr__(self) -> str:
+        source_list = self.sources if any( element for element in self.sources ) else []
+        multimedia_list = self.multimedia if any( element for element in self.multimedia ) else []
+        attachment_list = self.attachments if any( element for element in self.attachments ) else []
+        return (
+            f"{{id: {hex(id(self))}, comments: {self.comments}, attachments: {attachment_list}, "
+            f"multimedia: {multimedia_list}, sources: {source_list}}}"
+        )
+
     def screenshot(
         self,
         comment: str,
@@ -50,7 +59,7 @@ class Extras:
         full_page: bool = True,
         page_source: bool = False,
         escape_html: bool = True
-    ):
+    ) -> None:
         """
         Adds a step with a screenshot to the report.
 
@@ -66,7 +75,7 @@ class Extras:
         """
         if self.fx_allure is None and self.fx_html is None:
             return
-        target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
+        target_check, target_obj, _ = utils.check_screenshot_target_type(target)
         self.target = target_obj if target_obj is not None else self.target
         if target is not None and not target_check:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")
@@ -98,7 +107,7 @@ class Extras:
         mime: str = None,
         csv_delimiter: str = ',',
         escape_html: bool = True
-    ):
+    ) -> None:
         """
         Adds a step with an attachment to the report.
         The 'body' and 'source' parameters are exclusive.
@@ -194,7 +203,7 @@ class Extras:
             return None, None
         return utils.get_screenshot(target, full_page, self.fx_sources or page_source)
 
-    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]):
+    def _save_data(self, data: Optional[bytes | str], mime: Optional[Mime]) -> Optional[str]:
         """
         Saves multimedia data.
 
@@ -261,7 +270,7 @@ class Extras:
 
         return link_multimedia
 
-    def _save_webpage_source(self, source: Optional[str]):
+    def _save_webpage_source(self, source: Optional[str]) -> Optional[str]:
         """
         Saves a webpage source.
 
@@ -337,7 +346,7 @@ class Extras:
         websource: Optional[str],
         attachment: Optional[Attachment],
         escape_html: bool
-    ):
+    ) -> None:
         """
         Adds the comment, webpage source and attachment to the lists of the 'report' fixture.
         Screenshots are stored in the attachment argument.
@@ -353,30 +362,31 @@ class Extras:
             attachment (Attachment): The attachment.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
-        comment = utils.escape_html(comment) if escape_html else comment
         link_multimedia = None
         link_source = None
         mime = attachment.mime if attachment is not None else None
 
         # Add extras to Allure report if allure-pytest plugin is being used.
-        if self.fx_allure and importlib.util.find_spec("allure") is not None:
+        if self.fx_allure:
+            comment_allure = BeautifulSoup(comment, 'html.parser').text if not escape_html else comment
             import allure
             if attachment is not None:
                 try:
                     if attachment.body is not None:
-                        allure.attach(attachment.body, name=comment, attachment_type=mime)
+                        allure.attach(attachment.body, name=comment_allure, attachment_type=mime)
                     elif attachment.source is not None:
-                        allure.attach.file(attachment.source, name=comment)
+                        allure.attach.file(attachment.source, name=comment_allure)
                     if websource is not None:
                         allure.attach(websource, name="page source", attachment_type=allure.attachment_type.TEXT)
                 except Exception as err:
                     allure.attach(str(err), name="Error adding attachment", attachment_type=allure.attachment_type.TEXT)
             else:  # Comment alone
-                allure.attach("", name=comment, attachment_type=allure.attachment_type.TEXT)
+                allure.attach("", name=comment_allure, attachment_type=allure.attachment_type.TEXT)
 
         # Add extras to pytest-html report if pytest-html plugin is being used.
         if self.fx_html:
-            if comment is None and attachment is None:
+            comment_html = utils.escape_html(comment) if escape_html else comment
+            if comment_html is None and attachment is None:
                 utils.log_error(None, "Empty test step will be ignored.", None)
                 return
             if attachment is not None and Mime.is_multimedia(mime):
@@ -399,7 +409,7 @@ class Extras:
                         attachment.body = None
                     if Mime.is_image_binary(mime):
                         attachment = None
-            self.comments.append(comment)
+            self.comments.append(comment_html)
             self.multimedia.append(link_multimedia)
             self.sources.append(link_source)
             self.attachments.append(attachment)
@@ -408,7 +418,7 @@ class Extras:
         self,
         comment: str,
         target=None
-    ):
+    ) -> None:
         """
         Adds a step with the last screenshot to the report
         Returns the CSS class to apply to the comment table row of the pytest HTML report.

@@ -1,6 +1,6 @@
 import base64
 import html
-import importlib
+import importlib.metadata
 import os
 import pathlib
 import pytest
@@ -17,14 +17,13 @@ error_screenshot = None
 #
 # Auxiliary functions
 #
-def check_options(htmlpath, allurepath):
+def check_options(htmlpath: Optional[str], allurepath: Optional[str]) -> None:
     """ Verifies if the --html or --alluredir option has been set. """
     if htmlpath is None and allurepath is None:
-        message = ("It seems you are using pytest-report-extras plugin.\n"
-                   "pytest-html or pytest-allure plugin is required.\n"
-                   "'--html' or '--alluredir' option is missing.\n")
+        message = ("\nIt appears you are using the pytest-report-extras plugin.\n"
+                   "This requires either the pytest-html or allure-pytest plugin to generate reports.\n"
+                   "Please ensure you provide the --html or --alluredir option when running pytest.\n")
         print(message, file=sys.stderr)
-        # sys.exit(pytest.ExitCode.USAGE_ERROR)
 
 
 def check_lists_length(report, fx_extras) -> bool:
@@ -45,12 +44,12 @@ def check_lists_length(report, fx_extras) -> bool:
         return True
 
 
-def create_assets(report_html, single_page):
+def create_assets(htmlpath: Optional[str], single_page: bool) -> None:
     """ Recreate report sub-folders. """
     global error_screenshot
-    if report_html is None:
+    if htmlpath is None:
         return
-    folder = f"{report_html}{os.sep}"
+    folder = f"{htmlpath}{os.sep}"
     try:
         # Create downloads folder
         shutil.rmtree(f"{folder}downloads", ignore_errors=True)
@@ -81,10 +80,10 @@ def create_assets(report_html, single_page):
         print(message, repr(error), file=sys.stderr)
 
 
-def delete_empty_subfolders(report_html):
-    folder = ""
-    if report_html is not None and report_html != '':
-        folder = f"{report_html}{os.sep}"
+def delete_empty_subfolders(htmlpath: Optional[str]) -> None:
+    if htmlpath is None:
+        return
+    folder = f"{htmlpath}{os.sep}"
     try:
         for subfolder in ("sources", "videos", "audio", "downloads"):
             if (
@@ -102,7 +101,7 @@ def delete_empty_subfolders(report_html):
         pass
 
 
-def get_folder(filepath) -> Optional[str]:
+def get_folder(filepath: Optional[str]) -> Optional[str]:
     """
     Returns the folder of a filepath.
 
@@ -115,11 +114,31 @@ def get_folder(filepath) -> Optional[str]:
     return folder if folder != '' else '.'
 
 
-def escape_html(text, quote=False) -> Optional[str]:
+def escape_html(text: Optional[str], quote=False) -> Optional[str]:
     """ Escapes HTML characters in a text. """
     if text is None:
         return None
     return html.escape(str(text), quote)
+
+
+def is_package_installed(pkg: str) -> bool:
+    """ Whether a python package is installed """
+    try:
+        importlib.metadata.version(pkg)
+        return True
+    except importlib.metadata.PackageNotFoundError:
+        return False
+
+
+def get_scenario_steps(item) -> str:
+    """ Return the steps of a pytest-bdd test scenario """
+    result = ""
+    try:
+        for step in item.__scenario_report__.scenario.steps:
+            result += f"{step.keyword} {step.name}\n"
+    except Exception:
+        pass
+    return result
 
 
 #
@@ -134,7 +153,7 @@ def check_screenshot_target_type(target):
         WebDriver | Page: target if it is an instance of WebDriver or Page.
         bool: whether target is in a valid state (applicable only to Page objects).
     """
-    if importlib.util.find_spec("selenium") is not None:
+    if is_package_installed("selenium"):
         from selenium.webdriver.remote.webdriver import WebDriver
         from selenium.webdriver.remote.webelement import WebElement
         if isinstance(target, WebDriver):
@@ -142,7 +161,7 @@ def check_screenshot_target_type(target):
         if isinstance(target, WebElement):
             return True, None, True
 
-    if importlib.util.find_spec("playwright") is not None:
+    if is_package_installed("playwright"):
         from playwright.sync_api import Page
         from playwright.sync_api import Locator
         if isinstance(target, Page):
@@ -171,13 +190,13 @@ def get_screenshot(target, full_page=True, page_source=False) -> tuple[Optional[
     source = None
 
     if target is not None:
-        if importlib.util.find_spec("selenium") is not None:
+        if is_package_installed("selenium"):
             from selenium.webdriver.remote.webdriver import WebDriver
             from selenium.webdriver.remote.webelement import WebElement
             if isinstance(target, WebElement) or isinstance(target, WebDriver):
                 image, source = _get_selenium_screenshot(target, full_page, page_source)
 
-        if importlib.util.find_spec("playwright") is not None:
+        if is_package_installed("playwright"):
             from playwright.sync_api import Page
             from playwright.sync_api import Locator
             if isinstance(target, Page) or isinstance(target, Locator):
@@ -392,7 +411,9 @@ def get_marker_links(
                 links.append(Link(url, name, link_type, icon))
     else:
         for marker in item.iter_markers(name=link_type):
-            keys = marker.args[0].replace(' ', '').split(',') if len(marker.args) > 0 else []
+            keys = marker.args[0] if len(marker.args) > 0 else ""
+            keys = marker.kwargs.get("keys", keys)
+            keys = keys.replace(' ', '').split(',') if len(keys) > 0 else []
             icon = marker.args[1] if len(marker.args) > 1 else None
             icon = marker.kwargs.get("icon", icon)
             for key in keys:
@@ -402,7 +423,7 @@ def get_marker_links(
     return links
 
 
-def get_markers_links(
+def get_all_markers_links(
     item: pytest.Item,
     fx_issue_link_pattern: Optional[str],
     fx_tms_link_pattern: Optional[str]
@@ -428,7 +449,7 @@ def add_links(
     fx_html: Optional[str],
     fx_allure: Optional[str],
     fx_links_column: Literal["all", "link", "issue", "tms", "none"] = "all"
-):
+) -> None:
     """
     Add links to the report.
 
@@ -465,7 +486,7 @@ def log_error(
     report: Optional[pytest.TestReport],
     message: Optional[str],
     error: Optional[Exception] = None
-):
+) -> None:
     """
     Appends an error message in the stderr section of a test report.
 
