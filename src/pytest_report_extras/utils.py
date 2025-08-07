@@ -411,7 +411,9 @@ def get_marker_links(
                 links.append(Link(url, name, link_type, icon))
     else:
         for marker in item.iter_markers(name=link_type):
-            keys = marker.args[0].replace(' ', '').split(',') if len(marker.args) > 0 else []
+            keys = marker.args[0] if len(marker.args) > 0 else ""
+            keys = marker.kwargs.get("keys", keys)
+            keys = keys.replace(' ', '').split(',') if len(keys) > 0 else []
             icon = marker.args[1] if len(marker.args) > 1 else None
             icon = marker.kwargs.get("icon", icon)
             for key in keys:

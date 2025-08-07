@@ -116,8 +116,8 @@ def get_step_row(
     source: str,
     attachment,
     single_page: bool,
-    clazz_row: Optional[str] = None,
-    clazz_comment: Optional[str] = "extras_comment"
+    clazz_visibility_row: Optional[str] = None,
+    clazz_color: Optional[str] = None
 ) -> str:
     """
     Returns the HTML table row of a test step.
@@ -128,17 +128,18 @@ def get_step_row(
         source (str): The page source anchor element.
         attachment (Attachment): The attachment.
         single_page (bool): Whether to generate the HTML report in a single page.
-        clazz_row (str): The CSS class to apply to the comment table row.
-        clazz_comment (str): The CSS class to apply to the comment table cell.
+        clazz_visibility_row (str): The CSS class to apply to the comment table row (<tr> tag).
+        clazz_color (str): The CSS class to apply to the comment table cell (<td> tag).
 
     Returns:
         str: The <tr> element.
     """
+    clazz_comment = f"extras_comment {clazz_color}" if clazz_color else "extras_comment"
     if comment is None:
         comment = ""
-    clazz_row_str = ""
-    if clazz_row is not None:
-        clazz_row_str = f'class="{clazz_row}"'
+    clazz_row = ""
+    if clazz_visibility_row is not None:
+        clazz_row = f'class="{clazz_visibility_row}"'
     if multimedia is not None:
         comment = decorate_comment(comment, clazz_comment)
         if attachment is not None and attachment.mime is not None:
@@ -155,14 +156,14 @@ def get_step_row(
         if source is not None:
             source = decorate_page_source(source)
             return (
-                f"<tr {clazz_row_str}>"
+                f"<tr {clazz_row}>"
                 f"<td>{comment}</td>"
                 f'<td class="extras_td_multimedia"><div>{multimedia}<br>{source}</div></td>'
                 f"</tr>"
             )
         else:
             return (
-                f"<tr {clazz_row_str}>"
+                f"<tr {clazz_row}>"
                 f"<td>{comment}</td>"
                 f'<td class="extras_td_multimedia"><div>{multimedia}</div></td>'
                 "</tr>"
@@ -171,7 +172,7 @@ def get_step_row(
         comment = decorate_comment(comment, clazz_comment)
         comment += decorate_attachment(attachment)
         return (
-            f"<tr {clazz_row_str}>"
+            f"<tr {clazz_row}>"
             f'<td colspan="2">{comment}</td>'
             f"</tr>"
         )
@@ -344,7 +345,9 @@ def decorate_attachment(attachment) -> str:
     """ Applies CSS class to an attachment. """
     clazz_pre = "extras_attachment"
     clazz_frm = "extras_iframe"
-    if attachment is None or (attachment.body in (None, '') and attachment.inner_html in (None, '') and attachment.error in (None, '')):
+    if attachment is None or all(
+        field in (None, '') for field in (attachment.body, attachment.inner_html, attachment.error)
+    ):
         return ""
 
     if attachment.error is not None:

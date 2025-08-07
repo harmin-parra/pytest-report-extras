@@ -44,7 +44,10 @@ class Extras:
         self.Mime = Mime
 
     def __repr__(self) -> str:
-        return f"{{id: {hex(id(self))}, comments: {self.comments}, multimedia: {self.multimedia}, sources: {self.sources}, attachments: {self.attachments}}}"
+        return (
+            f"{{id: {hex(id(self))}, comments: {self.comments}, multimedia: {self.multimedia}, "
+            f"sources: {self.sources}, attachments: {self.attachments}}}"
+        )
 
     def screenshot(
         self,
@@ -69,7 +72,7 @@ class Extras:
         """
         if self.fx_allure is None and self.fx_html is None:
             return
-        target_check, target_obj, target_valid = utils.check_screenshot_target_type(target)
+        target_check, target_obj, _ = utils.check_screenshot_target_type(target)
         self.target = target_obj if target_obj is not None else self.target
         if target is not None and not target_check:
             utils.log_error(None, "The screenshot target is not an instance of WebDriver, WebElement, Page or Locator")

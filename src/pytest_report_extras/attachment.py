@@ -148,12 +148,27 @@ class Attachment:
             body_str = base64.b64encode(self.body).decode()
         else:
             body_str = self.body
-        body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
-        inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 65 else repr(self.inner_html)[:65] + "....'"
-        return (
-            f"{{body: {body_str}, source: {repr(self.source)}, "
-            f"mime: {repr(self.mime)}, inner_html: {inner_str}}}"
-        )
+        if self.body is not None:
+            body_str = repr(body_str) if len(repr(body_str)) < 50 else repr(body_str)[:50] + "....'"
+        inner_str = None
+        if self.inner_html is not None:
+            inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 65 else repr(self.inner_html)[:65] + "....'"
+        error_str = None
+        if self.error is not None:
+            error_str = repr(self.error_str) if len(repr(self.error_str)) < 30 else repr(self.error_str)[:30] + "....'"
+
+        parts = []
+        if body_str is not None:
+            parts.append(f"body: {body_str}")
+        if self.source is not None:
+            parts.append(f"source: {repr(self.source)}")
+        if self.mime is not None:
+            parts.append(f"mime: {repr(self.mime)}")
+        if inner_str is not None:
+            parts.append(f"inner_html: {inner_str}")
+        if error_str is not None:
+            parts.append(f"error: {self.error}")
+        return "{" + ", ".join(parts) + "}"
 
 
 def _attachment_json(text: str | dict, indent: int = 4) -> Attachment:

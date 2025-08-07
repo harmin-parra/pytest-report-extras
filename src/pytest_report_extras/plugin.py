@@ -236,13 +236,13 @@ def pytest_runtest_makereport(item, call):
                 fx_single_page
             )
 
-        clazz_row = None
+        clazz_visibility_row = None
         # Add screenshot for last step
         if fx_screenshots == "last" and failure is False and target is not None:
             try:
                 fx_report._last_screenshot("Last screenshot", target)
             except Exception as error:
-                clazz_row = "visibility_last_scr_error"
+                clazz_visibility_row = "visibility_last_scr_error"
                 utils.log_error(report, "Error gathering screenshot", error)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
@@ -250,7 +250,7 @@ def pytest_runtest_makereport(item, call):
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
                 fx_single_page,
-                clazz_row
+                clazz_visibility_row
             )
 
         # Add screenshot for test failure/skip
@@ -265,7 +265,7 @@ def pytest_runtest_makereport(item, call):
             try:
                 fx_report._last_screenshot(comment, target)
             except Exception as error:
-                clazz_row = "visibility_last_scr_error"
+                clazz_visibility_row = "visibility_last_scr_error"
                 utils.log_error(report, "Error gathering screenshot", error)
             steps += decorators.get_step_row(
                 fx_report.comments[-1],
@@ -273,8 +273,8 @@ def pytest_runtest_makereport(item, call):
                 fx_report.sources[-1],
                 fx_report.attachments[-1],
                 fx_single_page,
-                clazz_row,
-                f"extras_comment extras_color_{status}"
+                clazz_visibility_row,
+                f"extras_color_{status}"
             )
 
         # Add Execution title and horizontal line between the header and the steps table
