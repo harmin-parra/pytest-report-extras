@@ -219,17 +219,7 @@ Sample code
       driver.quit()
 
 
-* Example with Playwright screenshots
-
-.. code-block:: python
-
-  def test_with_playwright(browser: Browser, report):
-      page.goto("https://www.selenium.dev/selenium/web/web-form.html")
-      report.screenshot("Get the webpage to test", page)
-      report.screenshot(comment="Get the webpage to test", target=page, full_page=False)
-
-
-* Example adding Playwright video
+* Example with Playwright
 
 .. code-block:: python
 
@@ -250,16 +240,14 @@ Sample code
 
 .. code-block:: python
 
+  from pytest_report_extras import Mime
+
   def test_attachments(report):
-      """
-      This is a test adding XML & JSON attachments
-      """
       report.attach(
           "This is a XML document:",
           body="<root><child>text</child></root>",
           mime=report.Mime.XML
       )
-      from pytest_report_extras import Mime
       report.attach(
           "This is a XML document:",
           body="<root><child>text</child></root>",
@@ -329,7 +317,7 @@ Sample code
       playwright_context.locator("[id='searchInput']").fill(term)
       playwright_context.keyboard.press("Enter")
       playwright_context.wait_for_load_state("load")
-      report.screenshot(f'"{term}" page', playwright_context)
+      report.screenshot("The searched page", playwright_context)
   
   @then(parsers.parse('the page title is "{title}"'))
   def check_title(playwright_context: Page, title):
