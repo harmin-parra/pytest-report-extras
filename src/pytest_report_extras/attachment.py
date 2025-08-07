@@ -155,7 +155,7 @@ class Attachment:
             inner_str = repr(self.inner_html) if len(repr(self.inner_html)) < 65 else repr(self.inner_html)[:65] + "....'"
         error_str = None
         if self.error is not None:
-            error_str = repr(self.error_str) if len(repr(self.error_str)) < 30 else repr(self.error_str)[:30] + "....'"
+            error_str = repr(self.error) if len(repr(self.error)) < 50 else repr(self.error)[:50] + "....'"
 
         parts = []
         if body_str is not None:
@@ -167,7 +167,7 @@ class Attachment:
         if inner_str is not None:
             parts.append(f"inner_html: {inner_str}")
         if error_str is not None:
-            parts.append(f"error: {self.error}")
+            parts.append(f"error: {error_str}")
         return "{" + ", ".join(parts) + "}"
 
 

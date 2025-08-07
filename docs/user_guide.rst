@@ -294,12 +294,13 @@ Sample CSS file
 
 .. code-block:: css
 
-  .extras_font {
+  .extras_comment {
       font-family: monospace;
+      color: blue;
   }
   
-  .extras_color_comment {
-      color: blue;
+  .extras_comment strong {
+      color: black;
   }
   
   .extras_color_skipped {
@@ -406,7 +407,7 @@ Sample CSS file
       margin-right: 30px;
   }
   
-  code,
+  .extras_comment code,
   .extras_attachment_block {
       white-space: pre-wrap;
       overflow-wrap: break-word;

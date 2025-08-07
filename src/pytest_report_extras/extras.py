@@ -44,12 +44,12 @@ class Extras:
         self.Mime = Mime
 
     def __repr__(self) -> str:
+        source_list = self.sources if any( element for element in self.sources ) else []
+        multimedia_list = self.multimedia if any( element for element in self.multimedia ) else []
+        attachment_list = self.attachments if any( element for element in self.attachments ) else []
         return (
-            f"{{id: {hex(id(self))}, comments: {self.comments}, attachments: {self.attachments}, "
-            f"multimedia: {self.multimedia}, sources: {self.sources}}}"            
-        ) if any( source for source in self.sources ) else (
-            f"{{id: {hex(id(self))}, comments: {self.comments}, attachments: {self.attachments}, "
-            f"multimedia: {self.multimedia}, sources: []}}"
+            f"{{id: {hex(id(self))}, comments: {self.comments}, attachments: {attachment_list}, "
+            f"multimedia: {multimedia_list}, sources: {source_list}}}"
         )
 
     def screenshot(
