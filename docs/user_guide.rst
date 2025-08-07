@@ -506,7 +506,7 @@ Sample CSS file
 Sample reports
 ==============
 
-* Pytest-html sample report
+* pytest-html sample report
 
 .. image:: demo-pytest.png
 

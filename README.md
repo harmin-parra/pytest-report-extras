@@ -16,7 +16,7 @@ If you like this software, consider contributing to the project through [buy me 
 
 ## Screenshots ##
 
-- Pytest-html report
+- pytest-html report
 
 ![](docs/demo-pytest.png)
 
