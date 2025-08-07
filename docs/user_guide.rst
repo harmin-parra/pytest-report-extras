@@ -154,8 +154,8 @@ Limitations
 * For Playwright, only **sync_api** is supported.
 
 
-Example
-=======
+Examples
+========
 
 When using the **pytest-html** plugin (with the ``--html`` option), an external CSS file may be provided with the ``--css`` option.
 
