@@ -45,8 +45,11 @@ class Extras:
 
     def __repr__(self) -> str:
         return (
-            f"{{id: {hex(id(self))}, comments: {self.comments}, multimedia: {self.multimedia}, "
-            f"sources: {self.sources}, attachments: {self.attachments}}}"
+            f"{{id: {hex(id(self))}, comments: {self.comments}, attachments: {self.attachments}, "
+            f"multimedia: {self.multimedia}, sources: {self.sources}}}"            
+        ) if any( source for source in self.sources ) else (
+            f"{{id: {hex(id(self))}, comments: {self.comments}, attachments: {self.attachments}, "
+            f"multimedia: {self.multimedia}, sources: []}}"
         )
 
     def screenshot(
