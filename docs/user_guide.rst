@@ -199,7 +199,7 @@ Sample ``pytest.ini`` file
 Sample code
 -----------
 
-* Example adding Selenium screenshots
+* Example with Selenium
 
 .. code-block:: python
 
@@ -219,14 +219,11 @@ Sample code
       driver.quit()
 
 
-* Example adding Playwright screenshots
+* Example with Playwright screenshots
 
 .. code-block:: python
 
-  def test_with_playwright(page: Page, report):
-      """
-      This is a test using Playwright
-      """
+  def test_with_playwright(browser: Browser, report):
       page.goto("https://www.selenium.dev/selenium/web/web-form.html")
       report.screenshot("Get the webpage to test", page)
       report.screenshot(comment="Get the webpage to test", target=page, full_page=False)
@@ -237,15 +234,19 @@ Sample code
 .. code-block:: python
 
   def test_with_playwright(browser: Browser, report):
+      """
+      This is a test using Playwright
+      """
       context = browser.new_context(record_video_dir="path/to/videos/")
       page = context.new_page()
-      # Your test goes here
+      page.goto("https://www.wikipedia.org")
+      report.screenshot("Wikipedia page", page)
       context.close()
       page.close()
       report.attach("Recorded video", source=page.video.path(), mime="webm")
 
 
-* Example adding attachments
+* Example with attachments
 
 .. code-block:: python
 
@@ -276,7 +277,7 @@ Sample code
       )
 
 
-* Example adding links
+* Example with links
 
 .. code-block:: python
 
@@ -286,7 +287,53 @@ Sample code
   @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
   @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia", icon="&#129373;")
   def test_link_markers(report)
-      # Your test goes here
+      pass
+
+
+* Example with pytest-bdd (cucumber)
+
+.. code-block:: text
+
+  Feature: Wikipedia
+
+  Scenario: Search in Wikipedia
+    Given I go to Wikipedia
+    When I search for "pizza"
+    Then the page title is "Pizza - Wikipedia"
+
+
+.. code-block:: python
+
+  import pytest
+  from pytest_bdd import scenarios, given, when, then, parsers
+  from playwright.sync_api import sync_playwright, Page
+  
+  scenarios('features/wikipedia.feature')
+  
+  @pytest.fixture
+  def playwright_context():
+      with sync_playwright() as p:
+          browser = p.chromium.launch(headless=True)
+          page = browser.new_page()
+          yield page
+          browser.close()
+  
+  @given('I go to Wikipedia')
+  def go_to_wikipedia(playwright_context: Page, report):
+      playwright_context.goto("https://www.wikipedia.org")
+      assert "Wikipedia" in playwright_context.title()
+      report.screenshot("Wikipedia page", playwright_context)
+  
+  @when(parsers.parse('I search for "{term}"'))
+  def search_wikipedia(playwright_context: Page, term, report):
+      playwright_context.locator("[id='searchInput']").fill(term)
+      playwright_context.keyboard.press("Enter")
+      playwright_context.wait_for_load_state("load")
+      report.screenshot(f'"{term}" page', playwright_context)
+  
+  @then(parsers.parse('the page title is "{title}"'))
+  def check_title(playwright_context: Page, title):
+      assert playwright_context.title() == title
 
 
 Sample CSS file
