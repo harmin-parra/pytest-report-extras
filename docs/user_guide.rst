@@ -153,6 +153,8 @@ Limitations
 
 * For Playwright, only **sync_api** is supported.
 
+* When using **Allure** with **pytest-bdd**, the **allure-pytest** plugin should be installed instead of **allure-pytest-bdd**.
+
 
 Examples
 ========
