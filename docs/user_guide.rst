@@ -104,7 +104,7 @@ To add a step with attachment:
       comment: str,                                 # Comment of the test step.
       body: str | bytes | dict | list[str] = None,  # The content/body of the attachment.
       source: str = None,                           # The filepath of the attachment.
-      mime: str = None,                             # The attachment mime type.
+      mime: Mime | str = None,                      # The attachment mime type.
       escape_html: bool = True                      # Whether to escape HTML characters in the comment.
   )
 
@@ -152,6 +152,8 @@ Limitations
 * No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
 
 * For Playwright, only **sync_api** is supported.
+
+* When using **Allure** with **pytest-bdd**, the **allure-pytest** plugin should be installed instead of **allure-pytest-bdd**.
 
 
 Examples
@@ -233,30 +235,18 @@ Sample code
       report.screenshot("Wikipedia page", page)
       context.close()
       page.close()
-      report.attach("Recorded video", source=page.video.path(), mime="webm")
+      report.attach("Recorded video", source=page.video.path(), report.Mime.WEBM)
 
 
 * Example with attachments
 
 .. code-block:: python
 
-  from pytest_report_extras import Mime
-
   def test_attachments(report):
       report.attach(
           "This is a XML document:",
           body="<root><child>text</child></root>",
           mime=report.Mime.XML
-      )
-      report.attach(
-          "This is a XML document:",
-          body="<root><child>text</child></root>",
-          mime=Mime.XML
-      )
-      report.attach(
-          comment="This is a JSON document:",
-          source="path/to/file",
-          mime="application/json"
       )
       report.attach(
           comment="This is a JSON document:",

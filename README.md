@@ -18,8 +18,8 @@ If you like this software, consider contributing to the project through [buy me 
 
 - pytest-html report
 
-![](docs/demo-pytest.png)
+![](https://pytest-report-extras.readthedocs.io/stable/_images/demo-pytest.png)
 
 - Allure report
 
-![](docs/demo-allure.png)
+![](https://pytest-report-extras.readthedocs.io/stable/_images/demo-allure.png)
