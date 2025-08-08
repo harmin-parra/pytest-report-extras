@@ -104,7 +104,7 @@ class Extras:
         comment: str,
         body: str | bytes | dict | list[str] = None,
         source: str = None,
-        mime: str = None,
+        mime: Mime | str = None,
         csv_delimiter: str = ',',
         escape_html: bool = True
     ) -> None:
@@ -119,7 +119,7 @@ class Extras:
                 Can be of type 'list[str]' for uri-list mime type.
                 Can be of type 'bytes' for image mime type.
             source (str): The filepath of the source of the attachment.
-            mime (str): The mime type of the attachment.
+            mime (Mime | str): The mime type of the attachment.
             csv_delimiter (str): The delimiter for CSV documents.
             escape_html (bool): Whether to escape HTML characters in the comment.
         """
