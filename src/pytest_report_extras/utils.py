@@ -466,7 +466,7 @@ def add_links(
         if fx_html is not None and pytest_html is not None:
             if fx_links_column in ("all", link.type):
                 extras.append(pytest_html.extras.url(link.url, name=f"{link.icon} {link.name}"))
-        if fx_allure is not None and importlib.util.find_spec("allure") is not None:
+        if fx_allure is not None:  # and item.config.pluginmanager.has_plugin("allure_pytest"):
             import allure
             from allure_commons.types import LinkType
             allure_link_type = None

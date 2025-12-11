@@ -34,13 +34,22 @@ def get_header_rows(item, call, report, links, status: Status) -> str:
 def get_status_row(call, report, status) -> str:
     """ HTML table row for the test execution status and reason (if applicable). """
     reason = get_reason_msg(call, report, status)
-    return (
-        '<tr class="visibility_status">'
-        f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
-        '<td class="extras_header_separator" style="border: 0px"></td>'
-        f'<td style="border: 0px" class="extras_status_reason">{reason}</td>'
-        "</tr>"
-    )
+    if reason:
+        #print(reason)
+        return (
+            '<tr class="visibility_status">'
+            f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
+            '<td class="extras_header_separator" style="border: 0px"></td>'
+            '<td style="border: 0px; width: 60px" class="extras_status_reason">Reason: </td>'
+            f'<td style="border: 0px" class="extras_status_reason"><pre class="extras_header_block">{reason}</pre></td>'
+            '</tr>'
+        )
+    else:
+        return (
+            '<tr class="visibility_status">'
+            f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
+            '</tr>'
+        )
 
 
 def get_description_row(item) -> str:
@@ -57,11 +66,11 @@ def get_description_row(item) -> str:
         description = f"{description[description.rindex(os.sep) + 1:]}\n\n{utils.get_scenario_steps(item)}"
     if description is not None:
         row = (
-            "<tr>"
+            '</tr>'
             f'<td style="border: 0px"><span class="extras_title">Description</span></td>'
             '<td class="extras_header_separator" style="border: 0px"></td>'
-            f'<td style="border: 0px">{decorate_description(description)}</td>'
-            "</tr>"
+            f'<td style="border: 0px" colspan="2">{decorate_description(description)}</td>'
+            '</tr>'
         )
     return row
 
@@ -75,8 +84,8 @@ def get_parameters_row(item) -> str:
             '<tr class="visibility_parameters">'
             f'<td style="border: 0px"><span class="extras_title">Parameters</span></td>'
             '<td class="extras_header_separator" style="border: 0px"></td>'
-            f'<td style="border: 0px">{decorate_parameters(parameters)}</td>'
-            "</tr>"
+            f'<td style="border: 0px" colspan="2">{decorate_parameters(parameters)}</td>'
+            '</tr>'
         )
     return row
 
@@ -87,11 +96,11 @@ def get_exception_row(call) -> str:
     exception = decorate_exception(call)
     if exception != "":
         row = (
-            "<tr>"
+            '</tr>'
             f'<td style="border: 0px"><span class="extras_title">Exception</span></td>'
             '<td class="extras_header_separator" style="border: 0px"></td>'
-            f'<td style="border: 0px">{exception}</td>'
-            "</tr>"
+            f'<td style="border: 0px" colspan="2">{exception}</td>'
+            '</tr>'
         )
     return row
 
@@ -104,10 +113,17 @@ def get_links_row(links: list[Link]) -> str:
             '<tr class="visibility_links">'
             f'<td style="border: 0px"><span class="extras_title">Links</span></td>'
             '<td class="extras_header_separator" style="border: 0px"></td>'
-            f'<td style="border: 0px">{decorate_links(links)}</td>'
-            "</tr>"
+            f'<td style="border: 0px" colspan="2">{decorate_links(links)}</td>'
+            '</tr>'
         )
     return row
+
+def get_execution_row() -> str:
+    return (
+        '<tr class="visibility_execution">'
+        '<td style="border: 0px"><span class="extras_title">Execution</span></td>'
+        '</tr>'
+    )
 
 
 def get_step_row(
@@ -156,31 +172,31 @@ def get_step_row(
         if source is not None:
             source = decorate_page_source(source)
             return (
-                f"<tr {clazz_row}>"
-                f"<td>{comment}</td>"
+                f'<tr {clazz_row}>'
+                f'<td>{comment}</td>'
                 f'<td class="extras_td_multimedia"><div>{multimedia}<br>{source}</div></td>'
-                f"</tr>"
+                '</tr>'
             )
         else:
             return (
-                f"<tr {clazz_row}>"
-                f"<td>{comment}</td>"
+                f'<tr {clazz_row}>'
+                f'<td>{comment}</td>'
                 f'<td class="extras_td_multimedia"><div>{multimedia}</div></td>'
-                "</tr>"
+                '</tr>'
             )
     else:
         comment = decorate_comment(comment, clazz_comment)
         comment += decorate_attachment(attachment)
         return (
-            f"<tr {clazz_row}>"
+            f'<tr {clazz_row}>'
             f'<td colspan="2">{comment}</td>'
-            f"</tr>"
+            '</tr>'
         )
 
 
-def get_reason_msg(call, report, status: Status) -> str:
+def get_reason_msg(call, report, status: Status) -> Optional[str]:
     """  Returns the fail, xfail or skip reason. """
-    reason = ""
+    reason = None
     # Get Xfailed and Xpassed tests
     if status in (Status.XFAILED, Status.XPASSED):
         reason = utils.escape_html(report.wasxfail)
@@ -192,8 +208,6 @@ def get_reason_msg(call, report, status: Status) -> str:
         hasattr(call.excinfo.value, "msg")
     ):
         reason = utils.escape_html(call.excinfo.value.msg)
-    if reason != "":
-        reason = "Reason: " + reason
     return reason
 
 
@@ -225,10 +239,18 @@ def decorate_exception(call) -> str:
         call.excinfo is not None and
         not isinstance(call.excinfo.value, (Failed, XFailed, Skipped))
     ):
-        content = content + (
-            f'<pre class="extras_header_block">{utils.escape_html(call.excinfo.typename)}</pre><br>'
-            f'<pre class="extras_header_block">{utils.escape_html(call.excinfo.value)}</pre>'
-        )
+        _type = call.excinfo.typename
+        _value = call.excinfo.value
+        if _type == "AssertionError":
+            _value = "\n".join(_value.args[0].split("\n")[:-1])  #_value.args[0].rsplit("\n", 1)[0]
+        if len(str(_value)) > 0:
+            content = content + (
+                f'<pre class="extras_header_block">{utils.escape_html(_type)}</pre><br>'
+                f'<pre class="extras_header_block">{utils.escape_html(_value)}</pre>'
+            )
+        else:
+            content = content + \
+                f'<pre class="extras_header_block">{utils.escape_html(_type)}</pre>'
     return content
 
 
@@ -324,7 +346,7 @@ def decorate_video(uri: Optional[str], mime: str) -> str:
         f'<video controls class="{clazz}">'
         f'<source src="{uri}" type="{mime}">'
         "Your browser does not support the video tag."
-        "</video>"
+        '</video>'
     )
 
 
@@ -337,7 +359,7 @@ def decorate_audio(uri: Optional[str], mime: str) -> str:
         f'<audio controls class="{clazz}">'
         f'<source src="{uri}" type="{mime}">'
         "Your browser does not support the audio tag."
-        "</audio>"
+        '</audio>'
     )
 
 
