@@ -58,6 +58,7 @@ def pytest_addoption(parser):
 # Auxiliary functions to read CLI and INI options
 #
 def _fx_screenshots(config):
+    """ The screenshot strategy """
     value = config.getini("extras_screenshots")
     return value if value in ("all", "last", "fail", "none") else "all"
 
@@ -187,10 +188,9 @@ def pytest_runtest_makereport(item, call):
 
     # Add extras for skipped or failed setup
     if (
-        call.when == "setup" and
+        report.when in ("setup", "teardown") and
         executing_pytest_html and
-        (report.failed or report.skipped) and
-        "report" in item.fixturenames
+        (report.failed or report.skipped)
     ):
         if report.failed:
             status = Status.ERROR
@@ -201,8 +201,11 @@ def pytest_runtest_makereport(item, call):
 
     # If pytest-soft-assert is loaded, update test result status
     if call.when == "call" and item.config.pluginmanager.has_plugin("pytest_soft_assert"):
-        soft = item.config.pluginmanager.getplugin("pytest_soft_assert")
-        report = soft.update_test_status(report, item, call)
+        try:
+            soft = item.config.pluginmanager.getplugin("pytest_soft_assert")
+            report = soft.update_test_status(report, item, call)
+        except Exception:
+            pass
 
     # Add extras for test execution
     if report.when == "call":
