@@ -53,6 +53,7 @@ def pytest_addoption(parser):
         help="The test report title",
     )
 
+
 #
 # Auxiliary functions to read CLI and INI options
 #
@@ -91,14 +92,13 @@ def _fx_sources(config):
 #
 @pytest.fixture(scope="function")
 def report(request):
-    config = request.config
     return Extras(
-        _fx_html(config),
-        _fx_single_page(config),
-        _fx_screenshots(config),
-        _fx_sources(config),
-        _fx_indent(config),
-        _fx_allure(config)
+        _fx_html(request.config),
+        _fx_single_page(request.config),
+        _fx_screenshots(request.config),
+        _fx_sources(request.config),
+        _fx_indent(request.config),
+        _fx_allure(request.config)
     )
 
 
@@ -166,10 +166,6 @@ def pytest_runtest_makereport(item, call):
     """
     outcome = yield
 
-    # Exit if the test is not using fixtures
-    if 'request' not in item.fixturenames:
-        return
-
     fx_allure = _fx_allure(item.config)
     fx_html = _fx_html(item.config)
     fx_issue_link_pattern = item.config.getini("extras_issue_link_pattern")
@@ -186,13 +182,13 @@ def pytest_runtest_makereport(item, call):
     links = utils.get_all_markers_links(item, fx_issue_link_pattern, fx_tms_link_pattern)
     utils.add_links(item, extras, links, fx_html, fx_allure, fx_links_column)
 
-    # Exist if pytest-html is not being used
-    if fx_html is None or pytest_html is None:
-        return
+    # Whether pytest-html is being used
+    executing_pytest_html = fx_html is not None and pytest_html is not None
 
     # Add extras for skipped or failed setup
     if (
         call.when == "setup" and
+        executing_pytest_html and
         (report.failed or report.skipped) and
         "report" in item.fixturenames
     ):
@@ -210,14 +206,16 @@ def pytest_runtest_makereport(item, call):
 
     # Add extras for test execution
     if report.when == "call":
-        # Get test fixture values
+        # Get the 'report' fixture
         try:
             feature_request = item.funcargs["request"]
             fx_report = feature_request.getfixturevalue("report")
             target = fx_report.target
-        except pytest.FixtureLookupError as error:
-            utils.log_error(report, "Could not retrieve test fixtures", error)
-            return
+        except Exception:
+            # The test doesn't have any fixture, so let's create a fake 'report' fixture
+            fx_report = Extras(None, False, "none", False, 2, None)
+            target = None
+
         # Set test status variables
         wasfailed = False
         wasxpassed = False
@@ -245,23 +243,25 @@ def pytest_runtest_makereport(item, call):
         failure = wasfailed or wasxfailed or wasxpassed or wasskipped
 
         header = decorators.get_header_rows(item, call, report, links, status)
-
-        if not utils.check_lists_length(report, fx_report):
-            extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
-            return
-
-        # Generate HTML code of the test execution steps to be added in the report
         steps = ""
 
-        # Add steps in the report
-        for i in range(len(fx_report.comments)):
-            steps += decorators.get_step_row(
-                fx_report.comments[i],
-                fx_report.multimedia[i],
-                fx_report.sources[i],
-                fx_report.attachments[i],
-                fx_single_page
-            )
+        # Generate HTML code of the test execution steps to be added in the report
+        if  executing_pytest_html:
+
+            # Verify integrity of 'report' fixture internal lists
+            if not utils.check_lists_length(report, fx_report):
+                extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
+                return
+
+            # Add steps in the report
+            for i in range(len(fx_report.comments)):
+                steps += decorators.get_step_row(
+                    fx_report.comments[i],
+                    fx_report.multimedia[i],
+                    fx_report.sources[i],
+                    fx_report.attachments[i],
+                    fx_single_page
+                )
 
         clazz_visibility_row = None
         # Add screenshot for last step
@@ -271,14 +271,15 @@ def pytest_runtest_makereport(item, call):
             except Exception as error:
                 clazz_visibility_row = "visibility_last_scr_error"
                 utils.log_error(report, "Error gathering screenshot", error)
-            steps += decorators.get_step_row(
-                fx_report.comments[-1],
-                fx_report.multimedia[-1],
-                fx_report.sources[-1],
-                fx_report.attachments[-1],
-                fx_single_page,
-                clazz_visibility_row
-            )
+            if executing_pytest_html:
+                steps += decorators.get_step_row(
+                    fx_report.comments[-1],
+                    fx_report.multimedia[-1],
+                    fx_report.sources[-1],
+                    fx_report.attachments[-1],
+                    fx_single_page,
+                    clazz_visibility_row
+                )
 
         # Add screenshot for test failure/skip
         if fx_screenshots != "none" and failure and target is not None:
@@ -294,26 +295,28 @@ def pytest_runtest_makereport(item, call):
             except Exception as error:
                 clazz_visibility_row = "visibility_last_scr_error"
                 utils.log_error(report, "Error gathering screenshot", error)
-            steps += decorators.get_step_row(
-                fx_report.comments[-1],
-                fx_report.multimedia[-1],
-                fx_report.sources[-1],
-                fx_report.attachments[-1],
-                fx_single_page,
-                clazz_visibility_row,
-                f"extras_color_{status}"
-            )
+            if executing_pytest_html:
+                steps += decorators.get_step_row(
+                    fx_report.comments[-1],
+                    fx_report.multimedia[-1],
+                    fx_report.sources[-1],
+                    fx_report.attachments[-1],
+                    fx_single_page,
+                    clazz_visibility_row,
+                    f"extras_color_{status}"
+                )
 
-        # Add Execution title and horizontal line between the header and the steps table
-        if len(steps) > 0:
-            header += decorators.get_execution_row()
-        extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
-        if len(steps) > 0 and header.count("</tr>") > 1:
-            extras.append(pytest_html.extras.html('<hr class="extras_separator">'))
-
-        # Append steps table
-        if steps != "":
-            extras.append(pytest_html.extras.html(f'<table style="width: 100%;">{steps}</table>'))
+        # Let's put the steps and the header together
+        if executing_pytest_html:
+            # Add Execution title and horizontal line between the header and the steps table
+            if len(steps) > 0:
+                header += decorators.get_execution_row()
+            extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
+            if len(steps) > 0 and header.count("</tr>") > 1:
+                extras.append(pytest_html.extras.html('<hr class="extras_separator">'))
+            # Append steps table
+            if steps != "":
+                extras.append(pytest_html.extras.html(f'<table style="width: 100%;">{steps}</table>'))
 
     report.extras = extras
 
