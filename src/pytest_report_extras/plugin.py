@@ -246,7 +246,7 @@ def pytest_runtest_makereport(item, call):
         steps = ""
 
         # Generate HTML code of the test execution steps to be added in the report
-        if  executing_pytest_html:
+        if executing_pytest_html:
 
             # Verify integrity of 'report' fixture internal lists
             if not utils.check_lists_length(report, fx_report):
