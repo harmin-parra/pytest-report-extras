@@ -202,9 +202,8 @@ def get_reason_msg(call, report, status: Status) -> Optional[str]:
         reason = utils.escape_html(report.wasxfail)
     # Get explicit pytest.fail and pytest.skip calls
     if (
-        hasattr(call, "excinfo") and
         call.excinfo is not None and
-        isinstance(call.excinfo.value, (Failed, XFailed, Skipped)) and
+        # isinstance(call.excinfo.value, (Failed, XFailed, Skipped)) and
         hasattr(call.excinfo.value, "msg")
     ):
         reason = utils.escape_html(call.excinfo.value.msg)
@@ -235,9 +234,8 @@ def decorate_exception(call) -> str:
     content = ""
     # Get runtime exceptions in failed tests
     if (
-        hasattr(call, "excinfo") and
         call.excinfo is not None and
-        not isinstance(call.excinfo.value, (Failed, XFailed, Skipped))
+        call.excinfo.type not in (Failed, XFailed, Skipped)
     ):
         _type = call.excinfo.typename
         _value = call.excinfo.value

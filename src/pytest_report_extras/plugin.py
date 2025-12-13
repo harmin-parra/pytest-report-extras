@@ -204,6 +204,8 @@ def pytest_runtest_makereport(item, call):
         try:
             soft = item.config.pluginmanager.getplugin("pytest_soft_assert")
             report = soft.update_test_status(report, item, call)
+            if hasattr(report, "softexcinfo"):
+                call.excinfo = report.softexcinfo
         except Exception:
             pass
 
