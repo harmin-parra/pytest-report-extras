@@ -1,5 +1,6 @@
 import os
 import pathlib
+import pytest
 import textwrap
 from typing import Optional
 from _pytest.outcomes import Failed, Skipped, XFailed
@@ -11,31 +12,40 @@ from .status import Status
 #
 # Auxiliary functions for the report generation
 #
-def get_header_rows(item, call, report, links, status: Status) -> str:
+def get_header_rows(
+    item: pytest.Item,
+    call: pytest.CallInfo,
+    report: pytest.TestReport,
+    links: list[Link],
+    status: Status
+) -> str:
     """
     Decorates and appends the test description and execution exception trace, if any, to the report extras.
 
     Args:
         item (pytest.Item): The test item.
-        call (pytest.CallInfo): Information of the test call.
-        report (pytest.TestReport): The pytest test report.
-        links (List[Link]): The links to add to the header.
+        call (pytest.CallInfo): The test call.
+        report (pytest.TestReport): The test report.
+        links (list[Link]): The links to add to the header.
         status (Status): The test execution status.
     """
     return (
         get_status_row(call, report, status) +
         get_description_row(item) +
         get_parameters_row(item) +
-        get_exception_row(call) +
+        get_exception_row(call, report) +
         get_links_row(links)
     )
 
 
-def get_status_row(call, report, status) -> str:
+def get_status_row(
+    call: pytest.CallInfo,
+    report: pytest.TestReport,
+    status: Status
+) -> str:
     """ HTML table row for the test execution status and reason (if applicable). """
     reason = get_reason_msg(call, report, status)
-    if reason:
-        #print(reason)
+    if reason != "":
         return (
             '<tr class="visibility_status">'
             f'<td style="border: 0px"><span class="extras_status extras_status_{status}">{status.capitalize()}</span></td>'
@@ -52,7 +62,7 @@ def get_status_row(call, report, status) -> str:
         )
 
 
-def get_description_row(item) -> str:
+def get_description_row(item: pytest.Item) -> str:
     """ HTML table row for the test description. """
     row = ""
     description = None
@@ -75,7 +85,7 @@ def get_description_row(item) -> str:
     return row
 
 
-def get_parameters_row(item) -> str:
+def get_parameters_row(item: pytest.Item) -> str:
     """ HTML table row for the test parameters. """
     row = ""
     parameters = item.callspec.params if hasattr(item, "callspec") else None
@@ -90,18 +100,25 @@ def get_parameters_row(item) -> str:
     return row
 
 
-def get_exception_row(call) -> str:
-    """ HTML table row for the test execution exception. """
+def get_exception_row(call: pytest.CallInfo, report: pytest.TestReport) -> str:
+    """ HTML table row for the test execution exception(s). """
     row = ""
-    exception = decorate_exception(call)
-    if exception != "":
+    exception1 = decorate_exception(call.excinfo)
+    exception2 = decorate_exception(getattr(report, "softexcinfo", None))
+    if exception1 != '' or exception2 != '':
         row = (
             '</tr>'
             f'<td style="border: 0px"><span class="extras_title">Exception</span></td>'
             '<td class="extras_header_separator" style="border: 0px"></td>'
-            f'<td style="border: 0px" colspan="2">{exception}</td>'
-            '</tr>'
+            f'<td style="border: 0px" colspan="2">'
         )
+        if exception1 != '':
+            row += f"{exception1}"
+        if exception2 != '':
+            if exception1 != '':
+                row += "<br><hr><br>"
+            row += f"{exception2}"
+        row += '</td></tr>'
     return row
 
 
@@ -117,6 +134,7 @@ def get_links_row(links: list[Link]) -> str:
             '</tr>'
         )
     return row
+
 
 def get_execution_row() -> str:
     return (
@@ -194,19 +212,31 @@ def get_step_row(
         )
 
 
-def get_reason_msg(call, report, status: Status) -> Optional[str]:
+def get_reason_msg(
+    call: pytest.CallInfo,
+    report: pytest.TestReport,
+    status: Status
+) -> Optional[str]:
     """  Returns the fail, xfail or skip reason. """
-    reason = None
-    # Get Xfailed and Xpassed tests
-    if status in (Status.XFAILED, Status.XPASSED):
+    reason = ""
+    if hasattr(report, "wasxfail"):
         reason = utils.escape_html(report.wasxfail)
-    # Get explicit pytest.fail and pytest.skip calls
+    # Get exception message
     if (
+        reason == '' and
         call.excinfo is not None and
-        # isinstance(call.excinfo.value, (Failed, XFailed, Skipped)) and
+        call.excinfo.type in (Failed, XFailed, Skipped) and
         hasattr(call.excinfo.value, "msg")
     ):
         reason = utils.escape_html(call.excinfo.value.msg)
+    if (
+        hasattr(report, "softexcinfo") and
+        call.excinfo is not None and
+        call.excinfo.type in (Failed, XFailed, Skipped)
+    ):
+        if reason != '':
+            reason += '\n'
+        reason += "Soft assertion failure"
     return reason
 
 
@@ -219,7 +249,7 @@ def decorate_description(description) -> str:
     return f'<pre class="extras_description extras_header_block">{description}</pre>'
 
 
-def decorate_parameters(parameters) -> str:
+def decorate_parameters(parameters: Optional[dict]) -> str:
     """ Applies a CSS style to the test parameters. """
     if parameters is None:
         return ""
@@ -229,18 +259,16 @@ def decorate_parameters(parameters) -> str:
     return content
 
 
-def decorate_exception(call) -> str:
+def decorate_exception(excinfo: Optional[pytest.ExceptionInfo]) -> str:
     """  Applies a CSS style to the test execution exception. """
     content = ""
     # Get runtime exceptions in failed tests
     if (
-        call.excinfo is not None and
-        call.excinfo.type not in (Failed, XFailed, Skipped)
+        excinfo is not None and
+        excinfo.type not in (Failed, XFailed, Skipped)
     ):
-        _type = call.excinfo.typename
-        _value = call.excinfo.value
-        if _type == "AssertionError":
-            _value = "\n".join(_value.args[0].split("\n")[:-1])  #_value.args[0].rsplit("\n", 1)[0]
+        _type = excinfo.typename
+        _value = excinfo.value
         if len(str(_value)) > 0:
             content = content + (
                 f'<pre class="extras_header_block">{utils.escape_html(_type)}</pre><br>'

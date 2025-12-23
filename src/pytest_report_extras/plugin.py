@@ -204,8 +204,6 @@ def pytest_runtest_makereport(item, call):
         try:
             soft = item.config.pluginmanager.getplugin("pytest_soft_assert")
             report = soft.update_test_status(report, item, call)
-            if hasattr(report, "softexcinfo"):
-                call.excinfo = report.softexcinfo
         except Exception:
             pass
 
@@ -214,38 +212,16 @@ def pytest_runtest_makereport(item, call):
         # Get the 'report' fixture
         try:
             feature_request = item.funcargs["request"]
-            fx_report = feature_request.getfixturevalue("report")
+            fx_report: Extras = feature_request.getfixturevalue("report")
             target = fx_report.target
         except Exception:
             # The test doesn't have any fixture, so let's create a fake 'report' fixture
-            fx_report = Extras(None, False, "none", False, 2, None)
+            fx_report: Extras = Extras(None, False, "none", False, 2, None)
             target = None
 
         # Set test status variables
-        wasfailed = False
-        wasxpassed = False
-        wasxfailed = False
-        wasskipped = False
-        status = Status.UNKNOWN
-
-        xfail = hasattr(report, "wasxfail")
-        if report.failed:
-            wasfailed = True
-            status = Status.FAILED
-        if report.skipped and not xfail:
-            wasskipped = True
-            status = Status.SKIPPED
-        if report.skipped and xfail:
-            wasxfailed = True
-            status = Status.XFAILED
-        if report.passed and xfail:
-            wasxpassed = True
-            status = Status.XPASSED
-        if report.passed and not xfail:
-            status = Status.PASSED
-
-        # To check test failure/skip
-        failure = wasfailed or wasxfailed or wasxpassed or wasskipped
+        status = calculate_status(report)
+        failure = status in (Status.FAILED, Status.XFAILED, status.XPASSED, Status.SKIPPED)
 
         header = decorators.get_header_rows(item, call, report, links, status)
         steps = ""
@@ -332,3 +308,24 @@ def pytest_runtest_makereport(item, call):
 if importlib.util.find_spec("html") and utils.is_package_installed("pytest-html"):
     def pytest_html_report_title(report):
         report.title = report.config.getini("extras_title")
+
+
+#
+# Auxiliary function
+#
+def calculate_status(report: pytest.TestReport) -> Status:
+    status = Status.UNKNOWN
+
+    xfail = hasattr(report, "wasxfail")
+    if report.failed:
+        status = Status.FAILED
+    if report.skipped and not xfail:
+        status = Status.SKIPPED
+    if report.skipped and xfail:
+        status = Status.XFAILED
+    if report.passed and xfail:
+        status = Status.XPASSED
+    if report.passed and not xfail:
+        status = Status.PASSED
+
+    return status
