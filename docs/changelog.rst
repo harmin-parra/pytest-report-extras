@@ -12,7 +12,7 @@ Changelog
 
 **Improvement**
 
-* Better display of **xfailed** and **xpassed** multi-line reason messages.
+* Better display of **xfailed**, **xpassed** and **skipped** multi-line reason messages.
 * Failed test teardowns are included in the report.
 
 
