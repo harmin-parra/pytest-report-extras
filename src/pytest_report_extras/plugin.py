@@ -220,7 +220,7 @@ def pytest_runtest_makereport(item, call):
             target = None
 
         # Set test status variables
-        status = calculate_status(report)
+        status = _calculate_status(report)
         failure = status in (Status.FAILED, Status.XFAILED, status.XPASSED, Status.SKIPPED)
 
         header = decorators.get_header_rows(item, call, report, links, status)
@@ -313,9 +313,8 @@ if importlib.util.find_spec("html") and utils.is_package_installed("pytest-html"
 #
 # Auxiliary function
 #
-def calculate_status(report: pytest.TestReport) -> Status:
+def _calculate_status(report: pytest.TestReport) -> Status:
     status = Status.UNKNOWN
-
     xfail = hasattr(report, "wasxfail")
     if report.failed:
         status = Status.FAILED

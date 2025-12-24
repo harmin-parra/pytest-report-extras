@@ -44,7 +44,7 @@ def get_status_row(
     status: Status
 ) -> str:
     """ HTML table row for the test execution status and reason (if applicable). """
-    reason = get_reason_msg(call, report, status)
+    reason = get_reason_msg(call, report)
     if reason != "":
         return (
             '<tr class="visibility_status">'
@@ -214,8 +214,7 @@ def get_step_row(
 
 def get_reason_msg(
     call: pytest.CallInfo,
-    report: pytest.TestReport,
-    status: Status
+    report: pytest.TestReport
 ) -> Optional[str]:
     """  Returns the fail, xfail or skip reason. """
     reason = ""
