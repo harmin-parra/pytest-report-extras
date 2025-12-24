@@ -135,8 +135,8 @@ Change
 1.3.0
 =====
 
-Features
---------
+Feature
+-------
 
 - New INI options to define link patterns for issues and test-cases and new decorators to add links to the report.
 
