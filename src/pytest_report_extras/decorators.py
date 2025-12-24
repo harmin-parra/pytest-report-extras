@@ -112,13 +112,8 @@ def get_exception_row(call: pytest.CallInfo, report: pytest.TestReport) -> str:
             '<td class="extras_header_separator" style="border: 0px"></td>'
             f'<td style="border: 0px" colspan="2">'
         )
-        if exception1 != '':
-            row += f"{exception1}"
-        if exception2 != '':
-            if exception1 != '':
-                row += "<br><hr><br>"
-            row += f"{exception2}"
-        row += '</td></tr>'
+        parts = [e for e in (exception1, exception2) if e]
+        row += "<br><hr><br>".join(parts) + '</td></tr>'
     return row
 
 
@@ -217,26 +212,25 @@ def get_reason_msg(
     report: pytest.TestReport
 ) -> Optional[str]:
     """  Returns the fail, xfail or skip reason. """
-    reason = ""
+    reason1 = None
+    reason2 = None
+    reason3 = None
+    # Gather 'wasxfail'
     if hasattr(report, "wasxfail"):
-        reason = utils.escape_html(report.wasxfail)
-    # Get exception message
+        reason1 = utils.escape_html(report.wasxfail)
+    # Gather exception message
     if (
-        reason == '' and
         call.excinfo is not None and
         call.excinfo.type in (Failed, XFailed, Skipped) and
         hasattr(call.excinfo.value, "msg")
     ):
-        reason = utils.escape_html(call.excinfo.value.msg)
-    if (
-        hasattr(report, "softexcinfo") and
-        call.excinfo is not None and
-        call.excinfo.type in (Failed, XFailed, Skipped)
-    ):
-        if reason != '':
-            reason += '\n'
-        reason += "Soft assertion failure"
-    return reason
+        reason2 = utils.escape_html(call.excinfo.value.msg)
+    # Gather soft assertion failure
+    if hasattr(report, "softexcinfo"):
+        reason3 = "Soft assertion failure"
+    if reason1 == reason2:
+        reason2 = None
+    return "\n".join(filter(None, [reason1, reason2, reason3]))
 
 
 def decorate_description(description) -> str:
