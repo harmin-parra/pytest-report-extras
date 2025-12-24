@@ -26,7 +26,7 @@ def check_options(htmlpath: Optional[str], allurepath: Optional[str]) -> None:
         print(message, file=sys.stderr)
 
 
-def check_lists_length(report, fx_extras) -> bool:
+def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
     """
     Verifies if the comment, multimedia, page source and attachment lists have the same length
 
@@ -117,7 +117,7 @@ def get_folder(filepath: Optional[str]) -> Optional[str]:
 def escape_html(text: Optional[str], quote=False) -> Optional[str]:
     """ Escapes HTML characters in a text. """
     if text is None:
-        return None
+        return ''
     return html.escape(str(text), quote)
 
 
@@ -130,7 +130,7 @@ def is_package_installed(pkg: str) -> bool:
         return False
 
 
-def get_scenario_steps(item) -> str:
+def get_scenario_steps(item: pytest.Item) -> str:
     """ Return the steps of a pytest-bdd test scenario """
     result = ""
     try:
@@ -147,6 +147,9 @@ def get_scenario_steps(item) -> str:
 def check_screenshot_target_type(target):
     """
     Checks whether an object is an instance of WebDriver, WebElement, Page or Locator.
+
+    Args:
+        target (WebDriver | WebElement | Page | Locator): The target of the screenshot.
 
     Returns:
         bool: whether target is an instance of WebDriver, WebElement, Page or Locator.
@@ -466,7 +469,7 @@ def add_links(
         if fx_html is not None and pytest_html is not None:
             if fx_links_column in ("all", link.type):
                 extras.append(pytest_html.extras.url(link.url, name=f"{link.icon} {link.name}"))
-        if fx_allure is not None and importlib.util.find_spec("allure") is not None:
+        if fx_allure is not None:  # and item.config.pluginmanager.has_plugin("allure_pytest"):
             import allure
             from allure_commons.types import LinkType
             allure_link_type = None

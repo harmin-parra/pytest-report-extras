@@ -13,12 +13,12 @@ class Extras:
 
     def __init__(
         self,
-        report_html: str,
+        report_html: Optional[str],
         single_page: bool,
         screenshots: Literal["all", "last", "fail", "none"],
         sources: bool,
         indent: int,
-        report_allure: str
+        report_allure: Optional[str]
     ):
         """
         Args:
@@ -29,10 +29,10 @@ class Extras:
             indent (int): The indent to use to format XML, JSON and YAML documents.
             report_allure (str): The Allure report folder.
         """
-        self.comments = []
-        self.multimedia = []
-        self.sources = []
-        self.attachments = []
+        self.comments: list[str] = []
+        self.multimedia: list[Optional[str]] = []
+        self.sources: list[Optional[str]] = []
+        self.attachments: list[Optional[Attachment]] = []
         self.target = None
         self.fx_screenshots = screenshots
         self.fx_sources = sources
@@ -44,9 +44,9 @@ class Extras:
         self.Mime = Mime
 
     def __repr__(self) -> str:
-        source_list = self.sources if any( element for element in self.sources ) else []
-        multimedia_list = self.multimedia if any( element for element in self.multimedia ) else []
-        attachment_list = self.attachments if any( element for element in self.attachments ) else []
+        source_list = self.sources if any(x is not None for x in self.sources) else []
+        multimedia_list = self.multimedia if any(x is not None for x in self.multimedia) else []
+        attachment_list = self.attachments if any(x is not None for x in self.attachments) else []
         return (
             f"{{id: {hex(id(self))}, comments: {self.comments}, attachments: {attachment_list}, "
             f"multimedia: {multimedia_list}, sources: {source_list}}}"
@@ -102,9 +102,9 @@ class Extras:
     def attach(
         self,
         comment: str,
-        body: str | bytes | dict | list[str] = None,
-        source: str = None,
-        mime: Mime | str = None,
+        body: str | bytes | dict | list[str] | None = None,
+        source: str | None = None,
+        mime: Mime | str | None = None,
         csv_delimiter: str = ',',
         escape_html: bool = True
     ) -> None:
@@ -142,9 +142,9 @@ class Extras:
 
     def _get_attachment(
         self,
-        body: str | dict | list[str] | bytes = None,
-        source: str = None,
-        mime: Mime = None,
+        body: str | dict | list[str] | bytes | None = None,
+        source: str | None = None,
+        mime: Mime | None = None,
         delimiter=',',
     ) -> Attachment:
         """

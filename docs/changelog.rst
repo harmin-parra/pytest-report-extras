@@ -3,6 +3,19 @@ Changelog
 =========
 
 
+1.3.8
+=====
+
+**Bug fix**
+
+* Crash when running tests without any fixture.
+
+**Improvement**
+
+* Better display of **xfailed**, **xpassed** and **skipped** multi-line reason messages.
+* Failed test teardowns are included in the report.
+
+
 1.3.7
 =====
 

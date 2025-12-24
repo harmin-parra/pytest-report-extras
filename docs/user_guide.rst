@@ -144,18 +144,6 @@ To add links to the report:
   @pytest.mark.link(url: str, name: str, icon: str)
 
 
-Limitations
-===========
-
-* Limited support for the ``--self-contained-html`` option of the **pytest-html** plugin. The report still contains links for attachments of unsopported mime types.
-
-* No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
-
-* For Playwright, only **sync_api** is supported.
-
-* When using **Allure** with **pytest-bdd**, the **allure-pytest** plugin should be installed instead of **allure-pytest-bdd**.
-
-
 Examples
 ========
 

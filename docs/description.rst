@@ -27,11 +27,13 @@ Docstring of tests are also included in the report, as mean to provide a long de
 Therefore, you are highly encouraged to document your tests with docstrings.
 
 
-History of the project
-======================
+Limitations
+===========
 
-**pytest-report-extras** is the successor of the `pytest-webtest-extras <https://pytest-webtest-extras.readthedocs.io/>`_ project. The latter is now deprecated.
+* Limited support for the ``--self-contained-html`` option of the **pytest-html** plugin. The report still contains links for attachments of unsopported mime types.
 
-**pytest-webtest-extras** was primarily focus on front-end tests (Selenium or Playwright).
+* No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
 
-**pytest-report-extras** is a more general-purpose test report plugin that can also be used for back-end tests without screenshots.
+* For Playwright, only **sync_api** is supported.
+
+* When using **Allure** with **pytest-bdd**, the **allure-pytest** plugin should be installed instead of **allure-pytest-bdd**.
