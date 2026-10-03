@@ -181,17 +181,17 @@ PARAMETERS:
   - ``report.Mime.MP3``, ``audio/mpeg`` or ``mp3``.
   - ``report.Mime.OGA``, ``audio/ogg`` or ``oga``.
   - ``report.Mime.BMP``, ``image/bmp`` or ``bmp``.
-  - report.Mime.GIF    or "image/gif"          or "gif"
-  - report.Mime.JPEG   or "image/jpeg"         or "jpeg"
-  - report.Mime.PNG    or "image/png"          or "png"
-  - report.Mime.SVG    or "image/svg+xml"      or "svg"
-  - report.Mime.CSV    or "text/csv"           or "csv"
-  - report.Mime.HTML   or "text/html"          or "html"
-  - report.Mime.TEXT   or "text/plain"         or "text"
-  - report.Mime.URI    or "text/uri-list"      or "uri"
-  - report.Mime.MP4    or "video/mp4"          or "mp4"
-  - report.Mime.OGV    or "video/ogg"          or "ogv"
-  - report.Mime.WEBM   or "video/webm"         or "webm"
+  - ``report.Mime.GIF``, ``image/gif`` or ``gif``.
+  - ``report.Mime.JPEG``, ``image/jpeg`` or ``jpeg``.
+  - ``report.Mime.PNG``, ``image/png`` or ``png``.
+  - ``report.Mime.SVG``, ``image/svg+xml`` or ``svg``.
+  - ``report.Mime.CSV``, ``text/csv`` or ``csv``.
+  - ``report.Mime.HTML``, ``text/html`` or ``html``.
+  - ``report.Mime.TEXT``, ``text/plain`` or ``text``.
+  - ``report.Mime.URI``, ``text/uri-list`` or ``uri``.
+  - ``report.Mime.MP4``, ``video/mp4`` or ``mp4``.
+  - ``report.Mime.OGV``, ``video/ogg`` or ``ogv``.
+  - ``report.Mime.WEBM``, ``video/webm`` or ``webm``.
 
 
 Marks
