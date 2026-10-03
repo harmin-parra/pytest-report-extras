@@ -26,8 +26,6 @@ Accepted values:
 
 * ``none``: Exclude all screenshots in the report.
 
-
-
 .. confval:: extras_sources
 
    TYPE: ``bool``
@@ -35,8 +33,6 @@ Accepted values:
    DEFAULT VALUE: ``False``
 
 Whether to include gathered webpage sources in the report.
-
-
 
 .. confval:: extras_attachment_indent
 
@@ -48,9 +44,6 @@ The indent to use for attachments.
 
 Accepted values: any positive integer.
 
-
-
-
 .. confval:: extras_issue_link_pattern
 
    TYPE: ``str``
@@ -59,9 +52,6 @@ Accepted values: any positive integer.
 
 The pattern for the issues links. Example: ``https://bugtracker.com/issues/{}``
 
-
-
-
 .. confval:: extras_tms_link_pattern
 
    TYPE: ``str``
@@ -69,9 +59,6 @@ The pattern for the issues links. Example: ``https://bugtracker.com/issues/{}``
    DEFAULT VALUE: ``None``
 
 The pattern for the test-case links. Example: ``https://tms.com/tests/{}``
-
-
-
 
 .. confval:: extras_links_column
 
@@ -92,9 +79,6 @@ Accepted values:
 * ``link``: Display web links:
 
 * ``none``: Display no links
-
-
-
 
 .. confval:: extras_title
 
@@ -245,3 +229,138 @@ PARAMETERS
 .. code-block:: python
 
   @pytest.mark.link("https://www.wikipedia.org", "Wikipedia")
+
+EXAMPLES
+========
+
+Sample ``pytest.ini`` file
+--------------------------
+
+.. code-block:: ini
+
+  extras_attachment_indent = 4
+  extras_screenshots = all
+  extras_sources = False
+  extras_issue_link_pattern = http://bugtracker.com/{}
+  extras_tms_link_pattern = http://tms.com/tests/{}
+  extras_links_column = all
+  extras_title = My awesome test report
+
+Sample code
+-----------
+
+Example with Selenium
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+  def test_with_selenium(report):
+      """
+      This is a test using Selenium
+      """
+      driver = WebDriver()
+      driver.get("https://www.selenium.dev/selenium/web/web-form.html")
+      report.screenshot("Get the webpage to test", driver)
+      driver.find_element(By.ID, "my-text-id").send_keys("Hello World!")
+      report.screenshot("<h1>Set input text</h1>", driver, full_page=True, escape_html=False)
+      driver.find_element(By.NAME, "my-password").send_keys("password")
+      report.screenshot(comment="Another comment", target=driver)
+      report.screenshot("Comment without screenshot")
+      report.screenshot(comment="Comment without screenshot")
+      driver.quit()
+
+
+Example with Playwright
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+  def test_with_playwright(browser: Browser, report):
+      """
+      This is a test using Playwright
+      """
+      context = browser.new_context(record_video_dir="path/to/videos/")
+      page = context.new_page()
+      page.goto("https://www.wikipedia.org")
+      report.screenshot("Wikipedia page", page)
+      context.close()
+      page.close()
+      report.attach("Recorded video", source=page.video.path(), report.Mime.WEBM)
+
+
+Example with attachments
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+  def test_attachments(report):
+      report.attach(
+          "This is a XML document:",
+          body="<root><child>text</child></root>",
+          mime=report.Mime.XML
+      )
+      report.attach(
+          comment="This is a JSON document:",
+          source="path/to/file",
+          mime="json"
+      )
+
+
+Example with links
+~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+  @pytest.mark.tms("TEST-3")
+  @pytest.mark.issue("PROJ-123, PROJ-456")
+  @pytest.mark.link("https://example.com")
+  @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
+  @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia", icon="&#129373;")
+  def test_link_markers(report)
+      pass
+
+Example with pytest-bdd (cucumber)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: text
+
+  Feature: Wikipedia
+
+  Scenario: Search in Wikipedia
+    Given I go to Wikipedia
+    When I search for "pizza"
+    Then the page title is "Pizza - Wikipedia"
+
+
+.. code-block:: python
+
+  import pytest
+  from pytest_bdd import scenarios, given, when, then, parsers
+  from playwright.sync_api import sync_playwright, Page
+
+  scenarios('features/wikipedia.feature')
+
+  @pytest.fixture
+  def playwright_context():
+      with sync_playwright() as p:
+          browser = p.chromium.launch(headless=True)
+          page = browser.new_page()
+          yield page
+          browser.close()
+
+  @given('I go to Wikipedia')
+  def go_to_wikipedia(playwright_context: Page, report):
+      playwright_context.goto("https://www.wikipedia.org")
+      assert "Wikipedia" in playwright_context.title()
+      report.screenshot("Wikipedia page", playwright_context)
+
+  @when(parsers.parse('I search for "{term}"'))
+  def search_wikipedia(playwright_context: Page, term, report):
+      playwright_context.locator("[id='searchInput']").fill(term)
+      playwright_context.keyboard.press("Enter")
+      playwright_context.wait_for_load_state("load")
+      report.screenshot("The searched page", playwright_context)
+
+  @then(parsers.parse('the page title is "{title}"'))
+  def check_title(playwright_context: Page, title):
+      assert playwright_context.title() == title
