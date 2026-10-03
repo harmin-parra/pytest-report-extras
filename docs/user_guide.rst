@@ -30,7 +30,7 @@ Accepted values:
 
 .. confval:: extras_sources
 
-   TYPE: bool
+   TYPE: ``bool``
 
    DEFAULT VALUE: ``False``
 
@@ -40,7 +40,7 @@ Whether to include gathered webpage sources in the report.
 
 .. confval:: extras_attachment_indent
 
-   TYPE: int
+   TYPE: ``int``
 
    DEFAULT VALUE: ``4``
 
@@ -53,29 +53,29 @@ Accepted values: any positive integer.
 
 .. confval:: extras_issue_link_pattern
 
-   TYPE: str
+   TYPE: ``str``
 
    DEFAULT VALUE: ``None``
 
-The pattern for the issues links (example: ``https://bugtracker.com/issues/{}``)
+The pattern for the issues links. Example: ``https://bugtracker.com/issues/{}``
 
 
 
 
 .. confval:: extras_tms_link_pattern
 
-   TYPE: str
+   TYPE: ``str``
 
    DEFAULT VALUE: ``None``
 
-The pattern for the test-case links (example: https://tms.com/tests/{})
+The pattern for the test-case links. Example: ``https://tms.com/tests/{}``
 
 
 
 
 .. confval:: extras_links_column
 
-   TYPE: str
+   TYPE: ``str``
 
    DEFAULT VALUE: ``all``
 
@@ -98,9 +98,9 @@ Accepted values:
 
 .. confval:: extras_title
 
-   TYPE: str
+   TYPE: ``str``
 
-   DEFAULT VALUE: ``Test Report``
+   DEFAULT VALUE: ``"Test Report"``
 
 The test report title
 
@@ -147,11 +147,11 @@ report.attach
 .. code-block:: python
 
   attach(
-      comment: str,                                 # Comment of the test step.
-      body: str | bytes | dict | list[str] = None,  # The content/body of the attachment.
-      source: str = None,                           # The filepath of the attachment.
-      mime: Mime | str = None,                      # The attachment mime type.
-      escape_html: bool = True                      # Whether to escape HTML characters in the comment.
+      comment: str,
+      body: str | bytes | dict | list[str] = None,
+      source: str = None,
+      mime: Mime | str = None,
+      escape_html: bool = True
   )
 
 Add a step with attachment.
@@ -163,13 +163,13 @@ PARAMETERS:
 
   Type of **body** parameter:
 
-  * str:
+  * ``str``:
 
     - for XML, JSON, YAML, CSV or TXT attachments.
     - for image, video and audio attachments in base64 string format.
-  * bytes: for image, video and audio attachments.
-  * dict: for JSON attachments.
-  * list[str]: for list-uri attachments.
+  * ``bytes``: for image, video and audio attachments.
+  * ``dict``: for JSON attachments.
+  * ``list[str]``: for list-uri attachments.
 
 * **mime**: The attachment mime type.
 
