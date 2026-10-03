@@ -10,9 +10,9 @@ These are the options that can be added to the ``pytest.ini`` file.
 
 .. confval:: extras_screenshots
 
-   Type: ``str``
+   TYPE: ``str``
 
-   Default value: ``all``
+   DEFAULT VALUE: ``all``
 
 The screenshots to add in the report.
 
@@ -30,9 +30,9 @@ Accepted values:
 
 .. confval:: extras_sources
 
-   Type: bool
+   TYPE: bool
 
-   Default value: ``False``
+   DEFAULT VALUE: ``False``
 
 Whether to include gathered webpage sources in the report.
 
@@ -40,9 +40,9 @@ Whether to include gathered webpage sources in the report.
 
 .. confval:: extras_attachment_indent
 
-   Type: int
+   TYPE: int
 
-   Default value: ``4``
+   DEFAULT VALUE: ``4``
 
 The indent to use for attachments.
 
@@ -53,9 +53,9 @@ Accepted values: any positive integer.
 
 .. confval:: extras_issue_link_pattern
 
-   Type: str
+   TYPE: str
 
-   Default value: ``None``
+   DEFAULT VALUE: ``None``
 
 The pattern for the issues links (example: ``https://bugtracker.com/issues/{}``)
 
@@ -64,9 +64,9 @@ The pattern for the issues links (example: ``https://bugtracker.com/issues/{}``)
 
 .. confval:: extras_tms_link_pattern
 
-   Type: str
+   TYPE: str
 
-   Default value: ``None``
+   DEFAULT VALUE: ``None``
 
 The pattern for the test-case links (example: https://tms.com/tests/{})
 
@@ -75,9 +75,9 @@ The pattern for the test-case links (example: https://tms.com/tests/{})
 
 .. confval:: extras_links_column
 
-   Type: str
+   TYPE: str
 
-   Default value: ``all``
+   DEFAULT VALUE: ``all``
 
 The type of links to display in the **Links** columns of the pytest report.
 
@@ -98,9 +98,9 @@ Accepted values:
 
 .. confval:: extras_title
 
-   Type: str
+   TYPE: str
 
-   Default value: ``Test Report``
+   DEFAULT VALUE: ``Test Report``
 
 The test report title
 
