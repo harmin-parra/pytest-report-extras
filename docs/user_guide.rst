@@ -230,7 +230,7 @@ PARAMETERS
 
   @pytest.mark.link("https://www.wikipedia.org", "Wikipedia")
 
-EXAMPLES
+Examples
 ========
 
 Sample ``pytest.ini`` file
@@ -366,7 +366,7 @@ Example with pytest-bdd (cucumber)
       assert playwright_context.title() == title
 
 Sample CSS file
-~~~~~~~~~~~~~~~
+---------------
 
 .. code-block:: css
 
@@ -545,7 +545,7 @@ Sample CSS file
 
 
 Sample reports
-~~~~~~~~~~~~~~
+--------------
 
 * pytest-html sample report
 
