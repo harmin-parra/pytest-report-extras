@@ -127,21 +127,11 @@ class Attachment:
             except OSError as error:
                 return Attachment(error=f"{error_msg}\n{error}")
         elif mime == Mime.HTML:
-            if report.fx_single_page:
-                try:
-                    f = open(source, 'r')
-                    body = f.read()
-                    f.close()
-                    return _attachment_html(body, report)
-                except Exception as error:
-                    utils.log_error(None, f"{error_msg}: ", error)
-                    return Attachment(error=f"{error_msg}\n{error}")
-            else:
-                try:
-                    inner_html = utils.copy_file_and_get_link(report.fx_html, source, "html", "sources")
-                    return Attachment(source=source, mime=Mime.HTML, inner_html=inner_html)
-                except OSError as error:
-                    return Attachment(error=f"{error_msg}\n{error}")
+            try:
+                inner_html = utils.copy_file_and_get_link(report.fx_html, source, "html", "sources")
+                return Attachment(source=source, mime=Mime.HTML, inner_html=inner_html)
+            except OSError as error:
+                return Attachment(error=f"{error_msg}\n{error}")
 
     def __repr__(self) -> str:
         if isinstance(self.body, bytes):
@@ -329,19 +319,10 @@ def _attachment_html(text: str, report) -> Attachment:
     mime = Mime.HTML
     error_msg = "Error creating HTML attachment from body"
     if report.fx_html:
-        if report.fx_single_page:
-            try:
-                encoded_bytes = base64.b64encode(text.encode("utf-8"))
-                encoded_str = encoded_bytes.decode("utf-8")
-                inner_html = f"data:text/html;base64,{encoded_str}"
-            except Exception as error:
-                utils.log_error(None, error_msg, error)
-                return Attachment(error=f"{error_msg}\n{error}")
-        else:
-            try:
-                inner_html = utils.save_data_and_get_link(report.fx_html, text, "html", "sources")
-            except OSError as error:
-                return Attachment(error=f"Error saving HTML\n{error}")
+        try:
+            inner_html = utils.save_data_and_get_link(report.fx_html, text, "html", "sources")
+        except OSError as error:
+            return Attachment(error=f"Error saving HTML\n{error}")
     return Attachment(body=text, mime=mime, inner_html=inner_html)
 
 

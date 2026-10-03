@@ -144,7 +144,6 @@ def get_step_row(
     multimedia: str,
     source: str,
     attachment,
-    single_page: bool,
     clazz_visibility_row: Optional[str] = None,
     clazz_color: Optional[str] = None
 ) -> str:
@@ -156,7 +155,6 @@ def get_step_row(
         multimedia (str): The image, video or audio anchor element.
         source (str): The page source anchor element.
         attachment (Attachment): The attachment.
-        single_page (bool): Whether to generate the HTML report in a single page.
         clazz_visibility_row (str): The CSS class to apply to the comment table row (<tr> tag).
         clazz_color (str): The CSS class to apply to the comment table cell (<td> tag).
 
@@ -173,15 +171,15 @@ def get_step_row(
         comment = decorate_comment(comment, clazz_comment)
         if attachment is not None and attachment.mime is not None:
             if attachment.mime.startswith("image/svg"):
-                multimedia = decorate_image_svg(multimedia, attachment.body, single_page)
+                multimedia = decorate_image_svg(multimedia, attachment.body)
             elif attachment.mime.startswith("video/"):
                 multimedia = decorate_video(multimedia, attachment.mime)
             elif attachment.mime.startswith("audio/"):
                 multimedia = decorate_audio(multimedia, attachment.mime)
             else:  # Assuming mime = "image/*
-                multimedia = decorate_image(multimedia, single_page)
+                multimedia = decorate_image(multimedia)
         else:  # Multimedia with attachment = None are considered as images
-            multimedia = decorate_image(multimedia, single_page)
+            multimedia = decorate_image(multimedia)
         if source is not None:
             source = decorate_page_source(source)
             return (
@@ -297,12 +295,9 @@ def decorate_comment(comment, clazz) -> str:
     return f'<span class="{clazz}">{comment}</span>'
 
 
-def decorate_image(uri: Optional[str], single_page: bool) -> str:
+def decorate_image(uri: Optional[str]) -> str:
     """ Applies CSS class to an image anchor element. """
-    if single_page:
-        return decorate_image_from_base64(uri)
-    else:
-        return decorate_image_from_file(uri)
+    return decorate_image_from_file(uri)
 
 
 def decorate_image_from_file(uri: Optional[str]) -> str:
@@ -319,14 +314,11 @@ def decorate_image_from_base64(uri: Optional[str]) -> str:
     return f'<img src ="{uri}" class="{clazz}">'
 
 
-def decorate_image_svg(uri: Optional[str], inner_html: Optional[str], single_page) -> str:
+def decorate_image_svg(uri: Optional[str], inner_html: Optional[str]) -> str:
     """ Applies CSS class to an SVG element. """
     if uri in (None, '') or inner_html in (None, ''):
         return ""
-    if single_page:
-        return inner_html
-    else:
-        return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{inner_html}</a>'
+    return f'<a href="{uri}" target="_blank" rel="noopener noreferrer">{inner_html}</a>'
 
 
 def decorate_page_source(filename: Optional[str]) -> str:

@@ -3,6 +3,15 @@ Changelog
 =========
 
 
+1.3.9
+=====
+
+Change
+------
+
+- Support for the ``--self-contained-html`` option has been fully removed.
+
+
 1.3.8
 =====
 

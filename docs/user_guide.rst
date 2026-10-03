@@ -66,7 +66,17 @@ Default value: ``None``
 
 The type of links to display in the **Links** columns of the pytest report.
 
-Accepted values: ``all``, ``issue``, ``tms``, ``link`` or ``none``
+Accepted values: 
+
+* ``all``: Display all links
+
+* ``issue``: Display issue links
+
+* ``tms``: Display test case links
+
+* ``link``: Display web links:
+
+* ``none``: Display no links
 
 Default value: ``all``
 

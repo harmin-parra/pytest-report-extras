@@ -14,7 +14,6 @@ class Extras:
     def __init__(
         self,
         report_html: Optional[str],
-        single_page: bool,
         screenshots: Literal["all", "last", "fail", "none"],
         sources: bool,
         indent: int,
@@ -23,7 +22,6 @@ class Extras:
         """
         Args:
             report_html (str): The HTML report folder.
-            single_page (bool): Whether to generate the HTML report in a single webpage.
             screenshots (str): The screenshot strategy. Possible values: 'all' or 'last'.
             sources (bool): Whether to gather webpage sources.
             indent (int): The indent to use to format XML, JSON and YAML documents.
@@ -36,7 +34,6 @@ class Extras:
         self.target = None
         self.fx_screenshots = screenshots
         self.fx_sources = sources
-        self.fx_single_page = single_page
         self.fx_html = report_html
         self.fx_allure = report_allure
         self.fx_indent = indent
@@ -253,20 +250,14 @@ class Extras:
                 return None
 
         if Mime.is_video(mime) or Mime.is_audio(mime):
-            if self.fx_single_page is False:
-                if Mime.is_video(mime):
-                    link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "videos")
-                if Mime.is_audio(mime):
-                    link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "audio")
-            else:
-                link_multimedia = f"data:{mime};base64,{data_str}"
+            if Mime.is_video(mime):
+                link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "videos")
+            if Mime.is_audio(mime):
+                link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "audio")
             return link_multimedia
 
         if Mime.is_image(mime):
-            if self.fx_single_page is False:
-                link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "images")
-            else:
-                link_multimedia = f"data:{mime};base64,{data_str}"
+            link_multimedia = utils.save_data_and_get_link(self.fx_html, data_b64, extension, "images")
 
         return link_multimedia
 
@@ -287,11 +278,7 @@ class Extras:
         if source is None:
             return None
 
-        link_source = None
-        if self.fx_single_page is False:
-            link_source = utils.save_data_and_get_link(self.fx_html, source, None, "sources")
-        else:
-            link_source = f"data:text/plain;base64,{base64.b64encode(source.encode()).decode()}"
+        link_source = utils.save_data_and_get_link(self.fx_html, source, None, "sources")
 
         return link_source
 
@@ -320,16 +307,6 @@ class Extras:
 
         data_str = ""
         extension = Mime.get_extension(mime)
-        if self.fx_single_page:
-            try:
-                f = open(filepath, "rb")
-                data_b64 = f.read()
-                f.close()
-                data_str = base64.b64encode(data_b64).decode()
-            except Exception as error:
-                utils.log_error(None, f"Error reading image/video/audio file '{filepath}'", error)
-                return None
-            return f"data:{mime};base64,{data_str}"
 
         if Mime.is_video(mime):
             return utils.copy_file_and_get_link(self.fx_html, filepath, extension, "videos")

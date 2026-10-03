@@ -17,12 +17,20 @@ error_screenshot = None
 #
 # Auxiliary functions
 #
-def check_options(htmlpath: Optional[str], allurepath: Optional[str]) -> None:
+def check_options(htmlpath: Optional[str], allurepath: Optional[str], singlepage: Optional[bool]) -> None:
     """ Verifies if the --html or --alluredir option has been set. """
     if htmlpath is None and allurepath is None:
-        message = ("\nIt appears you are using the pytest-report-extras plugin.\n"
-                   "This requires either the pytest-html or allure-pytest plugin to generate reports.\n"
-                   "Please ensure you provide the --html or --alluredir option when running pytest.\n")
+        message = (
+            "\nIt appears you are using the pytest-report-extras plugin.\n"
+            "This requires either the pytest-html or allure-pytest plugin to generate reports.\n"
+            "Please ensure you provide the --html or --alluredir option when running pytest.\n"
+        )
+        print(message, file=sys.stderr)
+    if singlepage:
+        message = (
+            "\nThe pytest-html --self-contained-html option is not supported by pytest-report-extras.\n"
+            "This option will be ignored.\n"
+        )
         print(message, file=sys.stderr)
 
 
@@ -44,7 +52,7 @@ def check_lists_length(report: pytest.TestReport, fx_extras) -> bool:
         return True
 
 
-def create_assets(htmlpath: Optional[str], single_page: bool) -> None:
+def create_assets(htmlpath: Optional[str]) -> None:
     """ Recreate report sub-folders. """
     global error_screenshot
     if htmlpath is None:
@@ -57,16 +65,6 @@ def create_assets(htmlpath: Optional[str], single_page: bool) -> None:
         # Get error image file
         resources_path = pathlib.Path(__file__).parent.joinpath("resources")
         error_img = pathlib.Path(resources_path, "error.png")
-        if single_page:
-            try:
-                f = open(error_img, 'rb')
-                data = f.read()
-                f.close()
-                error_screenshot = f"data:image/png;base64,{base64.b64encode(data).decode()}"
-            except Exception:
-                pass
-            finally:
-                return
         # Create other folders
         for subfolder in ("images", "sources", "videos", "audio"):
             shutil.rmtree(f"{folder}{subfolder}", ignore_errors=True)

@@ -95,7 +95,6 @@ def _fx_sources(config):
 def report(request):
     return Extras(
         _fx_html(request.config),
-        _fx_single_page(request.config),
         _fx_screenshots(request.config),
         _fx_sources(request.config),
         _fx_indent(request.config),
@@ -129,9 +128,8 @@ def pytest_sessionstart(session):
     """ Create report assets. """
     config = session.config
     fx_html = _fx_html(config)
-    fx_single_page = _fx_single_page(config)
     if fx_html is not None:
-        utils.create_assets(fx_html, fx_single_page)
+        utils.create_assets(fx_html)
 
 
 @pytest.hookimpl()
@@ -140,8 +138,9 @@ def pytest_sessionfinish(session, exitstatus):
     config = session.config
     fx_html = _fx_html(config)
     fx_allure = _fx_allure(config)
+    fx_single_page = _fx_single_page(config)
     utils.delete_empty_subfolders(fx_html)
-    utils.check_options(fx_html, fx_allure)
+    utils.check_options(fx_html, fx_allure, fx_single_page)
 
 
 def pytest_collection_modifyitems(config, items):
@@ -172,7 +171,6 @@ def pytest_runtest_makereport(item, call):
     fx_issue_link_pattern = item.config.getini("extras_issue_link_pattern")
     fx_links_column = item.config.getini("extras_links_column")
     fx_screenshots = _fx_screenshots(item.config)
-    fx_single_page = _fx_single_page(item.config)
     fx_tms_link_pattern = item.config.getini("extras_tms_link_pattern")
 
     pytest_html = item.config.pluginmanager.getplugin("html")
@@ -202,8 +200,8 @@ def pytest_runtest_makereport(item, call):
     # If pytest-soft-assert is loaded, update test result status
     if call.when == "call" and item.config.pluginmanager.has_plugin("pytest_soft_assert"):
         try:
-            soft = item.config.pluginmanager.getplugin("pytest_soft_assert")
-            report = soft.update_test_status(report, item, call)
+            soft_assert = item.config.pluginmanager.getplugin("pytest_soft_assert")
+            report = soft_assert.update_test_status(report, item, call)
         except Exception:
             pass
 
@@ -241,7 +239,6 @@ def pytest_runtest_makereport(item, call):
                     fx_report.multimedia[i],
                     fx_report.sources[i],
                     fx_report.attachments[i],
-                    fx_single_page
                 )
 
         clazz_visibility_row = None
@@ -258,7 +255,6 @@ def pytest_runtest_makereport(item, call):
                     fx_report.multimedia[-1],
                     fx_report.sources[-1],
                     fx_report.attachments[-1],
-                    fx_single_page,
                     clazz_visibility_row
                 )
 
@@ -282,7 +278,6 @@ def pytest_runtest_makereport(item, call):
                     fx_report.multimedia[-1],
                     fx_report.sources[-1],
                     fx_report.attachments[-1],
-                    fx_single_page,
                     clazz_visibility_row,
                     f"extras_color_{status}"
                 )

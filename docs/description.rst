@@ -30,10 +30,10 @@ Therefore, you are highly encouraged to document your tests with docstrings.
 Limitations
 ===========
 
-* Limited support for the ``--self-contained-html`` option of the **pytest-html** plugin. The report still contains links for attachments of unsopported mime types.
+* No support for the ``--self-contained-html`` option of the **pytest-html** plugin. This option will be ignored by **pytest-report-extras** plugin.
 
 * No support for any kind of parallel tests execution (multi-treads, multi-tabs or multi-windows).
 
 * For Playwright, only **sync_api** is supported.
 
-* When using **Allure** with **pytest-bdd**, the **allure-pytest** plugin should be installed instead of **allure-pytest-bdd**.
+* When using **Allure** with **pytest-bdd**, the **allure-pytest** plugin should be installed instead of **allure-pytest-bdd**. Do not install **allure-pytest-bdd**.
