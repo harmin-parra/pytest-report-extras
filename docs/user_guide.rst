@@ -50,7 +50,7 @@ Accepted values: any positive integer.
 
    DEFAULT VALUE: ``None``
 
-The pattern for the issues links. Example: ``https://bugtracker.com/issues/{}``
+The pattern for the issue links. Example: ``https://bugtracker.com/issues/{}``
 
 .. confval:: extras_tms_link_pattern
 
@@ -115,7 +115,7 @@ report.screenshot
       escape_html: bool = True
   )
 
-Add a step with screenshot
+Add a step with screenshot.
 
 PARAMETERS:
 
@@ -184,7 +184,7 @@ Marks
 pytest.mark.issue
 ~~~~~~~~~~~~~~~~~
 
-Add issue links to the report
+Add issue link(s) to the report.
 
 ``@pytest.mark.issue(keys: str, icon: str)``
 
@@ -200,7 +200,7 @@ PARAMETERS
 pytest.mark.tms
 ~~~~~~~~~~~~~~~
 
-Add test-case links to the report
+Add test-case link(s) to the report.
 
 ``@pytest.mark.tms(keys: str, icon: str)``
 
@@ -216,7 +216,7 @@ PARAMETERS
 pytest.mark.link
 ~~~~~~~~~~~~~~~~
 
-Add webpage links to the report
+Add a webpage link to the report.
 
 ``@pytest.mark.link(url: str, name: str, icon: str)``
 
@@ -229,6 +229,8 @@ PARAMETERS
 .. code-block:: python
 
   @pytest.mark.link("https://www.wikipedia.org", "Wikipedia")
+  @pytest.mark.link("https://www.example.com")
+
 
 Examples
 ========
