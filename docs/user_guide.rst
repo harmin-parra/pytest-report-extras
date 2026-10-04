@@ -96,8 +96,8 @@ The plugin provides the function scoped ``report`` fixture.
 .. code-block:: python
 
   def test_example(report):
-    ...
-    ...
+      ...
+      ...
 
 Methods
 -------
@@ -155,6 +155,12 @@ PARAMETERS:
   * ``dict``: for JSON attachments.
   * ``list[str]``: for list-uri attachments.
 
+  **body** and **source** parameters are mutually exclusive. One one should be provided.
+
+* **source**: The filepath of the attachment.
+
+  **body** and **source** parameters are mutually exclusive. One one should be provided.
+
 * **mime**: The attachment mime type.
 
   The supported mime types are:
@@ -177,6 +183,7 @@ PARAMETERS:
   - ``report.Mime.OGV``, ``video/ogg`` or ``ogv``.
   - ``report.Mime.WEBM``, ``video/webm`` or ``webm``.
 
+* **escape_html**: Whether to escape HTML characters in the comment.
 
 Marks
 -----
@@ -218,12 +225,12 @@ pytest.mark.link
 
 Add a webpage link to the report.
 
-``@pytest.mark.link(url: str, name: str, icon: str)``
+``@pytest.mark.link(url: str, text: str, icon: str)``
 
 PARAMETERS
 
 * **url**: webpage URL.
-* **name**: Name to display instead of the URL.
+* **text**: Text to display instead of the URL. (*optional*)
 * **icon**: HTML entity code for the icon/emoji. Default value: ``&#127758;`` 🌍
 
 .. code-block:: python
@@ -316,8 +323,8 @@ Example with links
   @pytest.mark.tms("TEST-3")
   @pytest.mark.issue("PROJ-123, PROJ-456")
   @pytest.mark.link("https://example.com")
-  @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia")
-  @pytest.mark.link(uri="https://wikipedia.org", name="Wikipedia", icon="&#129373;")
+  @pytest.mark.link(uri="https://wikipedia.org", text="Wikipedia")
+  @pytest.mark.link(uri="https://wikipedia.org", text="Wikipedia", icon="&#129373;")
   def test_link_markers(report)
       pass
 

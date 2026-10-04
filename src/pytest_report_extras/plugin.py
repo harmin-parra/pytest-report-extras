@@ -1,7 +1,7 @@
 import importlib.util
 import pathlib
 import pytest
-from . import decorators, utils
+from . import decorators, markers, utils
 from .extras import Extras
 from .status import Status
 
@@ -113,7 +113,7 @@ def pytest_configure(config):
     # Add markers
     config.addinivalue_line("markers", "issue(keys, icon): The list of issue keys to add as issue links")
     config.addinivalue_line("markers", "tms(keys, icon): The list of test case keys to add as tms links")
-    config.addinivalue_line("markers", "link(url, name, icon): The url to add as web link")
+    config.addinivalue_line("markers", "link(url, text, icon): The url to add as web link")
 
     # Add default CSS file
     config_css = config.getoption("--css", default=[])
@@ -178,8 +178,8 @@ def pytest_runtest_makereport(item, call):
     extras = getattr(report, "extras", [])
 
     # Add links in decorators
-    links = utils.get_all_markers_links(item, fx_issue_link_pattern, fx_tms_link_pattern)
-    utils.add_links(item, extras, links, fx_html, fx_allure, fx_links_column)
+    links = markers.get_all_markers_links(item, fx_issue_link_pattern, fx_tms_link_pattern)
+    markers.add_links(item, extras, links, fx_html, fx_allure, fx_links_column)
 
     # Whether pytest-html is being used
     executing_pytest_html = fx_html is not None and pytest_html is not None

@@ -10,15 +10,16 @@ class Link:
     }
 
     def __init__(
-        self, url: str,
-        name: str,
+        self,
+        url: str,
+        text: str,
         link_type: Literal["link", "issue", "tms"] = "link",
         icon: Optional[str] = None
     ):
         self.url = url
-        self.name = name
+        self.text = text
         self.type = link_type
         self.icon = icon if icon is not None else Link.icons[link_type]
 
     def __repr__(self) -> str:
-        return f"{{url: {self.url}, name: {self.name}, type: {self.type}, icon: {self.icon}}}"
+        return f"{{url: {self.url}, text: {self.text}, type: {self.type}, icon: {self.icon}}}"
