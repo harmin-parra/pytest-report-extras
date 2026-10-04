@@ -3,7 +3,6 @@ import pathlib
 import pytest
 import textwrap
 from typing import Optional
-from _pytest.outcomes import Failed, Skipped, XFailed
 from . import utils
 from .link import Link
 from .status import Status
@@ -219,7 +218,11 @@ def get_reason_msg(
     # Gather exception message
     if (
         call.excinfo is not None and
-        call.excinfo.type in (Failed, XFailed, Skipped) and
+        call.excinfo.type in (
+            pytest.fail.Exception,
+            pytest.xfail.Exception,
+            pytest.skip.Exception
+        ) and
         hasattr(call.excinfo.value, "msg")
     ):
         reason2 = utils.escape_html(call.excinfo.value.msg)
@@ -256,7 +259,11 @@ def decorate_exception(excinfo: Optional[pytest.ExceptionInfo]) -> str:
     # Get runtime exceptions in failed tests
     if (
         excinfo is not None and
-        excinfo.type not in (Failed, XFailed, Skipped)
+        excinfo.type not in (
+            pytest.fail.Exception,
+            pytest.xfail.Exception,
+            pytest.skip.Exception
+        )
     ):
         _type = excinfo.typename
         _value = excinfo.value
