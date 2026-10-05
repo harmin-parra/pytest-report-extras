@@ -163,7 +163,7 @@ PARAMETERS:
 
 * **mime**: The attachment mime type.
 
-  The supported mime types are:
+  Accepted values:
 
   - ``report.Mime.JSON``, ``application/json`` or ``json``.
   - ``report.Mime.XML``, ``application/xml`` or ``xml``.
