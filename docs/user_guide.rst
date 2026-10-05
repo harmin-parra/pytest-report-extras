@@ -121,6 +121,12 @@ PARAMETERS:
 
 * **comment**: Comment of the test step.
 * **target**: The screenshot target. (*optional*)
+  
+  Type of **target** parameter:
+   
+  * ``WebDriver`` or ``WebElement`` when using Selenium.
+  * ``Page`` or ``Locator`` when using Playwright.
+
 * **full_page**: Whether to take a full page screenshot.
 * **page_source**: Whether to include the webpage HTML source.
 * **escape_html**: Whether to escape HTML characters in the comment.
@@ -134,7 +140,7 @@ report.attach
       comment: str,
       body: str | bytes | dict | list[str] = None,
       source: str = None,
-      mime: Mime | str = None,
+      mime: report.Mime | str = None,
       escape_html: bool = True
   )
 
