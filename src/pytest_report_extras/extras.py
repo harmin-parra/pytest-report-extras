@@ -326,12 +326,15 @@ class Extras:
     ) -> None:
         """
         Adds the comment, webpage source and attachment to the lists of the 'report' fixture.
+
         Screenshots are stored in the attachment argument.
         Images are saved in <report_html>/images folder.
         Webpage sources are saved in <report_html>/sources folder.
         Videos are saved in <report_html>/videos folder.
         Audios are saved in <report_html>/audio folder.
         Other types of files are saved in <report_html>/downloads folder.
+
+        This method also calls the Allure plugin to add the test steps to its report.
 
         Args:
             comment (str): The comment of the test step.

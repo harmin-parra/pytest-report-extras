@@ -173,7 +173,7 @@ def pytest_runtest_makereport(item, call):
     fx_screenshots = _fx_screenshots(item.config)
     fx_tms_link_pattern = item.config.getini("extras_tms_link_pattern")
 
-    pytest_html = item.config.pluginmanager.getplugin("html")
+    pytest_html = item.config.pluginmanager.get_plugin("html")
     report = outcome.get_result()
     extras = getattr(report, "extras", [])
 
@@ -197,25 +197,25 @@ def pytest_runtest_makereport(item, call):
         header = decorators.get_header_rows(item, call, report, links, status)
         extras.append(pytest_html.extras.html(f'<table class="extras_header">{header}</table>'))
 
-    # If pytest-soft-assert is loaded, update test result status
-    if call.when == "call" and item.config.pluginmanager.has_plugin("pytest_soft_assert"):
-        try:
-            soft_assert = item.config.pluginmanager.getplugin("pytest_soft_assert")
-            report = soft_assert.update_test_status(report, item, call)
-        except Exception:
-            pass
+    # If pytest-soft-assert is being used, get the 'soft-assert' fixture and update test result status
+    if (
+        call.when == "call" and
+        "soft_assert" in item.fixturenames and
+        item.config.pluginmanager.has_plugin("pytest_soft_assert")
+    ):
+        fx_soft_assert = item.funcargs["soft_assert"]
+        report = fx_soft_assert.update_test_status(report, item, call)
 
     # Add extras for test execution
     if report.when == "call":
-        # Get the 'report' fixture
-        try:
+        # Get the 'report' fixture or initialize it if it was not declared in test signature
+        if "request" in item.fixturenames:
             feature_request = item.funcargs["request"]
             fx_report: Extras = feature_request.getfixturevalue("report")
-            target = fx_report.target
-        except Exception:
-            # The test doesn't have any fixture, so let's create a fake 'report' fixture
-            fx_report: Extras = Extras(None, False, "none", False, 2, None)
-            target = None
+        else:
+            # Let's manually instantiate the 'report' fixture
+            fx_report: Extras = Extras(None, "none", False, 4, None)
+        target = fx_report.target
 
         # Set test status variables
         status = _calculate_status(report)

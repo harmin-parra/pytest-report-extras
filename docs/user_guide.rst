@@ -138,9 +138,10 @@ report.attach
 
   attach(
       comment: str,
-      body: str | bytes | dict | list[str] = None,
-      source: str = None,
-      mime: report.Mime | str = None,
+      body: str | bytes | dict | list[str] | None = None,
+      source: str | None = None,
+      mime: report.Mime | str | None = None,
+      csv_delimiter: str = ',',
       escape_html: bool = True
   )
 
@@ -161,11 +162,11 @@ PARAMETERS:
   * ``dict``: for JSON attachments.
   * ``list[str]``: for list-uri attachments.
 
-  **body** and **source** parameters are mutually exclusive. One one should be provided.
+  **body** and **source** parameters are mutually exclusive. Only one should be provided.
 
 * **source**: The filepath of the attachment.
 
-  **body** and **source** parameters are mutually exclusive. One one should be provided.
+  **body** and **source** parameters are mutually exclusive. Only one should be provided.
 
 * **mime**: The attachment mime type.
 
@@ -189,7 +190,8 @@ PARAMETERS:
   - ``report.Mime.OGV``, ``video/ogg`` or ``ogv``.
   - ``report.Mime.WEBM``, ``video/webm`` or ``webm``.
 
-* **escape_html**: Whether to escape HTML characters in the comment.
+* **csv_delimiter**: The delimiter of the CSV document attachments. Default value: `','`
+* **escape_html**: Whether to escape HTML characters in the comment. Deafult value: `True`
 
 Marks
 -----
