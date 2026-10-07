@@ -203,8 +203,8 @@ def pytest_runtest_makereport(item, call):
         "soft_assert" in item.fixturenames and
         item.config.pluginmanager.has_plugin("pytest_soft_assert")
     ):
-        fx_soft_assert = item.funcargs["soft_assert"]
-        report = fx_soft_assert.update_test_status(report, item, call)
+        pytest_soft_assert = item.config.pluginmanager.get_plugin("pytest_soft_assert")
+        report = pytest_soft_assert.update_test_status(report, item, call)
 
     # Add extras for test execution
     if report.when == "call":
