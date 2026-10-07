@@ -52,6 +52,12 @@ def pytest_addoption(parser):
         default="Test Report",
         help="The test report title",
     )
+    parser.addini(
+        "extras_exception_verbosity",
+        type="string",
+        default="short",
+        help="Verbosity level to display exception data. Accepted values: short, long",
+    )
 
 
 #
@@ -86,6 +92,12 @@ def _fx_indent(config):
 def _fx_sources(config):
     """ Whether to include webpage sources in the report. """
     return config.getini("extras_sources")
+
+
+def _fx_exception_verbosity(config):
+    """ Verbosity level to display exception data. """
+    value = config.getini("extras_exception_verbosity")
+    return value if value in ("short", "long") else "short"
 
 
 #
@@ -172,6 +184,7 @@ def pytest_runtest_makereport(item, call):
     fx_links_column = item.config.getini("extras_links_column")
     fx_screenshots = _fx_screenshots(item.config)
     fx_tms_link_pattern = item.config.getini("extras_tms_link_pattern")
+    fx_exception_verbosity = item.config.getini("extras_exception_verbosity")
 
     pytest_html = item.config.pluginmanager.get_plugin("html")
     report = outcome.get_result()
@@ -221,7 +234,7 @@ def pytest_runtest_makereport(item, call):
         status = _calculate_status(report)
         failure = status in (Status.FAILED, Status.XFAILED, status.XPASSED, Status.SKIPPED)
 
-        header = decorators.get_header_rows(item, call, report, links, status)
+        header = decorators.get_header_rows(item, call, report, links, status, fx_exception_verbosity)
         steps = ""
 
         # Generate HTML code of the test execution steps to be added in the report

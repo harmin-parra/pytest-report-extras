@@ -6,6 +6,11 @@ Changelog
 1.3.9
 =====
 
+Improvement
+-----------
+
+- Addition of ``extras_exception_verbosity`` option to set the verbosity level to display exception data.
+
 Change
 ------
 

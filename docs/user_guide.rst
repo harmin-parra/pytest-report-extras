@@ -88,6 +88,20 @@ Accepted values:
 
 The test report title
 
+.. confval:: extras_exception_verbosity
+
+   TYPE: ``str``
+
+   DEFAULT VALUE: ``"short"``
+
+The verbosity level to display exception data.
+
+Accepted values:
+
+* ``short``: Display the exception(s) type(s).
+
+* ``long``: Display the exception(s) type(s) and value(s).
+
 API
 ===
 
@@ -261,6 +275,7 @@ Sample ``pytest.ini`` file
   extras_issue_link_pattern = http://bugtracker.com/{}
   extras_tms_link_pattern = http://tms.com/tests/{}
   extras_links_column = all
+  extras_exception_verbosity = short
   extras_title = My awesome test report
 
 Sample code

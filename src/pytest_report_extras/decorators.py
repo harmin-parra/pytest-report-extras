@@ -2,7 +2,7 @@ import os
 import pathlib
 import pytest
 import textwrap
-from typing import Optional
+from typing import Literal, Optional
 from . import utils
 from .link import Link
 from .status import Status
@@ -16,7 +16,8 @@ def get_header_rows(
     call: pytest.CallInfo,
     report: pytest.TestReport,
     links: list[Link],
-    status: Status
+    status: Status,
+    verbosity: Literal['short', 'long'] = 'short'
 ) -> str:
     """
     Decorates and appends the test description and execution exception trace, if any, to the report extras.
@@ -27,12 +28,13 @@ def get_header_rows(
         report (pytest.TestReport): The test report.
         links (list[Link]): The links to add to the header.
         status (Status): The test execution status.
+        verbosity (str): The verbosity level for exception data.
     """
     return (
         get_status_row(call, report, status) +
         get_description_row(item) +
         get_parameters_row(item) +
-        get_exception_row(call, report) +
+        get_exception_row(call, report, verbosity) +
         get_links_row(links)
     )
 
@@ -99,11 +101,16 @@ def get_parameters_row(item: pytest.Item) -> str:
     return row
 
 
-def get_exception_row(call: pytest.CallInfo, report: pytest.TestReport) -> str:
+def get_exception_row(
+    call: pytest.CallInfo,
+    report: pytest.TestReport,
+    verbosity: Literal['short', 'long'] = 'short'
+) -> str:
     """ HTML table row for the test execution exception(s). """
     row = ""
-    exception1 = decorate_exception(call.excinfo)
-    exception2 = decorate_exception(getattr(report, "softexcinfo", None))
+    exception1 = decorate_exception(call.excinfo, verbosity)
+    exception2 = decorate_exception(getattr(report, "softexcinfo", None), verbosity)
+
     if exception1 != '' or exception2 != '':
         row = (
             '</tr>'
@@ -253,7 +260,7 @@ def decorate_parameters(parameters: Optional[dict]) -> str:
     return content
 
 
-def decorate_exception(excinfo: Optional[pytest.ExceptionInfo]) -> str:
+def decorate_exception(excinfo: Optional[pytest.ExceptionInfo], verbosity: Literal['short', 'long']) -> str:
     """  Applies a CSS style to the test execution exception. """
     content = ""
     # Get runtime exceptions in failed tests
@@ -267,7 +274,7 @@ def decorate_exception(excinfo: Optional[pytest.ExceptionInfo]) -> str:
     ):
         _type = excinfo.typename
         _value = excinfo.value
-        if len(str(_value)) > 0:
+        if verbosity == "long" and len(str(_value)) > 0:
             content = content + (
                 f'<pre class="extras_header_block">{utils.escape_html(_type)}</pre><br>'
                 f'<pre class="extras_header_block">{utils.escape_html(_value)}</pre>'
