@@ -92,7 +92,7 @@ The test report title
 
    TYPE: ``str``
 
-   DEFAULT VALUE: ``"short"``
+   DEFAULT VALUE: ``short``
 
 The verbosity level to display exception data.
 
